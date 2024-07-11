@@ -11,15 +11,15 @@ import java.util.List;
  *
  * @author Manh_Chien
  */
-public interface IBikeService {
+public interface IItemService {
 
     public List<Items> findAll();
 
-    public void createBike(Items bikes);
+    public void createItem(Items items);
 
-    public Items findOne(int bikeId);
+    public Items findOne(int itemId);
 
-    public void updateBike(Items bikes);
+    public void updateItem(Items items);
 
-    public void deleteBike(int bikeId);
+    public void deleteItem(int itemId);
 }

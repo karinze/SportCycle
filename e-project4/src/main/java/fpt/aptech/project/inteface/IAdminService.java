@@ -11,6 +11,6 @@ import java.util.List;
  *
  * @author Manh_Chien
  */
-public interface IAdminRepository {
+public interface IAdminService {
     public List<Admins> findAll();
 }

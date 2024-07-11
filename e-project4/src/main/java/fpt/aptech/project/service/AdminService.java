@@ -4,19 +4,19 @@
  */
 package fpt.aptech.project.service;
 
-import fpt.aptech.project.inteface.IAdminRepository;
 import fpt.aptech.project.entities.Admins;
 import fpt.aptech.project.repository.AdminRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import fpt.aptech.project.inteface.IAdminService;
 
 /**
  *
  * @author Manh_Chien
  */
 @Service
-public class AdminService implements IAdminRepository{
+public class AdminService implements IAdminService{
     @Autowired
     AdminRepository adminRepository;
     

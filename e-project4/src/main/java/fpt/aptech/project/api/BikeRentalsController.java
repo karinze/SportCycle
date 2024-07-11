@@ -4,8 +4,8 @@
  */
 package fpt.aptech.project.api;
 
-import fpt.aptech.project.entities.Items;
-import fpt.aptech.project.inteface.IBikeService;
+import fpt.aptech.project.entities.BikeRentals;
+import fpt.aptech.project.inteface.IBikeRentalsService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,39 +24,38 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Manh_Chien
  */
 @RestController
-@RequestMapping("/api/bikes")
-public class BikeController {
-
+@RequestMapping("/api/bikerentals")
+public class BikeRentalsController {
     @Autowired
-    IBikeService service;
+    IBikeRentalsService service;
 
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
-    public List<Items> list() {
+    public List<BikeRentals> list() {
         return service.findAll();
     }
 
-    @GetMapping("/{bikeId}")
+    @GetMapping("/{bikeRentalsId}")
     @ResponseStatus(HttpStatus.OK)
-    public Items get(@PathVariable("bikeId") int bikeId) {
-        return service.findOne(bikeId);
+    public BikeRentals get(@PathVariable("bikeRentalsId") int bikeRentalsId) {
+        return service.findOne(bikeRentalsId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void post(@RequestBody Items newBike) {
-        service.createBike(newBike);
+    public void post(@RequestBody BikeRentals newBikeRentals) {
+        service.createBikeRentals(newBikeRentals);
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void put(@RequestBody Items editBike) {
-        service.updateBike(editBike);
+    public void put(@RequestBody BikeRentals editBikeRentals) {
+        service.updateBikeRentals(editBikeRentals);
     }
 
-    @DeleteMapping("/{bikeId}")
+    @DeleteMapping("/{bikeRentalsId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable int bikeId) {
-        service.deleteBike(bikeId);
+    public void delete(@PathVariable int bikeRentalsId) {
+        service.deleteBikeRentals(bikeRentalsId);
     }
 }

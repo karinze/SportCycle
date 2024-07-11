@@ -4,9 +4,11 @@
  */
 package fpt.aptech.project.api;
 
+import fpt.aptech.project.entities.Tokens;
 import fpt.aptech.project.entities.Users;
 import fpt.aptech.project.inteface.IUserService;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +39,7 @@ public class UserController {
 
     @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public Users get(@PathVariable("userId") int userId) {
+    public Users get(@PathVariable("userId") UUID userId) {
         return service.findOne(userId);
     }
     
@@ -47,10 +49,40 @@ public class UserController {
         service.registerUser(newUser);
     }
 
-    @PutMapping
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void put(@RequestBody Users editUser) {
-        service.updateUser(editUser);
+    
+    @PostMapping("/sendmail")
+    @ResponseStatus(HttpStatus.OK)
+    public void sendmail(@RequestBody Users users) {
+        service.sendMail(users);
     }
-
+    
+    @GetMapping("/findtoken/{token}")
+    @ResponseStatus(HttpStatus.OK)
+    public Tokens findToken(@PathVariable("token") String token) {
+        return service.findToken(token);
+    }
+    
+    @PostMapping("/resetpassword")
+    @ResponseStatus(HttpStatus.OK)
+    public void resetpassword(@RequestBody Users resetpass) {
+        service.updateUser(resetpass);
+    }
+    
+    @PostMapping("/savetoken")
+    @ResponseStatus(HttpStatus.OK)
+    public void savetoken(@RequestBody Tokens resettoken) {
+        service.savePass(resettoken);
+    }
+    
+    @GetMapping("/finduser/{users}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Tokens> findToken(@PathVariable("users") Users users) {
+        return service.getResetTokens(users);
+    }
+    
+    @PutMapping("/savetokenactive")
+    @ResponseStatus(HttpStatus.OK)
+    public void savetokenactive(@RequestBody List<Tokens> resettoken) {
+        service.saveTokenPass(resettoken);
+    }
 }

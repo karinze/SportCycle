@@ -9,6 +9,7 @@ import fpt.aptech.project.entities.Orders;
 import fpt.aptech.project.entities.Users;
 import fpt.aptech.project.repository.OrderRepository;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,8 +33,8 @@ public class OrderService implements IOrderService{
     }
 
     @Override
-    public List<Orders> findUser(int userId) {
-        return orderRepository.listOrderByUserId(userId);
+    public List<Orders> findUser(Users users) {
+        return orderRepository.listOrderByUserId(users);
     }
     
 }

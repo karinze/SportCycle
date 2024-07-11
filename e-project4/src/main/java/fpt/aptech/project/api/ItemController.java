@@ -5,47 +5,58 @@
 package fpt.aptech.project.api;
 
 import fpt.aptech.project.entities.Items;
-import fpt.aptech.project.entities.Orders;
-import fpt.aptech.project.entities.Users;
-import fpt.aptech.project.inteface.IOrderService;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import fpt.aptech.project.inteface.IItemService;
 
 /**
  *
  * @author Manh_Chien
  */
 @RestController
-@RequestMapping("/api/orders")
-public class OrderController {
+@RequestMapping("/api/items")
+public class ItemController {
 
     @Autowired
-    IOrderService service;
+    IItemService service;
+
+    @GetMapping("")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Items> list() {
+        return service.findAll();
+    }
+
+    @GetMapping("/{itemId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Items get(@PathVariable("itemId") int itemId) {
+        return service.findOne(itemId);
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void post(@RequestBody Orders newOrder) {
-        service.createOrder(newOrder);
+    public void post(@RequestBody Items newItem) {
+        service.createItem(newItem);
     }
 
-    @GetMapping("/{orderId}")
-    @ResponseStatus(HttpStatus.OK)
-    public Orders get(@PathVariable("orderId") int orderId) {
-        return service.findOne(orderId);
+    @PutMapping
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void put(@RequestBody Items editItem) {
+        service.updateItem(editItem);
     }
 
-    @GetMapping("/users/{users}")
-    @ResponseStatus(HttpStatus.OK)
-    public List<Orders> list(@PathVariable("users") Users users) {
-        return service.findUser(users);
+    @DeleteMapping("/{itemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable int itemId) {
+        service.deleteItem(itemId);
     }
 }

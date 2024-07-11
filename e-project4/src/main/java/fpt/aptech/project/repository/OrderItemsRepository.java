@@ -4,13 +4,13 @@
  */
 package fpt.aptech.project.repository;
 
-import fpt.aptech.project.entities.Items;
+import fpt.aptech.project.entities.OrderItems;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  *
  * @author Manh_Chien
  */
-public interface BikeRepository extends JpaRepository<Items, Integer> {
+public interface OrderItemsRepository extends JpaRepository<OrderItems, Integer> {
     
 }

@@ -4,14 +4,13 @@
  */
 package fpt.aptech.project.repository;
 
-import fpt.aptech.project.entities.Admins;
-import java.util.UUID;
+import fpt.aptech.project.entities.BikeRentals;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 /**
  *
  * @author Manh_Chien
  */
-public interface AdminRepository extends JpaRepository<Admins, UUID> {
+
+public interface BikeRentalsRepository extends JpaRepository<BikeRentals, Integer> {
     
 }

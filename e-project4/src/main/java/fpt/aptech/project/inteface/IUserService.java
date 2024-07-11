@@ -4,8 +4,11 @@
  */
 package fpt.aptech.project.inteface;
 
+import fpt.aptech.project.entities.Tokens;
 import fpt.aptech.project.entities.Users;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -17,8 +20,24 @@ public interface IUserService {
 
     public void registerUser(Users user);
 
-    public Users findOne(int userId);
+    public Users findOne(UUID userId);
 
     public void updateUser(Users users);
+
+    public List<Users> searchUsers(String username);
+
+    public Users findByEmail(String email);
+
+    public void sendMail(Users users);
+
+    public boolean hashExipred(LocalDateTime eDateTime);
+    
+    public void savePass(Tokens newResetToken);
+    
+    public Tokens findToken(String token);
+    
+    public List<Tokens> getResetTokens(Users users);
+    
+    public void saveTokenPass(List<Tokens> list);
 
 }

@@ -4,45 +4,45 @@
  */
 package fpt.aptech.project.service;
 
-import fpt.aptech.project.inteface.IBikeService;
 import fpt.aptech.project.entities.Items;
-import fpt.aptech.project.repository.BikeRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import fpt.aptech.project.inteface.IItemService;
+import fpt.aptech.project.repository.ItemRepository;
 
 /**
  *
  * @author Manh_Chien
  */
 @Service
-public class BikeService implements IBikeService{
+public class ItemService implements IItemService{
     @Autowired
-    BikeRepository bikeRepository;
+    ItemRepository itemRepository;
 
     @Override
     public List<Items> findAll() {
-        return bikeRepository.findAll();
+        return itemRepository.findAll();
     }
 
     @Override
-    public void createBike(Items bikes) {
-        bikeRepository.save(bikes);
+    public void createItem(Items items) {
+        itemRepository.save(items);
     }
 
     @Override
-    public Items findOne(int bikeId) {
-        return bikeRepository.findById(bikeId).get();
+    public Items findOne(int itemId) {
+        return itemRepository.findById(itemId).get();
     }
 
     @Override
-    public void updateBike(Items bikes) {
-        bikeRepository.save(bikes);
+    public void updateItem(Items items) {
+        itemRepository.save(items);
     }
 
     @Override
-    public void deleteBike(int bikeId) {
-        bikeRepository.deleteById(bikeId);
+    public void deleteItem(int itemId) {
+        itemRepository.deleteById(itemId);
     }
     
 }

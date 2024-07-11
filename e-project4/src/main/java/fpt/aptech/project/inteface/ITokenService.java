@@ -4,17 +4,16 @@
  */
 package fpt.aptech.project.inteface;
 
-import fpt.aptech.project.entities.Orders;
+import fpt.aptech.project.entities.Tokens;
 import fpt.aptech.project.entities.Users;
 import java.util.List;
-import java.util.UUID;
 
 /**
  *
  * @author Manh_Chien
  */
-public interface IOrderService {
-    public void createOrder(Orders orders);
-    public Orders findOne(int orderId);
-    public List<Orders> findUser(Users users);
+public interface ITokenService {
+    Tokens findToken(String token);
+    List<Tokens> getResetTokens(Users users);
+    void saveTokens(List<Tokens> list);
 }
