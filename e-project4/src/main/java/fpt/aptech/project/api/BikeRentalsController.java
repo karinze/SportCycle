@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Manh_Chien
  */
 @RestController
-@RequestMapping("/api/bikerentals")
+@RequestMapping("/api/bikerentals/")
 public class BikeRentalsController {
     @Autowired
     IBikeRentalsService service;

@@ -24,7 +24,7 @@ import fpt.aptech.project.inteface.IItemService;
  * @author Manh_Chien
  */
 @RestController
-@RequestMapping("/api/items")
+@RequestMapping("/api/items/")
 public class ItemController {
 
     @Autowired

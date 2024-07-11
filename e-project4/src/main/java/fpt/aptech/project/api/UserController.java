@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Manh_Chien
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/users/")
 public class UserController {
 
     @Autowired
@@ -48,7 +48,12 @@ public class UserController {
     public void post(@RequestBody Users newUser) {
         service.registerUser(newUser);
     }
-
+    
+    @GetMapping("/findemail/{email}")
+    @ResponseStatus(HttpStatus.OK)
+    public Users findByEmail(@PathVariable("email") String email) {
+        return service.findByEmail(email);
+    }
     
     @PostMapping("/sendmail")
     @ResponseStatus(HttpStatus.OK)

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html  xmlns:th="https://www.thymeleaf.org/">
+    <head>
+        <title>Login</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h3>Login Account</h3>
+        <form th:action="@{/login}" method="post" th:object="${account}">
+            Enter UserName:<br>
+            <input type="text" name="username" th:field="*{username}"><br><br>
+            Enter Password:<br>
+            <input type="password" name="password" th:field="*{password}"><br><br>
+            
+            <input type="submit" value="Login">
+            <a th:href="@{/register}">Register now</a>
+            <a th:href="@{/forgotpassword}">Forgot Password</a>
+        </form>
+    </body>
+</html>

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Manh_Chien
  */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/auth/")
 public class AuthController {
     @Autowired
     IAuthService service;

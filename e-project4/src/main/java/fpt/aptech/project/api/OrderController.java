@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Manh_Chien
  */
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/orders/")
 public class OrderController {
 
     @Autowired

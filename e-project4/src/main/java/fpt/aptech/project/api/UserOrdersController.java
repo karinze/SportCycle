@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Manh_Chien
  */
 @RestController
-@RequestMapping("/api/userorders")
+@RequestMapping("/api/userorders/")
 public class UserOrdersController {
     @Autowired
     IUserOrdersService service;

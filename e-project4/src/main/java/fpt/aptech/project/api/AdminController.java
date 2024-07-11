@@ -20,7 +20,7 @@ import fpt.aptech.project.inteface.IAdminService;
  * @author Manh_Chien
  */
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/admin/")
 public class AdminController {
     @Autowired
     IAdminService service;
