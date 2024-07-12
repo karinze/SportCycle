@@ -5,12 +5,18 @@
 package fpt.aptech.project.repository;
 
 import fpt.aptech.project.entities.Items;
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  *
  * @author Manh_Chien
  */
 public interface ItemRepository extends JpaRepository<Items, Integer> {
-    
+    @Query("Select e From Items e Where e.name LIKE :name ")
+    Page<Items> searchByName(@Param("name") String name,Pageable pageable);
 }

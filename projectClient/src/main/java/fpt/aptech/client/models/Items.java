@@ -35,9 +35,10 @@ public class Items {
     public BigDecimal price;
     public int stock;
     public String type;
-    public MultipartFile image;
+    public String image;
     public boolean is_visible;
     public Date created_dt;
+    
 
     
     
@@ -50,8 +51,21 @@ public class Items {
         
     }
 
-    public Items(int item_id, String name, String brand, String description, BigDecimal price, int stock, String type, MultipartFile image, boolean is_visible, Date created_dt) {
+    public Items(int item_id, String name, String brand, String description, BigDecimal price, int stock, String type, String image, boolean is_visible, Date created_dt) {
         this.item_id = item_id;
+        this.name = name;
+        this.brand = brand;
+        this.description = description;
+        this.price = price;
+        this.stock = stock;
+        this.type = type;
+        this.image = image;
+        this.is_visible = is_visible;
+        this.created_dt = created_dt;
+    }
+    
+    public Items( String name, String brand, String description, BigDecimal price, int stock, String type, String image, boolean is_visible, Date created_dt) {
+        
         this.name = name;
         this.brand = brand;
         this.description = description;
@@ -120,11 +134,11 @@ public class Items {
         this.type = type;
     }
 
-    public MultipartFile getImage() {
+    public String getImage() {
         return image;
     }
 
-    public void setImage(MultipartFile image) {
+    public void setImage(String image) {
         this.image = image;
     }
 

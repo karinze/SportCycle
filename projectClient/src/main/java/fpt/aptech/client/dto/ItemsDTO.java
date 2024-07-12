@@ -63,6 +63,18 @@ public class ItemsDTO {
         this.created_dt = created_dt;
     }
     
+    public ItemsDTO( String name, String brand, String description, BigDecimal price, int stock, String type, MultipartFile image, boolean is_visible, Date created_dt) {
+        this.name = name;
+        this.brand = brand;
+        this.description = description;
+        this.price = price;
+        this.stock = stock;
+        this.type = type;
+        this.image = image;
+        this.is_visible = is_visible;
+        this.created_dt = created_dt;
+    }
+    
 
     public int getItem_id() {
         return item_id;

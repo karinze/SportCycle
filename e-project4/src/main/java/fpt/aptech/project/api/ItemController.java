@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import fpt.aptech.project.inteface.IItemService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  *
@@ -59,4 +63,26 @@ public class ItemController {
     public void delete(@PathVariable int itemId) {
         service.deleteItem(itemId);
     }
+    
+    @GetMapping("/item")
+@ResponseStatus(HttpStatus.OK)
+public List<Items> list(@RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
+                        @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize) {
+    // Ensure pageNumber and pageSize are not null
+    int validPageNumber = (pageNumber != null) ? pageNumber : 0;
+    int validPageSize = (pageSize != null) ? pageSize : 10;
+
+    return service.page(validPageNumber, validPageSize);
+}
+
+@GetMapping("/search/{name}")
+@ResponseStatus(HttpStatus.OK)
+public List<Items> search(@PathVariable("name") String name,@RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
+                        @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize) {
+    // Ensure pageNumber and pageSize are not null
+    int validPageNumber = (pageNumber != null) ? pageNumber : 0;
+    int validPageSize = (pageSize != null) ? pageSize : 10;
+
+    return service.search(name, validPageNumber, validPageSize);
+}
 }

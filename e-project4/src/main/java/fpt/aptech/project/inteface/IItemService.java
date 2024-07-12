@@ -6,6 +6,8 @@ package fpt.aptech.project.inteface;
 
 import fpt.aptech.project.entities.Items;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  *
@@ -22,4 +24,8 @@ public interface IItemService {
     public void updateItem(Items items);
 
     public void deleteItem(int itemId);
+    
+    public List<Items> search(String name,int pageNumber,int pageSize);
+    
+    public List<Items> page(int pageNumber,int pageSize);
 }

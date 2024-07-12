@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html xmlns:th="https://www.thymeleaf.org/">
+<head>
+    <title>Create New</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap CSS link -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1>Create</h1>
+            <form th:action="@{/docreateAdminItems}" th:object="${items}" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="name">Enter Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" th:field="*{name}">
+                    <p style="color: red" th:errors="*{name}" th:if="${#fields.hasErrors('name')}" class="error-message"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="brand">Enter Brand:</label>
+                    <input type="text" id="brand" name="brand" class="form-control" th:field="*{brand}">
+                    <p style="color: red" th:errors="*{brand}" th:if="${#fields.hasErrors('brand')}" class="error-message"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Enter Description:</label>
+                    <input type="text" id="description" name="description" class="form-control" th:field="*{description}">
+                    <p style="color: red" th:errors="*{description}" th:if="${#fields.hasErrors('description')}" class="error-message"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Enter Price:</label>
+                    <input type="text" id="price" name="price" class="form-control" th:field="*{price}">
+                    <p style="color: red" th:errors="*{price}" th:if="${#fields.hasErrors('price')}" class="error-message"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="stock">Enter Stock:</label>
+                    <input type="text" id="stock" name="stock" class="form-control" th:field="*{stock}">
+                    <p style="color: red" th:errors="*{stock}" th:if="${#fields.hasErrors('stock')}" class="error-message"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="type">Enter Type:</label>
+                    <input type="text" id="type" name="type" class="form-control" th:field="*{type}">
+                    <p style="color: red" th:errors="*{type}" th:if="${#fields.hasErrors('type')}" class="error-message"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Enter Image:</label>
+                    <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
+                    <p style="color: red" th:errors="*{image}" th:if="${#fields.hasErrors('image')}" class="error-message"></p>
+                </div>
+
+                <div class="form-group form-check">
+                    <input type="checkbox" id="is_visible" name="is_visible" class="form-check-input" th:field="*{is_visible}">
+                    <label for="is_visible" class="form-check-label">Visible</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies (optional, if needed) -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-Vkoo8x4CGsGXP6D9w8rsQv9Lf1KuO8HvJGNIpz2mtm3U6sFOnq0s1Gt4AVR3uAiz"
+        crossorigin="anonymous"></script>
+</body>
+</html>

@@ -10,6 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import fpt.aptech.project.inteface.IItemService;
 import fpt.aptech.project.repository.ItemRepository;
+import java.util.stream.Collectors;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 /**
  *
@@ -19,6 +24,7 @@ import fpt.aptech.project.repository.ItemRepository;
 public class ItemService implements IItemService{
     @Autowired
     ItemRepository itemRepository;
+
 
     @Override
     public List<Items> findAll() {
@@ -44,5 +50,47 @@ public class ItemService implements IItemService{
     public void deleteItem(int itemId) {
         itemRepository.deleteById(itemId);
     }
+    
+    
+    @Override
+public List<Items> page(int pageNumber, int pageSize) {
+    try {
+        // Set default page size to 10 if provided page size is less than 1
+        int validatedPageSize = (pageSize < 1) ? 10 : pageSize;
+        Pageable pageable = PageRequest.of(pageNumber, validatedPageSize);
+        Page<Items> pageItems = this.itemRepository.findAll(pageable);
+        
+        List<Items> allItems = pageItems.getContent();
+        
+        return allItems;
+    } catch (Exception ex) {
+        // Handle exception (e.g., log it)
+        ex.printStackTrace();
+        throw new RuntimeException("Failed to fetch paginated items: " + ex.getMessage());
+    }
+}
+    @Override
+    public List<Items> search(String name, int pageNumber, int pageSize) {
+    try {
+        // Set default page size to 10 if provided page size is less than 1
+        int validatedPageSize = (pageSize < 1) ? 10 : pageSize;
+        Pageable pageable = PageRequest.of(pageNumber, validatedPageSize);
+        
+        Page<Items> pageItems = this.itemRepository.searchByName('%'+name+'%', pageable);
+        
+        List<Items> allItems = pageItems.getContent();
+        
+        return allItems;
+    } catch (Exception ex) {
+        // Handle exception (e.g., log it)
+        ex.printStackTrace();
+        throw new RuntimeException("Failed to fetch paginated items: " + ex.getMessage());
+    }
+}
+    
+
+    
+
+    
     
 }

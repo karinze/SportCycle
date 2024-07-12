@@ -4,23 +4,49 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to c
 Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
 -->
 <html xmlns:th="https://www.thymeleaf.org/">
-    <head>
-        <title>Register</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <h2>Register</h2>
-        <form th:action="@{/doregister}" th:object="${account}" method="post" enctype="multipart/form-data">
-            Enter User Name:<br>
-            <input type="text" th:field="*{username}" size="30"><br><br>
-            Enter Password:<br>
-            <input type="text" th:field="*{password}" size="30"><br><br>
-            Enter Email:<br>
-            <input type="email" th:field="*{email}" size="30"><br><br>
-            
+<head>
+    <title>Register</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-            <input type="submit" value="Register">
-        </form>
-    </body>
+    <!-- Bootstrap CSS link -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center">Register</h2>
+                    <form th:action="@{/doregister}" th:object="${account}" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="username">Enter User Name:</label>
+                            <input type="text" id="username" name="username" class="form-control"
+                                   th:field="*{username}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Enter Password:</label>
+                            <input type="password" id="password" name="password" class="form-control"
+                                   th:field="*{password}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Enter Email:</label>
+                            <input type="email" id="email" name="email" class="form-control"
+                                   th:field="*{email}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies (optional, if needed) -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-Vkoo8x4CGsGXP6D9w8rsQv9Lf1KuO8HvJGNIpz2mtm3U6sFOnq0s1Gt4AVR3uAiz"
+        crossorigin="anonymous"></script>
+</body>
 </html>
