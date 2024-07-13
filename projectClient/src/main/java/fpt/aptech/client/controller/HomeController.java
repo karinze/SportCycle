@@ -6,6 +6,7 @@ package fpt.aptech.client.controller;
 
 import fpt.aptech.client.dto.ItemsDTO;
 import fpt.aptech.client.dto.UsersDTO;
+import fpt.aptech.client.models.CartItems;
 import fpt.aptech.client.models.Items;
 import fpt.aptech.client.models.Tokens;
 import fpt.aptech.client.models.Users;
@@ -16,9 +17,12 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -73,7 +77,7 @@ public class HomeController {
             if (users.isRole()) {
                 session.setAttribute("admin", username);
 
-                return "redirect:/indexAdminItems";
+                return "redirect:/dashboard";
             } else {
                 session.setAttribute("user", username);
 
@@ -191,37 +195,50 @@ public class HomeController {
 
     //Start Items
     @GetMapping("/indexAdminItems")
-public String index(Model model, HttpSession session,
-                    @RequestParam(defaultValue = "0") int pageNumber,
-                    @RequestParam(defaultValue = "10") int pageSize) {
-    if (session.getAttribute("admin") != null) {
-        // Assuming rt is your RestTemplate instance for making HTTP requests
-        ResponseEntity<List<Items>> response = rt.exchange(
-                urlitems + "/item" + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<List<Items>>() {}
-        );
+    public String index(Model model, HttpSession session,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        if (session.getAttribute("admin") != null) {
+            // Assuming rt is your RestTemplate instance for making HTTP requests
+            ResponseEntity<List<Items>> response = rt.exchange(
+                    urlitems + "/item" + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Items>>() {
+            }
+            );
 
-        List<Items> itemList = response.getBody();
+            List<Items> itemList = response.getBody();
 
-        // Get total number of items from the response headers or body
-        int totalItems = itemList.size(); // Example: Replace with actual total items count
+            // Get total number of items from the response headers or body
+            int totalItems = itemList.size(); // Example: Replace with actual total items count
 
-        // Calculate total pages
-        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+            // Calculate total pages
+            int totalPages = (int) Math.ceil((double) totalItems / pageSize);
 
-        // Add the paginated list, pagination parameters, and totalPages to the model
-        model.addAttribute("list", itemList);
-        model.addAttribute("currentPage", pageNumber);
-        model.addAttribute("pageSize", pageSize);
-        model.addAttribute("totalPages", totalPages); // Add totalPages to the model
+            // Add the paginated list, pagination parameters, and totalPages to the model
+            model.addAttribute("list", itemList);
+            model.addAttribute("currentPage", pageNumber);
+            model.addAttribute("pageSize", pageSize);
+            model.addAttribute("totalPages", totalPages); // Add totalPages to the model
 
-        return "admin/indexAdminItems";
-    } else {
-        return "redirect:/";
+            return "admin/indexAdminItems";
+        } else {
+            return "redirect:/";
+        }
     }
-}
+
+    @GetMapping("/dashboard")
+    public String dashboard(Model model, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+
+            return "admin/dashboard";
+        } else {
+
+            return "redirect:/";
+        }
+
+    }
 
     @GetMapping("/createAdminItems")
     public String create(Model model, HttpSession session) {
@@ -230,7 +247,7 @@ public String index(Model model, HttpSession session,
             return "admin/createAdminItems";
         } else {
 
-            return "redirect:/indexAdminItems";
+            return "redirect:/";
         }
 
     }
@@ -260,7 +277,7 @@ public String index(Model model, HttpSession session,
             return "admin/editAdminItems";
         } else {
 
-            return "redirect:/indexAdminItems";
+            return "redirect:/";
         }
 
     }
@@ -280,13 +297,13 @@ public String index(Model model, HttpSession session,
 
             if (item.getImage().isEmpty()) {
                 String file = items.getImage();
-                Items editItems = new Items(item.item_id,item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), file, item.isIs_visible(), item.getCreated_dt());
+                Items editItems = new Items(item.item_id, item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), file, item.isIs_visible(), item.getCreated_dt());
                 model.addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class));
                 return "redirect:/indexAdminItems";
 
             } else {
                 FileCopyUtils.copy(item.getImage().getBytes(), new File(FileUpload, fileName));
-                Items editItems = new Items(item.item_id,item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), fileName, item.isIs_visible(), item.getCreated_dt());
+                Items editItems = new Items(item.item_id, item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), fileName, item.isIs_visible(), item.getCreated_dt());
                 model.addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class));
                 return "redirect:/indexAdminItems";
             }
@@ -305,39 +322,99 @@ public String index(Model model, HttpSession session,
     }
 
     @GetMapping("/searchAdminItems")
-public String search(Model model, @RequestParam("name") String name, HttpSession session,
-                     @RequestParam(defaultValue = "0") int pageNumber,
-                     @RequestParam(defaultValue = "10") int pageSize) {
-    if (session.getAttribute("admin") != null) {
-        if (name != null && !name.isEmpty()) {
-            
-            ResponseEntity<List<Items>> response = rt.exchange(
-            urlitems + "/search/" + name + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<List<Items>>() {}
-        );
-            
-            List<Items> itemList = response.getBody();
-            int totalItems = itemList.size(); // Example: Replace with actual total items count
+    public String search(Model model, @RequestParam("name") String name, HttpSession session,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        if (session.getAttribute("admin") != null) {
+            if (name != null && !name.isEmpty()) {
 
-        // Calculate total pages
-        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+                ResponseEntity<List<Items>> response = rt.exchange(
+                        urlitems + "/search/" + name + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<List<Items>>() {
+                }
+                );
 
-        // Add the paginated list and pagination parameters to the model
-        model.addAttribute("list", itemList);
-        model.addAttribute("currentPage", pageNumber);
-        model.addAttribute("pageSize", pageSize);
-        model.addAttribute("totalPages", totalPages);
-model.addAttribute("name", name);
-        return "admin/indexAdminItems";
-            
+                List<Items> itemList = response.getBody();
+                int totalItems = itemList.size(); // Example: Replace with actual total items count
+
+                // Calculate total pages
+                int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+
+                // Add the paginated list and pagination parameters to the model
+                model.addAttribute("list", itemList);
+                model.addAttribute("currentPage", pageNumber);
+                model.addAttribute("pageSize", pageSize);
+                model.addAttribute("totalPages", totalPages);
+                model.addAttribute("name", name);
+                return "admin/indexAdminItems";
+
+            } else {
+                // Call index method if name is empty or null
+                return index(model, session, pageNumber, pageSize);
+            }
         } else {
-            // Call index method if name is empty or null
-            return index(model, session, pageNumber, pageSize);
+            return "redirect:/"; // Redirect to homepage if admin session is not found
         }
-    } else {
-        return "redirect:/"; // Redirect to homepage if admin session is not found
     }
+
+    @GetMapping("/cart")
+public String viewCart(Model model, HttpSession session) {
+    List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
+    if (cartItems == null) {
+        cartItems = new ArrayList<>(); // Initialize empty list if null
+    }
+    
+    // Calculate total price and merge cart items
+    Map<Integer, CartItems> mergedCart = new LinkedHashMap<>();
+    BigDecimal totalPrice = BigDecimal.ZERO; // Initialize totalPrice as BigDecimal
+
+    for (CartItems item : cartItems) {
+        if (mergedCart.containsKey(item.getItem_id())) {
+            CartItems existingItem = mergedCart.get(item.getItem_id());
+            existingItem.setTotalQuantity(existingItem.getTotalQuantity() + 1);
+        } else {
+            CartItems newItem = new CartItems();
+            newItem.setItem_id(item.getItem_id());
+            newItem.setName(item.getName());
+            newItem.setPrice(item.getPrice());
+            newItem.setImage(item.getImage());
+            newItem.setTotalQuantity(1); // Initial quantity is 1
+            mergedCart.put(item.getItem_id(), newItem);
+        }
+
+        // Calculate total price per item
+        totalPrice = totalPrice.add(item.getPrice()); // Use add() method for BigDecimal
+    }
+
+    // Convert merged items map to list
+    List<CartItems> mergedCartItems = new ArrayList<>(mergedCart.values());
+
+    // Add attributes to model
+    model.addAttribute("cartItems", mergedCartItems);
+    model.addAttribute("totalPrice", totalPrice);
+
+    return "admin/cart"; // Ensure your template name matches the actual file name
 }
+
+    @PostMapping("/addToCart/{itemId}")
+    public String addToCart(@PathVariable int itemId, HttpSession session) {
+        // Retrieve item details from API or database
+        CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class);
+
+        // Retrieve cart from session
+        List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
+        if (cartItems == null) {
+            cartItems = new ArrayList<>();
+            session.setAttribute("cartItems", cartItems);
+        }
+
+        // Add item to cart
+        cartItems.add(item);
+
+        // Optionally, update session or database with cart changes
+        return "redirect:/indexAdminItems";
+    }
+
 }

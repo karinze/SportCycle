@@ -1,15 +1,77 @@
 <!DOCTYPE html>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
--->
-<html>
+<html xmlns:th="https://www.thymeleaf.org/">
     <head>
-        <title>TODO supply a title</title>
+        <title>Dashboard</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <style>
+            .sidebar {
+                height: 100%;
+                width: 0;
+                position: fixed;
+                z-index: 1;
+                top: 0;
+                left: 0;
+                background-color: #111;
+                overflow-x: hidden;
+                transition: 0.5s;
+                padding-top: 60px;
+            }
+
+            .sidebar a {
+                padding: 8px 8px 8px 32px;
+                text-decoration: none;
+                font-size: 25px;
+                color: #818181;
+                display: block;
+                transition: 0.3s;
+            }
+
+            .sidebar a:hover {
+                color: #f1f1f1;
+            }
+
+            .wrapper {
+                margin-left: 10px;
+            }
+
+            @media screen and (max-height: 450px) {
+                .sidebar {
+                    padding-top: 15px;
+                }
+                .sidebar a {
+                    font-size: 18px;
+                }
+            }
+        </style>
     </head>
     <body>
-        <div>TODO write content</div>
+        <div class="wrapper">
+            <button class="openbtn" onclick="toggleNav()">&#9776;</button>
+            <div id="mySidebar" class="sidebar">
+                <a th:href="@{/indexAdminItems}">Items</a>
+                <a th:href="@{/indexAdminItems}">Services</a>
+                <a th:href="@{/indexAdminItems}">Clients</a>
+                <a th:href="@{/indexAdminItems}">Contact</a>
+            </div>
+        </div>
+        <script>
+        function toggleNav() {
+    const sidebar = document.getElementById("mySidebar");
+    const wrapper = document.querySelector(".wrapper");
+    if (sidebar.style.width === "250px") {
+        sidebar.style.width = "0";
+        sidebar.style.display = "none";
+        wrapper.style.marginLeft = "10px";
+    } else {
+        sidebar.style.display = "block";
+        sidebar.style.width = "250px";
+        wrapper.style.marginLeft = "250px";
+    }
+}
+    </script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     </body>
 </html>
