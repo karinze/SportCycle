@@ -195,38 +195,41 @@ public class HomeController {
 
     //Start Items
     @GetMapping("/indexAdminItems")
-    public String index(Model model, HttpSession session,
-            @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        if (session.getAttribute("admin") != null) {
-            // Assuming rt is your RestTemplate instance for making HTTP requests
-            ResponseEntity<List<Items>> response = rt.exchange(
-                    urlitems + "/item" + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<List<Items>>() {
-            }
-            );
+public String index(Model model, HttpSession session,
+                    @RequestParam(defaultValue = "0") int pageNumber,
+                    @RequestParam(defaultValue = "5") int pageSize) {
+    if (session.getAttribute("admin") != null) {
+        ResponseEntity<List<Items>> response = rt.exchange(
+                urlitems + "/item" + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<Items>>() {
+                }
+        );
+        List<Items> p =  rt.getForObject(urlitems + "/", List.class);
 
-            List<Items> itemList = response.getBody();
-
-            // Get total number of items from the response headers or body
-            int totalItems = itemList.size(); // Example: Replace with actual total items count
-
-            // Calculate total pages
-            int totalPages = (int) Math.ceil((double) totalItems / pageSize);
-
-            // Add the paginated list, pagination parameters, and totalPages to the model
-            model.addAttribute("list", itemList);
-            model.addAttribute("currentPage", pageNumber);
-            model.addAttribute("pageSize", pageSize);
-            model.addAttribute("totalPages", totalPages); // Add totalPages to the model
-
-            return "admin/indexAdminItems";
+        List<Items> itemList = response.getBody();
+        
+        int totalItems = p.size(); // Ensure totalItems is calculated correctly
+        int totalPages = (int) Math.ceil((double)totalItems / pageSize);
+        
+        if (session.getAttribute("countcartItems") != null) {
+            int count = (int) session.getAttribute("countcartItems");
+            model.addAttribute("countcartItems", count);
         } else {
-            return "redirect:/";
+            model.addAttribute("countcartItems", 0);
         }
+
+        model.addAttribute("list", itemList);
+        model.addAttribute("currentPage", pageNumber);
+        model.addAttribute("pageSize", pageSize);
+        model.addAttribute("totalPages", totalPages);
+
+        return "admin/indexAdminItems";
+    } else {
+        return "redirect:/";
     }
+}
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, HttpSession session) {
@@ -322,81 +325,80 @@ public class HomeController {
     }
 
     @GetMapping("/searchAdminItems")
-    public String search(Model model, @RequestParam("name") String name, HttpSession session,
-            @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        if (session.getAttribute("admin") != null) {
-            if (name != null && !name.isEmpty()) {
+public String search(Model model, @RequestParam("name") String name, HttpSession session,
+        @RequestParam(defaultValue = "0") int pageNumber,
+        @RequestParam(defaultValue = "5") int pageSize) {
+    if (session.getAttribute("admin") != null) {
+        if (name != null && !name.isEmpty()) {
+            ResponseEntity<List<Items>> response = rt.exchange(
+                    urlitems + "/searchp/" + name + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Items>>() {
+            });
+        
+        List<Items> p =  rt.getForObject(urlitems + "/search/"+ name , List.class);
 
-                ResponseEntity<List<Items>> response = rt.exchange(
-                        urlitems + "/search/" + name + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
-                        HttpMethod.GET,
-                        null,
-                        new ParameterizedTypeReference<List<Items>>() {
-                }
-                );
+        List<Items> itemList = response.getBody();
+        
+        int totalItems = p.size(); // Ensure totalItems is calculated correctly
+        int totalPages = (int) Math.ceil((double)totalItems / pageSize);
+            
 
-                List<Items> itemList = response.getBody();
-                int totalItems = itemList.size(); // Example: Replace with actual total items count
-
-                // Calculate total pages
-                int totalPages = (int) Math.ceil((double) totalItems / pageSize);
-
-                // Add the paginated list and pagination parameters to the model
-                model.addAttribute("list", itemList);
-                model.addAttribute("currentPage", pageNumber);
-                model.addAttribute("pageSize", pageSize);
-                model.addAttribute("totalPages", totalPages);
-                model.addAttribute("name", name);
-                return "admin/indexAdminItems";
-
-            } else {
-                // Call index method if name is empty or null
-                return index(model, session, pageNumber, pageSize);
-            }
+            // Add the paginated list and pagination parameters to the model
+            model.addAttribute("list", itemList);
+            model.addAttribute("currentPage", pageNumber);
+            model.addAttribute("pageSize", pageSize);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("name", name);
+            return "admin/indexAdminItems";
         } else {
-            return "redirect:/"; // Redirect to homepage if admin session is not found
+            // Call index method if name is empty or null
+            return index(model, session, pageNumber, pageSize);
         }
+    } else {
+        return "redirect:/"; // Redirect to homepage if admin session is not found
     }
+}
 
     @GetMapping("/cart")
-public String viewCart(Model model, HttpSession session) {
-    List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
-    if (cartItems == null) {
-        cartItems = new ArrayList<>(); // Initialize empty list if null
-    }
-    
-    // Calculate total price and merge cart items
-    Map<Integer, CartItems> mergedCart = new LinkedHashMap<>();
-    BigDecimal totalPrice = BigDecimal.ZERO; // Initialize totalPrice as BigDecimal
-
-    for (CartItems item : cartItems) {
-        if (mergedCart.containsKey(item.getItem_id())) {
-            CartItems existingItem = mergedCart.get(item.getItem_id());
-            existingItem.setTotalQuantity(existingItem.getTotalQuantity() + 1);
-        } else {
-            CartItems newItem = new CartItems();
-            newItem.setItem_id(item.getItem_id());
-            newItem.setName(item.getName());
-            newItem.setPrice(item.getPrice());
-            newItem.setImage(item.getImage());
-            newItem.setTotalQuantity(1); // Initial quantity is 1
-            mergedCart.put(item.getItem_id(), newItem);
+    public String viewCart(Model model, HttpSession session) {
+        List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
+        if (cartItems == null) {
+            cartItems = new ArrayList<>(); // Initialize empty list if null
         }
 
-        // Calculate total price per item
-        totalPrice = totalPrice.add(item.getPrice()); // Use add() method for BigDecimal
+        // Calculate total price and merge cart items
+        Map<Integer, CartItems> mergedCart = new LinkedHashMap<>();
+        BigDecimal totalPrice = BigDecimal.ZERO; // Initialize totalPrice as BigDecimal
+
+        for (CartItems item : cartItems) {
+            if (mergedCart.containsKey(item.getItem_id())) {
+                CartItems existingItem = mergedCart.get(item.getItem_id());
+                existingItem.setTotalQuantity(existingItem.getTotalQuantity() + 1);
+            } else {
+                CartItems newItem = new CartItems();
+                newItem.setItem_id(item.getItem_id());
+                newItem.setName(item.getName());
+                newItem.setPrice(item.getPrice());
+                newItem.setImage(item.getImage());
+                newItem.setTotalQuantity(1); // Initial quantity is 1
+                mergedCart.put(item.getItem_id(), newItem);
+            }
+
+            // Calculate total price per item
+            totalPrice = totalPrice.add(item.getPrice()); // Use add() method for BigDecimal
+        }
+
+        // Convert merged items map to list
+        List<CartItems> mergedCartItems = new ArrayList<>(mergedCart.values());
+
+        // Add attributes to model
+        model.addAttribute("cartItems", mergedCartItems);
+        model.addAttribute("totalPrice", totalPrice);
+
+        return "admin/cart"; // Ensure your template name matches the actual file name
     }
-
-    // Convert merged items map to list
-    List<CartItems> mergedCartItems = new ArrayList<>(mergedCart.values());
-
-    // Add attributes to model
-    model.addAttribute("cartItems", mergedCartItems);
-    model.addAttribute("totalPrice", totalPrice);
-
-    return "admin/cart"; // Ensure your template name matches the actual file name
-}
 
     @PostMapping("/addToCart/{itemId}")
     public String addToCart(@PathVariable int itemId, HttpSession session) {
@@ -412,7 +414,7 @@ public String viewCart(Model model, HttpSession session) {
 
         // Add item to cart
         cartItems.add(item);
-
+        session.setAttribute("countcartItems", cartItems.size());
         // Optionally, update session or database with cart changes
         return "redirect:/indexAdminItems";
     }

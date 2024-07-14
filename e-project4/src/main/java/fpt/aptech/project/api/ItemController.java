@@ -67,22 +67,30 @@ public class ItemController {
     @GetMapping("/item")
 @ResponseStatus(HttpStatus.OK)
 public List<Items> list(@RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
-                        @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize) {
+                        @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
     // Ensure pageNumber and pageSize are not null
     int validPageNumber = (pageNumber != null) ? pageNumber : 0;
-    int validPageSize = (pageSize != null) ? pageSize : 10;
+    int validPageSize = (pageSize != null) ? pageSize : 5;
 
     return service.page(validPageNumber, validPageSize);
 }
 
-@GetMapping("/search/{name}")
+@GetMapping("/searchp/{name}")
 @ResponseStatus(HttpStatus.OK)
 public List<Items> search(@PathVariable("name") String name,@RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
-                        @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize) {
+                        @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
     // Ensure pageNumber and pageSize are not null
     int validPageNumber = (pageNumber != null) ? pageNumber : 0;
-    int validPageSize = (pageSize != null) ? pageSize : 10;
+    int validPageSize = (pageSize != null) ? pageSize : 5;
 
-    return service.search(name, validPageNumber, validPageSize);
+    return service.searchpage(name, validPageNumber, validPageSize);
+}
+
+@GetMapping("/search/{name}")
+@ResponseStatus(HttpStatus.OK)
+public List<Items> search(@PathVariable("name") String name) {
+    // Ensure pageNumber and pageSize are not null
+
+    return service.search(name);
 }
 }

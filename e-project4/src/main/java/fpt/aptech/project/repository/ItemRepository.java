@@ -18,5 +18,8 @@ import org.springframework.data.repository.query.Param;
  */
 public interface ItemRepository extends JpaRepository<Items, Integer> {
     @Query("Select e From Items e Where e.name LIKE :name ")
-    Page<Items> searchByName(@Param("name") String name,Pageable pageable);
+    Page<Items> searchByNamePage(@Param("name") String name,Pageable pageable);
+    
+    @Query("Select e From Items e Where e.name LIKE :name ")
+    List<Items> searchByName(@Param("name") String name);
 }

@@ -25,7 +25,9 @@ public interface IItemService {
 
     public void deleteItem(int itemId);
     
-    public List<Items> search(String name,int pageNumber,int pageSize);
+    public List<Items> searchpage(String name,int pageNumber,int pageSize);
+    
+    public List<Items> search(String name);
     
     public List<Items> page(int pageNumber,int pageSize);
 }

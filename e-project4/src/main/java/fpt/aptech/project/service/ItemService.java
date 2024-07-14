@@ -56,7 +56,7 @@ public class ItemService implements IItemService{
 public List<Items> page(int pageNumber, int pageSize) {
     try {
         // Set default page size to 10 if provided page size is less than 1
-        int validatedPageSize = (pageSize < 1) ? 10 : pageSize;
+        int validatedPageSize = (pageSize < 1) ? 5 : pageSize;
         Pageable pageable = PageRequest.of(pageNumber, validatedPageSize);
         Page<Items> pageItems = this.itemRepository.findAll(pageable);
         
@@ -70,13 +70,13 @@ public List<Items> page(int pageNumber, int pageSize) {
     }
 }
     @Override
-    public List<Items> search(String name, int pageNumber, int pageSize) {
+    public List<Items> searchpage(String name, int pageNumber, int pageSize) {
     try {
         // Set default page size to 10 if provided page size is less than 1
-        int validatedPageSize = (pageSize < 1) ? 10 : pageSize;
+        int validatedPageSize = (pageSize < 1) ? 5 : pageSize;
         Pageable pageable = PageRequest.of(pageNumber, validatedPageSize);
         
-        Page<Items> pageItems = this.itemRepository.searchByName('%'+name+'%', pageable);
+        Page<Items> pageItems = this.itemRepository.searchByNamePage('%'+name+'%', pageable);
         
         List<Items> allItems = pageItems.getContent();
         
@@ -87,6 +87,11 @@ public List<Items> page(int pageNumber, int pageSize) {
         throw new RuntimeException("Failed to fetch paginated items: " + ex.getMessage());
     }
 }
+
+    @Override
+    public List<Items> search(String name) {
+        return itemRepository.searchByName('%'+name+'%');
+    }
     
 
     
