@@ -77,7 +77,7 @@
 
                 <a th:href="@{/cart}" class="btn btn-primary mb-3">
                     <i class="bi bi-cart"></i>
-                    <span id="cart-count" class="badge bg-danger" th:text="${countcartItems}"></span>
+                    <span class="badge" id="cartItemCount" th:text="${countcartItems}">0</span>
                 </a>
                 <h5>
                     <a th:href="@{/createAdminItems}" class="btn btn-success mb-3">Create New</a>
@@ -88,6 +88,7 @@
                         <button type="submit" class="btn btn-primary">Search</button>
                     </div>
                 </form>
+                <div id="messageArea"></div>
                 <h3>List</h3>
                 <table class="table table-bordered table-hover">
                     <thead class="table-dark">
@@ -117,8 +118,8 @@
                             <td th:text="${f.created_dt}"></td>
                             <td>
                                 <a th:href="@{/editAdminItems/{id}(id=${f.item_id})}" class="btn btn-info">Edit</a>
-                                <form th:action="@{/addToCart/{itemId}(itemId=${f.item_id})}" method="post">
-                                    <button class="btn btn-warning" >Add to Cart</button>
+                                <form class="add-to-cart-form" th:data-item-id="${f.item_id}">
+                                    <button type="button" class="btn btn-warning" onclick="addToCart(this)">Add to Cart</button>
                                 </form>
                                 <a th:href="@{/deleteAdminItems/{id}(id=${f.item_id})}" class="btn btn-danger">Delete</a>
                             </td>
@@ -198,6 +199,51 @@
                     wrapper.style.marginLeft = "250px";
                 }
             }
+            var messageArea = document.getElementById("messageArea");
+
+            function addToCart(button) {
+                var form = button.closest('form');  // Find the closest form ancestor
+                var itemId = form.getAttribute("data-item-id");  // Retrieve the item ID from the data attribute
+
+                console.log("Retrieved item ID:", itemId);  // Debug log to check the retrieved item ID
+
+                // Check if itemId is NaN or empty
+                if (!itemId || isNaN(itemId)) {
+                    alert("Invalid item ID");
+                    return;
+                }
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/addToCart/" + encodeURIComponent(itemId), true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        // Parse the response to get the new cart item count
+                        var newCount = parseInt(xhr.responseText);
+                        // Update the cart item count in the UI
+                        document.getElementById("cartItemCount").innerText = newCount;
+
+                        // Display a success message
+                        messageArea.innerText = "Item added to cart successfully!";
+                        messageArea.style.position = "fixed";
+                        messageArea.style.bottom = "20px";
+                        messageArea.style.right = "20px";
+                        messageArea.style.backgroundColor = "#28a745"; // Green background
+                        messageArea.style.color = "#fff"; // White text
+                        messageArea.style.padding = "10px";
+                        messageArea.style.borderRadius = "5px";
+                        messageArea.style.zIndex = "1000";
+
+                        // Hide the message after 3 seconds
+                        setTimeout(function () {
+                            messageArea.innerText = "";
+                        }, 3000);  // 3000 milliseconds = 3 seconds
+                    }
+                };
+
+                xhr.send();
+            }
         </script>
         <script>
             function formatScientificNotation() {
@@ -214,6 +260,7 @@
             }
             window.onload = formatScientificNotation;
         </script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>

@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -401,22 +402,24 @@ public String search(Model model, @RequestParam("name") String name, HttpSession
     }
 
     @PostMapping("/addToCart/{itemId}")
-    public String addToCart(@PathVariable int itemId, HttpSession session) {
-        // Retrieve item details from API or database
-        CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class);
+@ResponseBody
+public ResponseEntity<Integer> addToCart(@PathVariable int itemId, HttpSession session) {
+    // Retrieve item details from API or database
+    CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class);
 
-        // Retrieve cart from session
-        List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
-        if (cartItems == null) {
-            cartItems = new ArrayList<>();
-            session.setAttribute("cartItems", cartItems);
-        }
-
-        // Add item to cart
-        cartItems.add(item);
-        session.setAttribute("countcartItems", cartItems.size());
-        // Optionally, update session or database with cart changes
-        return "redirect:/indexAdminItems";
+    // Retrieve cart from session
+    List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
+    if (cartItems == null) {
+        cartItems = new ArrayList<>();
+        session.setAttribute("cartItems", cartItems);
     }
+
+    // Add item to cart
+    cartItems.add(item);
+    session.setAttribute("countcartItems", cartItems.size());
+    
+    // Return the new cart item count
+    return ResponseEntity.ok(cartItems.size());
+}
 
 }

@@ -60,9 +60,10 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                     <input type="text" id="type" name="type" class="form-control" th:field="*{type}">
                     <p style="color: red" th:errors="*{type}" th:if="${#fields.hasErrors('type')}" class="error-message"></p>
                 </div>
-
+                
                 <div class="form-group">
                     <label for="image">Enter Image:</label>
+                    <img th:src="@{'/images/'+${items.image}}" width="100" height="auto"/>
                     <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
                     <p style="color: red" th:errors="*{image}" th:if="${#fields.hasErrors('image')}" class="error-message"></p>
                 </div>
