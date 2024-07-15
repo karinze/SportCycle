@@ -88,7 +88,7 @@
                         <button type="submit" class="btn btn-primary">Search</button>
                     </div>
                 </form>
-                <div id="messageArea"></div>
+                <div id="messageArea" style="display: none"></div>
                 <h3>List</h3>
                 <table class="table table-bordered table-hover">
                     <thead class="table-dark">
@@ -234,9 +234,11 @@
                         messageArea.style.padding = "10px";
                         messageArea.style.borderRadius = "5px";
                         messageArea.style.zIndex = "1000";
+                        messageArea.style.display = "block";
 
                         // Hide the message after 3 seconds
                         setTimeout(function () {
+                            messageArea.style.display = "none";
                             messageArea.innerText = "";
                         }, 3000);  // 3000 milliseconds = 3 seconds
                     }
