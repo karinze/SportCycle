@@ -18,7 +18,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
     <div class="row justify-content-center">
         <div class="col-md-6">
             <h1>Create</h1>
-            <form th:action="@{/docreateAdminItems}" th:object="${items}" method="post" enctype="multipart/form-data">
+            <form th:action="@{/createAdminItems}" th:object="${items}" method="post" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="name">Enter Name:</label>
                     <input type="text" id="name" name="name" class="form-control" th:field="*{name}">
@@ -53,12 +53,14 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                     <label for="type">Enter Type:</label>
                     <input type="text" id="type" name="type" class="form-control" th:field="*{type}">
                     <p style="color: red" th:errors="*{type}" th:if="${#fields.hasErrors('type')}" class="error-message"></p>
+
                 </div>
 
                 <div class="form-group">
                     <label for="image">Enter Image:</label>
                     <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
                     <p style="color: red" th:errors="*{image}" th:if="${#fields.hasErrors('image')}" class="error-message"></p>
+                    
                 </div>
 
                 <div class="form-group form-check">

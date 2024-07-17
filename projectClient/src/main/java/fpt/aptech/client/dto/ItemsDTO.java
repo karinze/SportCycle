@@ -1,53 +1,47 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package fpt.aptech.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- *
+ * ItemsDTO class with validation annotations
+ * 
  * @author Manh_Chien
  */
-
 public class ItemsDTO {
-    public int item_id;
-    public String name;
-    public String brand;
-    public String description;
-    public BigDecimal price;
-    public int stock;
-    public String type;
+    private int item_id;
+
+    @NotEmpty(message = "Name is required")
+    private String name;
+
+    @NotEmpty(message = "Brand is required")
+    private String brand;
+
+    @NotEmpty(message = "Description is required")
+    private String description;
+
+    @NotNull(message = "Price is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
+    private BigDecimal price;
+
+    @Min(value = 0, message = "Stock must be 0 or greater")
+    private int stock;
+
+    @NotEmpty(message = "Type is required")
+    private String type;
     public MultipartFile image;
+
     public boolean is_visible;
+
     public Date created_dt;
 
-    
-    
-    
     public ItemsDTO() {
     }
 
     public ItemsDTO(int item_id) {
         this.item_id = item_id;
-        
     }
 
     public ItemsDTO(int item_id, String name, String brand, String description, BigDecimal price, int stock, String type, MultipartFile image, boolean is_visible, Date created_dt) {
@@ -62,8 +56,8 @@ public class ItemsDTO {
         this.is_visible = is_visible;
         this.created_dt = created_dt;
     }
-    
-    public ItemsDTO( String name, String brand, String description, BigDecimal price, int stock, String type, MultipartFile image, boolean is_visible, Date created_dt) {
+
+    public ItemsDTO(String name, String brand, String description, BigDecimal price, int stock, String type, MultipartFile image, boolean is_visible, Date created_dt) {
         this.name = name;
         this.brand = brand;
         this.description = description;
@@ -74,7 +68,6 @@ public class ItemsDTO {
         this.is_visible = is_visible;
         this.created_dt = created_dt;
     }
-    
 
     public int getItem_id() {
         return item_id;
@@ -155,10 +148,4 @@ public class ItemsDTO {
     public void setCreated_dt(Date created_dt) {
         this.created_dt = created_dt;
     }
-
-    
-
-    
-    
-    
 }
