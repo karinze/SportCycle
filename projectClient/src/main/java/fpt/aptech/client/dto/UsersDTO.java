@@ -1,29 +1,39 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package fpt.aptech.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import lombok.*;
+
 /**
- *
+ * UsersDTO class with validation annotations
+ * 
  * @author Manh_Chien
  */
-
 public class UsersDTO {
     private UUID user_id;
+
+    @NotBlank(message = "Username is mandatory")
+    @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
     public String username;
+
+    @NotBlank(message = "Password is mandatory")
+    @Size(min = 6, message = "Password must be at least 6 characters long")
     public String password;
+
+    @NotBlank(message = "Email is mandatory")
+    @Email(message = "Email should be valid")
     public String email;
-    public boolean role;
-    public Date created_dt;
     
+    public boolean role;
+
+
+    public Date created_dt;
+
     public UsersDTO() {
     }
 
@@ -39,8 +49,6 @@ public class UsersDTO {
         this.role = role;
         this.created_dt = created_dt;
     }
-    
-    
 
     public UUID getUser_id() {
         return user_id;
@@ -89,8 +97,4 @@ public class UsersDTO {
     public void setCreated_dt(Date created_dt) {
         this.created_dt = created_dt;
     }
-
-    
- 
-    
 }
