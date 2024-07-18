@@ -18,7 +18,15 @@
         <link rel="stylesheet" th:href="@{/css/aos.css}">
 
         <link rel="stylesheet" th:href="@{/css/style.css}">
-
+        <style>
+    .site-block-top-search {
+        display: flex;
+        align-items: center;
+    }
+    .site-block-top-search .form-control {
+        flex-grow: 1;
+    }
+        </style>
     </head>
     <body>
 
@@ -29,33 +37,45 @@
                         <div class="row align-items-center">
 
                             <div class="col-6 col-md-4 order-2 order-md-1 site-search-icon text-left">
-                                <form action="" class="site-block-top-search">
-                                    <span class="icon icon-search2"></span>
-                                    <input type="text" class="form-control border-0" placeholder="Search">
+                                <form th:action="@{/shopsearch}" class="site-block-top-search d-flex align-items-center">
+                                    <span class="icon icon-search2 mr-2"></span>
+                                    <input type="text" name="name" class="form-control border-0 mr-2" placeholder="Search...">
+                                    <button type="submit" class="btn border-0"><i class="icon-search"></i></button>
                                 </form>
                             </div>
 
                             <div class="col-12 mb-3 mb-md-0 col-md-4 order-1 order-md-2 text-center">
                                 <div class="site-logo">
-                                    <a th:href="@{/index}" class="js-logo-clone">Shoppers</a>
+                                    <a th:href="@{/}" class="js-logo-clone">Shoppers</a>
                                 </div>
                             </div>
 
-                            <div class="col-6 col-md-4 order-3 order-md-3 text-right">
+                            <div class="col-6 col-md-4 order-3 text-right">
                                 <div class="site-top-icons">
-                                    <ul>
-                                        <li th:style="${user == null} ? 'display: none'"><p th:text="${user != null} ? '${user}'" ></p></li>
-                                        <li th:style="${user == null} ? 'display: none'"><a th:text="${user != null} ? 'Logout'"></a></li>
-                                        <li th:style="${user != null} ? 'display: none'"><a th:href="@{/login}"><span class="icon icon-person"></span></a></li>
-                                        <li>
-                                            <a th:href="@{/cart}" class="site-cart">
+                                    <ul class="list-inline">
+                                        <li class="list-inline-item" th:if="${session.user != null}">
+                                            <p class="d-inline" th:text="${session.user}"></p>
+                                        </li>
+                                        <li class="list-inline-item" th:if="${session.user != null}">
+                                            <p class="d-inline"></p>
+                                        </li>
+                                        <li class="list-inline-item" th:if="${session.user != null}">
+                                            <a th:href="@{/logout}" class="d-inline logout"><u>LOGOUT</u></a>
+                                        </li>
+                                        <li class="list-inline-item" th:if="${session.user == null}">
+                                            <a th:href="@{/login}" class="d-inline"><span class="icon icon-person"></span></a>
+                                        </li>
+                                        <li class="list-inline-item">
+                                            <a th:href="@{/cart}" class="site-cart d-inline">
                                                 <span class="icon icon-shopping_cart"></span>
                                                 <span class="count" id="cartItemCount" th:text="${countcartItems}">2</span>
                                             </a>
-                                        </li> 
-                                        <li class="d-inline-block d-md-none ml-md-0"><a href="#" class="site-menu-toggle js-menu-toggle"><span class="icon-menu"></span></a></li>
+                                        </li>
+                                        <li class="list-inline-item d-md-none">
+                                            <a href="#" class="site-menu-toggle js-menu-toggle"><span class="icon-menu"></span></a>
+                                        </li>
                                     </ul>
-                                </div> 
+                                </div>
                             </div>
 
                         </div>
@@ -65,7 +85,7 @@
                     <div class="container">
                         <ul class="site-menu js-clone-nav d-none d-md-block">
                             <li class="has-children">
-                                <a th:href="@{/index}">Home</a>
+                                <a th:href="@{/}">Home</a>
                                 <ul class="dropdown">
                                     <li><a href="#">Menu One</a></li>
                                     <li><a href="#">Menu Two</a></li>
@@ -100,7 +120,7 @@
             <div class="bg-light py-3">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-12 mb-0"><a th:href="@{/index}">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Shop</strong></div>
+                        <div class="col-md-12 mb-0"><a th:href="@{/}">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Shop</strong></div>
                     </div>
                 </div>
             </div>
@@ -161,28 +181,28 @@
                                 <div class="col-md-12 text-center">
                                     <div class="site-block-27">
                                         <ul>
-                                            <li th:classappend="${currentPage == 0} ? ' disabled'">
-                                                <a th:href="@{/searchAdminItems(name=${name},pageNumber=0,pageSize=${pageSize})}" class="page-link">First</a>
+                                            <li th:classappend="${currentPage == 0} ? ' disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shopsearch(name=${name},pageNumber=0,pageSize=${pageSize})}" class="li-pagination">&lt;&lt;</a>
                                             </li>
-                                            <li th:classappend="${currentPage == 0} ? ' disabled'">
-                                                <a th:href="@{/searchAdminItems(name=${name},pageNumber=${currentPage - 1},pageSize=${pageSize})}" class="page-link">Previous</a>
+                                            <li th:classappend="${currentPage == 0} ? ' disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shopsearch(name=${name},pageNumber=${currentPage - 1},pageSize=${pageSize})}" class="li-pagination">&lt;</a>
                                             </li>
                                             <li th:class="${currentPage > 5} ? 'page-item' : 'd-none'">
                                                 <span class="page-link">...</span>
                                             </li>
                                             <th:block th:each="pageNumber : ${#numbers.sequence(math.max(0, currentPage - 2), math.min(totalPages - 1, currentPage + 2))}">
                                                 <li th:classappend="${pageNumber == currentPage} ? ' active'">
-                                                    <a th:href="@{/searchAdminItems(name=${name},pageNumber=${pageNumber},pageSize=${pageSize})}" class="page-link" th:text="${pageNumber + 1}"></a>
+                                                    <a th:href="@{/shopsearch(name=${name},pageNumber=${pageNumber},pageSize=${pageSize})}"class="li-pagination" th:text="${pageNumber + 1}"></a>
                                                 </li>
                                             </th:block>
                                             <li th:class="${currentPage < totalPages - 6} ? 'page-item' : 'd-none'">
                                                 <span class="page-link">...</span>
                                             </li>
-                                            <li th:classappend="${currentPage >= totalPages - 1} ? ' disabled'">
-                                                <a th:href="@{/searchAdminItems(name=${name},pageNumber=${currentPage + 1},pageSize=${pageSize})}" class="page-link">Next</a>
+                                            <li th:classappend="${currentPage >= totalPages - 1} ? ' disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shopsearch(name=${name},pageNumber=${currentPage + 1},pageSize=${pageSize})}" class="li-pagination">&gt;</a>
                                             </li>
-                                            <li th:classappend="${currentPage >= totalPages - 1} ? ' disabled'">
-                                                <a th:href="@{/searchAdminItems(name=${name},pageNumber=${totalPages - 1},pageSize=${pageSize})}" class="page-link">Last</a>
+                                            <li th:classappend="${currentPage >= totalPages - 1} ? ' disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shopsearch(name=${name},pageNumber=${totalPages - 1},pageSize=${pageSize})}" class="li-pagination">&gt;&gt;</a>
                                             </li>
                                         </ul>
                                     </div>
@@ -356,7 +376,7 @@
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
-                            
+
                         </div>
                         <div class="col-md-6 col-lg-3">
                             <div class="block-5 mb-5">
