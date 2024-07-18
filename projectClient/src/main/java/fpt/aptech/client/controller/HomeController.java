@@ -69,7 +69,7 @@ public class HomeController {
     private String FileUpload;
 
     // Start Login
-    @RequestMapping("/")
+    @GetMapping("/login")
     public String page(Model model) {
         model.addAttribute("account", new Users());
         return "login/login";
@@ -85,9 +85,8 @@ public class HomeController {
 
                 return "redirect:/dashboard";
             } else {
-                session.setAttribute("user", users.getEmail());
-
-                return "redirect:/index";
+                session.setAttribute("user", users.email);
+                return "redirect:/";
             }
 
         } else {
@@ -106,37 +105,45 @@ public class HomeController {
 
     @PostMapping("/doregister")
     public String doregister(Model model, @Valid @ModelAttribute("account") UsersDTO user, BindingResult bindingResult) throws IOException {
-        Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class);
-        if (bindingResult.hasErrors()) {
-            if (users == null) {
 
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("account", user);
+
+            if (user.getEmail().isEmpty()) {
                 model.addAttribute("account", user);
-                return "login/register";
             } else {
-                bindingResult.rejectValue("email", "error.account", "Email already exists");
-                model.addAttribute("account", user);
-                return "login/register";
+                Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class);
+                if (users != null) {
+                    bindingResult.rejectValue("email", "error.account", "Email already exists");
+                    model.addAttribute("account", user);
+                }
             }
+            return "login/register";
         } else {
+            if (!user.getEmail().isEmpty()) {
+                Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class);
+                if (users != null) {
+                    bindingResult.rejectValue("email", "error.account", "Email already exists");
+                    model.addAttribute("account", user);
+                    return "login/register";
+                }
+            }
 
             user.setUser_id(UUID.randomUUID());
             user.setRole(false);
             user.setCreated_dt(Date.from(Instant.now()));
             Users newUsers = new Users(user.getUser_id(), user.getUsername(), user.getPassword(), user.getEmail(), user.isRole(), user.getCreated_dt());
-            model.addAttribute("Users", rt.postForEntity(urlusers, newUsers, Users.class));
-            return "redirect:/";
-        
-                
-            
+            rt.postForEntity(urlusers, newUsers, Users.class);
+            return "redirect:/login";
+        }
     }
-}
 
-@GetMapping("/logout")
-public String logout(Model model, HttpSession session) {
+    @GetMapping("/logout")
+    public String logout(Model model, HttpSession session) {
 
         if (session.getAttribute("admin") != null) {
             session.removeAttribute("admin");
-            return "redirect:/";
+            return "redirect:/login";
         } else {
             session.removeAttribute("user");
             return "redirect:/";
@@ -145,43 +152,38 @@ public String logout(Model model, HttpSession session) {
     }
 
     @GetMapping("/forgotpassword")
-public String forgotpassword(Model model, HttpSession session) {
+    public String forgotpassword(Model model, HttpSession session) {
         model.addAttribute("account", new Users());
         return "login/forgotpassword";
 
     }
 
     @PostMapping("/doforgotpassword")
-public String doforgotpassword(Model model, @ModelAttribute("account") UsersDTO
+    public String doforgotpassword(Model model, @ModelAttribute("account") UsersDTO user) {
+        Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class
+        );
 
-user) {
-        Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class  
-
-);
-
-if (users != null) {
-            model.addAttribute("Tokens", rt.postForEntity(urlusers + "/sendmail", users, Tokens.class  
-
-));
-            return "redirect:/";
+        if (users != null) {
+            model.addAttribute("Tokens", rt.postForEntity(urlusers + "/sendmail", users, Tokens.class));
+            model.addAttribute("email", "We have sent the link to reset your password to your email!");
+            model.addAttribute("error", null); // No error if email is found
         } else {
-            return "redirect:/forgotpassword";
+            model.addAttribute("error", "This email address does not exist");
+            model.addAttribute("email", null); // No success message if email is not found
         }
+        model.addAttribute("account", user);
+        return "login/forgotpassword";
 
     }
 
     @GetMapping("/resetPassword/{token}")
-public String resetpassword(Model model, @PathVariable String
+    public String resetpassword(Model model, @PathVariable String token) {
+        Tokens reset = rt.getForObject(urlusers + "/findtoken/" + token, Tokens.class
+        );
 
-token) {
-        Tokens reset = rt.getForObject(urlusers + "/findtoken/" + token, Tokens.class  
-
-);
-
-if (reset != null) {
-            Users a = rt.getForObject(urlusers + "/findemail/" + reset.getUsers().getEmail(), Users.class  
-
-);
+        if (reset != null) {
+            Users a = rt.getForObject(urlusers + "/findemail/" + reset.getUsers().getEmail(), Users.class
+            );
             if (reset.getIs_active() == 0) {
                 model.addAttribute("account", a);
                 model.addAttribute("token", token);
@@ -198,27 +200,19 @@ if (reset != null) {
     }
 
     @PostMapping("/resetPassword")
-public String doresetpassword(Model model, @ModelAttribute("account") UsersDTO
-
-user) {
-        Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class  
-
-);
+    public String doresetpassword(Model model, @ModelAttribute("account") UsersDTO user) {
+        Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class
+        );
         String t = user.getUsername();
-        Tokens
-
-reset = rt.getForObject(urlusers + "/findtoken/" + t, Tokens.class  
-
-);
+        Tokens reset = rt.getForObject(urlusers + "/findtoken/" + t, Tokens.class
+        );
         if (users != null) {
             if (reset != null) {
                 reset.setIs_active(1);
                 Tokens resetpass = new Tokens(reset.getToken_id(), reset.getToken(), reset.getToken_expiry_date(), reset.getIs_active(), users);
                 model
-
-.addAttribute("Tokens", rt.postForEntity(urlusers + "/savetoken", resetpass, Tokens.class  
-
-));
+                        .addAttribute("Tokens", rt.postForEntity(urlusers + "/savetoken", resetpass, Tokens.class
+                        ));
             }
             users.setPassword(users.getPassword());
 
@@ -227,85 +221,80 @@ reset = rt.getForObject(urlusers + "/findtoken/" + t, Tokens.class
             Users acc = new Users(users.getUser_id(), users.getUsername(), users.getPassword(), users.getEmail(), users.isRole(), users.getCreated_dt());
 
             model
-
-.addAttribute("Users", rt.postForEntity(urlusers + "/resetpassword", acc, Users.class  
-
-));
+                    .addAttribute("Users", rt.postForEntity(urlusers + "/resetpassword", acc, Users.class
+                    ));
 
         }
-        return "redirect:/";
+        return "redirect:/login";
     }
     // End Login
 
     //Start Items
     @GetMapping("/indexAdminItems")
-public String index(Model model, HttpSession session,
-            @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "5") int pageSize) {
+    public String indexAdmin(Model model, HttpSession session) {
+//            @RequestParam(defaultValue = "0") int pageNumber,
+//            @RequestParam(defaultValue = "5") int pageSize
         if (session.getAttribute("admin") != null) {
-            ResponseEntity<List<Items>> response = rt.exchange(
-                    urlitems + "/item" + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<List<Items>>() {
-            }
+//            ResponseEntity<List<Items>> response = rt.exchange(
+//                    urlitems + "/item" + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
+//                    HttpMethod.GET,
+//                    null,
+//                    new ParameterizedTypeReference<List<Items>>() {
+//            }
+//            );
+            List<Items> p = rt.getForObject(urlitems + "/", List.class
             );
-            List
+//
+//            List<Items> itemList = response.getBody();
+//
+//            int totalItems = p.size(); // Ensure totalItems is calculated correctly
+//            int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+//
+//            if (session.getAttribute("countcartItems") != null) {
+//                int count = (int) session.getAttribute("countcartItems");
+//                model.addAttribute("countcartItems", count);
+//            } else {
+//                model.addAttribute("countcartItems", 0);
+//            }
+//
+            model.addAttribute("list", p);
+//            model.addAttribute("currentPage", pageNumber);
+//            model.addAttribute("pageSize", pageSize);
+//            model.addAttribute("totalPages", totalPages);
 
-<Items> p = rt.getForObject(urlitems + "/", List.class  
-
-);
-
-            List<Items> itemList = response.getBody();
-
-            int totalItems = p.size(); // Ensure totalItems is calculated correctly
-            int totalPages = (int) Math.ceil((double) totalItems / pageSize);
-
-            if (session.getAttribute("countcartItems") != null) {
-                int count = (int) session.getAttribute("countcartItems");
-                model.addAttribute("countcartItems", count);
-            } else {
-                model.addAttribute("countcartItems", 0);
-            }
-
-            model.addAttribute("list", itemList);
-            model.addAttribute("currentPage", pageNumber);
-            model.addAttribute("pageSize", pageSize);
-            model.addAttribute("totalPages", totalPages);
-
-            return "admin/indexAdminItems";
+            return "admin/itemsAdmin";
         } else {
-            return "redirect:/";
+            return "redirect:/login";
         }
     }
 
     @GetMapping("/dashboard")
-public String dashboard(Model model, HttpSession session) {
+    public String dashboard(Model model, HttpSession session) {
         if (session.getAttribute("admin") != null) {
 
             return "admin/dashboard";
         } else {
 
-            return "redirect:/";
+            return "redirect:/login";
         }
 
     }
 
     @GetMapping("/createAdminItems")
-public String create(Model model, HttpSession session) {
+    public String create(Model model, HttpSession session) {
         if (session.getAttribute("admin") != null) {
             model.addAttribute("items", new Items());
             return "admin/createAdminItems";
         } else {
 
-            return "redirect:/";
+            return "redirect:/login";
         }
 
     }
 
     @PostMapping("/createAdminItems")
-public String docreate(Model model, @Valid
-@ModelAttribute("items") ItemsDTO items, BindingResult bindingResult) throws IOException {
+    public String docreate(Model model, @Valid
+            @ModelAttribute("items") ItemsDTO items, BindingResult bindingResult) throws IOException {
         if (bindingResult.hasErrors()) {
             System.out.println("Binding Result Errors: " + bindingResult.getAllErrors());
 
@@ -328,10 +317,8 @@ public String docreate(Model model, @Valid
 
                 Items newItem = new Items(items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), items.getStock(), items.getType(), fileName, items.isIs_visible(), items.getCreated_dt());
                 model
-
-.addAttribute("Items", rt.postForEntity(urlitems, newItem, Items.class  
-
-));
+                        .addAttribute("Items", rt.postForEntity(urlitems, newItem, Items.class
+                        ));
                 return "redirect:/indexAdminItems";
             } else {
                 bindingResult.rejectValue("image", "error.items", "Image file is required.");
@@ -341,36 +328,29 @@ public String docreate(Model model, @Valid
     }
 
     @GetMapping("/editAdminItems/{id}")
-public String edit(Model model, @PathVariable String
-
-id, HttpSession session) {
+    public String edit(Model model, @PathVariable String id, HttpSession session) {
         if (session.getAttribute("admin") != null) {
-            Items p = rt.getForObject(urlitems + "/" + id, Items.class  
-
-);
+            Items p = rt.getForObject(urlitems + "/" + id, Items.class
+            );
             model.addAttribute("items", p);
             return "admin/editAdminItems";
         } else {
 
-            return "redirect:/";
+            return "redirect:/login";
         }
 
     }
 
     @PostMapping("/saveAdminItems")
-public String doedit(Model model, @Valid
-@ModelAttribute("items") ItemsDTO
+    public String doedit(Model model, @Valid
+            @ModelAttribute("items") ItemsDTO item, BindingResult bindingResult) throws IOException {
+        Items items = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class
+        );
 
-item, BindingResult bindingResult) throws IOException {
-        Items items = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class  
-
-);
-
-if (bindingResult.hasErrors()) {
-            Items p = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class  
-
-);
-            model.addAttribute("items", p);
+        if (bindingResult.hasErrors()) {
+            Items p = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class
+            );
+            model.addAttribute("items", item);
             return "admin/editAdminItems";
         } else {
 
@@ -382,42 +362,35 @@ if (bindingResult.hasErrors()) {
                 String file = items.getImage();
                 Items editItems = new Items(item.getItem_id(), item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), file, item.isIs_visible(), item.getCreated_dt());
                 model
-
-.addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class  
-
-));
+                        .addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class
+                        ));
                 return "redirect:/indexAdminItems";
 
             } else {
                 FileCopyUtils.copy(item.getImage().getBytes(), new File(FileUpload, fileName));
                 Items editItems = new Items(item.getItem_id(), item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), fileName, item.isIs_visible(), item.getCreated_dt());
                 model
-
-.addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class  
-
-));
+                        .addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class
+                        ));
                 return "redirect:/indexAdminItems";
             }
         }
     }
 
     @GetMapping("/deleteAdminItems/{id}")
-public String delete(Model model, @PathVariable String
-
-id, HttpSession session) {
+    public String delete(Model model, @PathVariable String id, HttpSession session) {
         if (session.getAttribute("admin") != null) {
-            rt.delete(urlitems + "/" + id, Items.class  
-
-);
+            rt.delete(urlitems + "/" + id, Items.class
+            );
             return "redirect:/indexAdminItems";
         } else {
-            return "redirect:/";
+            return "redirect:/login";
         }
 
     }
 
     @GetMapping("/searchAdminItems")
-public String search(Model model, @RequestParam("name") String name, HttpSession session,
+    public String search(Model model, @RequestParam("name") String name, HttpSession session,
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "5") int pageSize) {
         if (session.getAttribute("admin") != null) {
@@ -429,11 +402,8 @@ public String search(Model model, @RequestParam("name") String name, HttpSession
                         new ParameterizedTypeReference<List<Items>>() {
                 });
 
-                List
-
-<Items> p = rt.getForObject(urlitems + "/search/" + name, List.class  
-
-);
+                List<Items> p = rt.getForObject(urlitems + "/search/" + name, List.class
+                );
 
                 List<Items> itemList = response.getBody();
 
@@ -449,22 +419,20 @@ public String search(Model model, @RequestParam("name") String name, HttpSession
                 return "admin/indexAdminItems";
             } else {
                 // Call index method if name is empty or null
-                return index(model, session, pageNumber, pageSize);
+//                return index(model, session, pageNumber, pageSize);
+return "redirect:/";
             }
         } else {
-            return "redirect:/"; // Redirect to homepage if admin session is not found
+            return "redirect:/login"; // Redirect to homepage if admin session is not found
         }
     }
 
     @PostMapping("/addToCart/{itemId}/{quantity}")
-@ResponseBody
-public ResponseEntity<Integer> addToCart(@PathVariable int itemId, @PathVariable 
-
-int quantity, HttpSession session) {
+    @ResponseBody
+    public ResponseEntity<Integer> addToCart(@PathVariable int itemId, @PathVariable int quantity, HttpSession session) {
         // Retrieve item details from API or database
-        CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class  
-
-);
+        CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class
+        );
 
         // Retrieve cart from session
         List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
@@ -483,8 +451,8 @@ int quantity, HttpSession session) {
         return ResponseEntity.ok(cartItems.size());
     }
 
-    @GetMapping("/index")
-public String index(Model model, HttpSession session) {
+    @GetMapping("/")
+    public String index(Model model, HttpSession session) {
         ParameterizedTypeReference<List<Items>> responseType = new ParameterizedTypeReference<List<Items>>() {
         };
         ResponseEntity<List<Items>> response = rt.exchange(urlitems + "/", HttpMethod.GET, null, responseType);
@@ -510,7 +478,7 @@ public String index(Model model, HttpSession session) {
     }
 
     @GetMapping("/about")
-public String about(Model model, HttpSession session) {
+    public String about(Model model, HttpSession session) {
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
             model.addAttribute("countcartItems", count);
@@ -522,7 +490,7 @@ public String about(Model model, HttpSession session) {
     }
 
     @GetMapping("/cart")
-public String cart(Model model, HttpSession session) {
+    public String cart(Model model, HttpSession session) {
         List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
         if (cartItems == null) {
             cartItems = new ArrayList<>(); // Initialize empty list if null
@@ -564,7 +532,7 @@ public String cart(Model model, HttpSession session) {
     }
 
     @GetMapping("/checkout")
-public String checkout(Model model, HttpSession session) {
+    public String checkout(Model model, HttpSession session) {
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
             model.addAttribute("countcartItems", count);
@@ -576,7 +544,7 @@ public String checkout(Model model, HttpSession session) {
     }
 
     @GetMapping("/contact")
-public String contact(Model model, HttpSession session) {
+    public String contact(Model model, HttpSession session) {
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
             model.addAttribute("countcartItems", count);
@@ -588,7 +556,7 @@ public String contact(Model model, HttpSession session) {
     }
 
     @GetMapping("/shop")
-public String shop(Model model, HttpSession session, @RequestParam(defaultValue = "0") int pageNumber,
+    public String shop(Model model, HttpSession session, @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "9") int pageSize) {
         ResponseEntity<List<Items>> response = rt.exchange(
                 urlitems + "/item" + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
@@ -597,11 +565,8 @@ public String shop(Model model, HttpSession session, @RequestParam(defaultValue 
                 new ParameterizedTypeReference<List<Items>>() {
         }
         );
-        List
-
-<Items> p = rt.getForObject(urlitems + "/", List.class  
-
-);
+        List<Items> p = rt.getForObject(urlitems + "/", List.class
+        );
 
         List<Items> itemList = response.getBody();
 
@@ -623,8 +588,46 @@ public String shop(Model model, HttpSession session, @RequestParam(defaultValue 
         return "user/shop";
     }
 
+    @GetMapping("/shopsearch")
+    public String shopsearch(Model model, HttpSession session, @RequestParam("name") String name, @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "9") int pageSize) {
+        if (name != null && !name.isEmpty()) {
+            ResponseEntity<List<Items>> response = rt.exchange(
+                    urlitems + "/searchp/" + name + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Items>>() {
+            });
+
+            List<Items> p = rt.getForObject(urlitems + "/search/" + name, List.class
+            );
+
+            List<Items> itemList = response.getBody();
+
+            int totalItems = p.size(); // Ensure totalItems is calculated correctly
+            int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+
+            if (session.getAttribute("countcartItems") != null) {
+                int count = (int) session.getAttribute("countcartItems");
+                model.addAttribute("countcartItems", count);
+            } else {
+                model.addAttribute("countcartItems", 0);
+            }
+            // Add the paginated list and pagination parameters to the model
+            model.addAttribute("list", itemList);
+            model.addAttribute("currentPage", pageNumber);
+            model.addAttribute("pageSize", pageSize);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("name", name);
+            return "user/shop";
+        } else {
+            // Call index method if name is empty or null
+            return shop(model, session, pageNumber, pageSize);
+        }
+    }
+
     @GetMapping("/shopdetail/{id}")
-public String shopdetail(Model model, @PathVariable int id, HttpSession session) {
+    public String shopdetail(Model model, @PathVariable int id, HttpSession session) {
         ParameterizedTypeReference<List<Items>> responseType = new ParameterizedTypeReference<List<Items>>() {
         };
         ResponseEntity<List<Items>> response = rt.exchange(urlitems + "/", HttpMethod.GET, null, responseType);
@@ -646,18 +649,15 @@ public String shopdetail(Model model, @PathVariable int id, HttpSession session)
         }
 
         model.addAttribute("top10", a);
-        Items
-
-items = rt.getForObject(urlitems + "/" + id, Items.class  
-
-);
+        Items items = rt.getForObject(urlitems + "/" + id, Items.class
+        );
         model.addAttribute("items", items);
         return "user/shopdetail";
 
     }
 
     @GetMapping("/thankyou")
-public String thankyou(Model model, HttpSession session) {
+    public String thankyou(Model model, HttpSession session) {
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
             model.addAttribute("countcartItems", count);
@@ -669,7 +669,7 @@ public String thankyou(Model model, HttpSession session) {
     }
 
     @PostMapping("/updatecart")
-public String updateCart(@RequestParam(name = "itemId", defaultValue = "") List<Integer> itemIds, @RequestParam(name = "quantity", defaultValue = "") List<Integer> quantities, HttpSession session) {
+    public String updateCart(@RequestParam(name = "itemId", defaultValue = "") List<Integer> itemIds, @RequestParam(name = "quantity", defaultValue = "") List<Integer> quantities, HttpSession session) {
         List<CartItems> cartItems = new ArrayList<>();
         if (itemIds.isEmpty()) {
             return "redirect:/cart?error=empty";
@@ -678,11 +678,8 @@ public String updateCart(@RequestParam(name = "itemId", defaultValue = "") List<
                 int itemId = itemIds.get(i);
                 int quantity = quantities.get(i);
 
-                CartItems
-
-item = rt.getForObject(urlitems + "/" + itemId, CartItems.class  
-
-);
+                CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class
+                );
 
                 for (int j = 0; j < quantity; j++) {
                     cartItems.add(item);
@@ -698,7 +695,7 @@ item = rt.getForObject(urlitems + "/" + itemId, CartItems.class
     }
 
     @GetMapping("/deletecart/{itemId}")
-public String deleteCart(@PathVariable int itemId, HttpSession session) {
+    public String deleteCart(@PathVariable int itemId, HttpSession session) {
         List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
         if (cartItems != null) {
             cartItems.removeIf(item -> item.getItem_id() == itemId);
