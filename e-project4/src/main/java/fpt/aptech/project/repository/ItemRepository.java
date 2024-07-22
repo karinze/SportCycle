@@ -22,4 +22,7 @@ public interface ItemRepository extends JpaRepository<Items, Integer> {
     
     @Query("Select e From Items e Where e.name LIKE :name ")
     List<Items> searchByName(@Param("name") String name);
+    
+    @Query("Select e From Items e Where e.item_id = :item_id ")
+    List<Items> searchByid(@Param("item_id") int item_id);
 }

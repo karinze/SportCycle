@@ -109,8 +109,7 @@
                                 </ul>
                             </li>
                             <li><a th:href="@{/shop}">Shop</a></li>
-                            <li><a href="#">Catalogue</a></li>
-                            <li><a href="#">New Arrivals</a></li>
+                            <li th:if="${session.user != null}"><a th:href="@{/informationLine}">Information Line</a></li>
                             <li><a th:href="@{/contact}">Contact</a></li>
                         </ul>
                     </div>
@@ -220,7 +219,8 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <button class="btn btn-primary btn-lg py-3 btn-block" onclick="window.location = '@{/checkout}'">Proceed To Checkout</button>
+                                            <a class="btn btn-primary btn-lg py-3 btn-block" th:href="@{/checkout}">Proceed To Checkout</a>
+                                            
                                         </div>
                                     </div>
                                 </div>

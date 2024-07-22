@@ -4,10 +4,15 @@
  */
 package fpt.aptech.client.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fpt.aptech.client.dto.ItemsDTO;
 import fpt.aptech.client.dto.UsersDTO;
 import fpt.aptech.client.models.CartItems;
+import fpt.aptech.client.models.ExternalTokens;
 import fpt.aptech.client.models.Items;
+import fpt.aptech.client.models.OrderItems;
+import fpt.aptech.client.models.Orders;
 import fpt.aptech.client.models.Tokens;
 import fpt.aptech.client.models.Users;
 import jakarta.servlet.http.HttpSession;
@@ -19,6 +24,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -30,11 +37,16 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -44,9 +56,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
 /**
  *
@@ -63,10 +78,39 @@ public class HomeController {
     public final String urlorders = "http://localhost:9999/api/orders/";
     public final String urlusers = "http://localhost:9999/api/users/";
     public final String urluserorders = "http://localhost:9999/api/userorders/";
+    public final String urlexternaltoken = "http://localhost:9999/api/externalTokens/";
+    public final String urlorderitems = "http://localhost:9999/api/orderitems/";
+
     private static final RestTemplate rt = new RestTemplate();
 
     @Value("${upload.path}")
     private String FileUpload;
+
+    @Value("${google.client.id}")
+    private String clientId;
+
+    @Value("${google.client.secret}")
+    private String clientSecret;
+
+    @Value("${google.redirect.uri}")
+    private String redirectUri;
+
+    private final String authUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+    private final String tokenUrl = "https://oauth2.googleapis.com/token";
+    private final String userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+    @Value("${facebook.client.id}")
+    private String facebookClientId;
+
+    @Value("${facebook.client.secret}")
+    private String facebookClientSecret;
+
+    @Value("${facebook.redirect.uri}")
+    private String facebookRedirectUri;
+
+    private final String facebookAuthUrl = "https://www.facebook.com/v12.0/dialog/oauth";
+    private final String facebookTokenUrl = "https://graph.facebook.com/v12.0/oauth/access_token";
+    private final String facebookUserInfoUrl = "https://graph.facebook.com/me?fields=id,name,email";
 
     // Start Login
     @GetMapping("/login")
@@ -76,25 +120,162 @@ public class HomeController {
     }
 
     @PostMapping("/login")
-    public String dologin(Model model, @Param("username") String username, @Param("password") String password, HttpSession session) {
-
+    public String dologin(Model model, @RequestParam("username") String username, @RequestParam("password") String password, HttpSession session) {
         Users users = rt.getForObject(urlauth + "/login/" + username + "/" + password, Users.class);
         if (users != null) {
             if (users.isRole()) {
                 session.setAttribute("admin", username);
-
                 return "redirect:/dashboard";
             } else {
-                session.setAttribute("user", users.email);
+                session.setAttribute("user", users.getEmail());
                 return "redirect:/";
             }
-
         } else {
             model.addAttribute("account", new Users());
             return "login/login";
+        }
+    }
 
+    @GetMapping("/loginGoogle")
+    public RedirectView loginGoogle() {
+        String url = String.format("%s?client_id=%s&redirect_uri=%s&response_type=code&scope=profile email",
+                authUrl, clientId, redirectUri);
+        return new RedirectView(url);
+    }
+
+    @GetMapping("/oauth2/callback/google")
+    public ModelAndView callback(@RequestParam("code") String code, HttpSession session) throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Exchange authorization code for access token
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        String body = String.format(
+                "code=%s&client_id=%s&client_secret=%s&redirect_uri=%s&grant_type=authorization_code",
+                code, clientId, clientSecret, redirectUri);
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+        ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, request, String.class);
+
+        // Extract access token, refresh token, and expires in from response
+        String responseBody = response.getBody();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode responseJson = mapper.readTree(responseBody);
+        String accessToken = responseJson.get("access_token").asText();
+        String refreshToken = responseJson.has("refresh_token") ? responseJson.get("refresh_token").asText() : null;
+        int expiresIn = responseJson.get("expires_in").asInt();
+        Date tokenExpires = new Date(System.currentTimeMillis() + (expiresIn * 1000L));
+
+        // Fetch user info
+        String userInfo = restTemplate.getForObject(userInfoUrl + "?access_token=" + accessToken, String.class);
+        JsonNode userInfoJson = mapper.readTree(userInfo);
+        String email = userInfoJson.get("email").asText();
+        String username = userInfoJson.get("name").asText();
+
+        // Check if the user already exists
+        Users user = restTemplate.getForObject(urlusers + "/findemail/" + email, Users.class);
+        if (user == null) {
+            // Create new user if not found
+            user = new Users();
+            user.setUser_id(UUID.randomUUID());
+            user.setEmail(email);
+            user.setUsername(username);
+            user.setRole(false); // Set default role or based on logic
+            user.setCreated_dt(new Date());
+            restTemplate.postForEntity(urlusers, user, Users.class);
+        } else {
+            // Check if the user already has a valid token
+            ExternalTokens existingToken = restTemplate.getForObject(urlexternaltoken + "/findbyuser/" + user.getUser_id(), ExternalTokens.class);
+            if (existingToken != null && existingToken.getToken_expires().after(new Date())) {
+                // Token is still valid, set user in session and redirect
+                session.setAttribute("user", email);
+                return new ModelAndView("redirect:/");
+            }
         }
 
+        // Save new access token and other details
+        ExternalTokens externalToken = new ExternalTokens();
+        externalToken.setAccess_token(accessToken);
+        externalToken.setRefresh_token(refreshToken);
+        externalToken.setToken_expires(tokenExpires);
+        externalToken.setCreated_dt(new Date());
+        externalToken.setUsers(user);
+        restTemplate.postForEntity(urlexternaltoken, externalToken, ExternalTokens.class);
+
+        session.setAttribute("user", email);
+
+        return new ModelAndView("redirect:/");
+    }
+
+    @GetMapping("/loginFacebook")
+    public RedirectView loginFacebook() {
+        String url = String.format("%s?client_id=%s&redirect_uri=%s&response_type=code&scope=email,public_profile",
+                facebookAuthUrl, facebookClientId, facebookRedirectUri);
+        return new RedirectView(url);
+    }
+
+    @GetMapping("/oauth2/facebook/callback")
+    public ModelAndView facebookCallback(@RequestParam("code") String code, HttpSession session) throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Exchange authorization code for access token
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        String body = String.format(
+                "client_id=%s&redirect_uri=%s&client_secret=%s&code=%s",
+                facebookClientId, facebookRedirectUri, facebookClientSecret, code);
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+        ResponseEntity<String> response = restTemplate.exchange(facebookTokenUrl, HttpMethod.POST, request, String.class);
+
+        // Extract access token from response
+        String responseBody = response.getBody();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode responseJson = mapper.readTree(responseBody);
+        String accessToken = responseJson.get("access_token").asText();
+
+        // Fetch user info
+        String userInfo = restTemplate.getForObject(facebookUserInfoUrl + "&access_token=" + accessToken, String.class);
+        JsonNode userInfoJson = mapper.readTree(userInfo);
+        String email = userInfoJson.get("email").asText();
+        String username = userInfoJson.get("name").asText();
+
+        // Check if the user already exists
+        Users user = restTemplate.getForObject(urlusers + "/findemail/" + email, Users.class);
+        if (user == null) {
+            // Create new user if not found
+            user = new Users();
+            user.setUser_id(UUID.randomUUID());
+            user.setEmail(email);
+            user.setUsername(username);
+            user.setRole(false); // Set default role or based on logic
+            user.setCreated_dt(new Date());
+            restTemplate.postForEntity(urlusers, user, Users.class);
+        } else {
+            // Check if the user already has a valid token
+            ExternalTokens existingToken = restTemplate.getForObject(urlexternaltoken + "/findbyuser/" + user.getUser_id(), ExternalTokens.class);
+            if (existingToken != null && existingToken.getToken_expires().after(new Date())) {
+                // Token is still valid, set user in session and redirect
+                session.setAttribute("user", email);
+                return new ModelAndView("redirect:/");
+            }
+        }
+
+        // Save new access token and other details
+        ExternalTokens externalToken = new ExternalTokens();
+        externalToken.setAccess_token(accessToken);
+        externalToken.setToken_expires(null); // Facebook tokens do not expire
+        externalToken.setCreated_dt(new Date());
+        externalToken.setUsers(user);
+        restTemplate.postForEntity(urlexternaltoken, externalToken, ExternalTokens.class);
+
+        session.setAttribute("user", email);
+
+        return new ModelAndView("redirect:/");
+    }
+
+    private String extractAccessToken(String responseBody) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(responseBody);
+        return jsonNode.get("access_token").asText();
     }
 
     @GetMapping("/register")
@@ -134,7 +315,9 @@ public class HomeController {
             user.setCreated_dt(Date.from(Instant.now()));
             Users newUsers = new Users(user.getUser_id(), user.getUsername(), user.getPassword(), user.getEmail(), user.isRole(), user.getCreated_dt());
             rt.postForEntity(urlusers, newUsers, Users.class);
-            return "redirect:/login";
+            model.addAttribute("success", "Account registration successful");
+            model.addAttribute("account", new Users());
+            return "login/login";
         }
     }
 
@@ -191,7 +374,9 @@ public class HomeController {
                 return "login/resetpassword";
             } else {
 
-                return "redirect:/forgotpassword?error";
+                model.addAttribute("account", new Users());
+                model.addAttribute("error", "The link has expired");
+                return "login/forgotpassword";
             }
         } else {
             return "redirect:/forgotpassword?error";
@@ -214,21 +399,20 @@ public class HomeController {
                         .addAttribute("Tokens", rt.postForEntity(urlusers + "/savetoken", resetpass, Tokens.class
                         ));
             }
-            users.setPassword(users.getPassword());
+            users.setPassword(user.getPassword());
 
             users.setUsername(users.getUsername());
 
             Users acc = new Users(users.getUser_id(), users.getUsername(), users.getPassword(), users.getEmail(), users.isRole(), users.getCreated_dt());
 
-            model
-                    .addAttribute("Users", rt.postForEntity(urlusers + "/resetpassword", acc, Users.class
-                    ));
-
+            model.addAttribute("Users", rt.postForEntity(urlusers + "/resetpassword", acc, Users.class));
         }
-        return "redirect:/login";
+        model.addAttribute("success", "Changed password successfully");
+        model.addAttribute("account", new Users());
+        return "login/login";
     }
-    // End Login
 
+    // End Login
     //Start Items
     @GetMapping("/indexAdminItems")
     public String indexAdmin(Model model, HttpSession session) {
@@ -420,10 +604,62 @@ public class HomeController {
             } else {
                 // Call index method if name is empty or null
 //                return index(model, session, pageNumber, pageSize);
-return "redirect:/";
+                return "redirect:/";
             }
         } else {
             return "redirect:/login"; // Redirect to homepage if admin session is not found
+        }
+    }
+
+    @GetMapping("/indexAdminUsers")
+    public String indexAdminUsers(Model model, HttpSession session) {
+//            @RequestParam(defaultValue = "0") int pageNumber,
+//            @RequestParam(defaultValue = "5") int pageSize
+        if (session.getAttribute("admin") != null) {
+//            ResponseEntity<List<Items>> response = rt.exchange(
+//                    urlitems + "/item" + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
+//                    HttpMethod.GET,
+//                    null,
+//                    new ParameterizedTypeReference<List<Items>>() {
+//            }
+//            );
+            List<Items> p = rt.getForObject(urlusers + "/", List.class
+            );
+//
+//            List<Items> itemList = response.getBody();
+//
+//            int totalItems = p.size(); // Ensure totalItems is calculated correctly
+//            int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+//
+//            if (session.getAttribute("countcartItems") != null) {
+//                int count = (int) session.getAttribute("countcartItems");
+//                model.addAttribute("countcartItems", count);
+//            } else {
+//                model.addAttribute("countcartItems", 0);
+//            }
+//
+            model.addAttribute("list", p);
+//            model.addAttribute("currentPage", pageNumber);
+//            model.addAttribute("pageSize", pageSize);
+//            model.addAttribute("totalPages", totalPages);
+
+            return "admin/usersAdmin";
+        } else {
+            return "redirect:/login";
+        }
+    }
+    
+    @GetMapping("/indexAdminOrders")
+    public String indexAdminOrders(Model model, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+
+            List<Items> p = rt.getForObject(urlorders + "/", List.class);
+
+            model.addAttribute("list", p);
+
+            return "admin/ordersAdmin";
+        } else {
+            return "redirect:/login";
         }
     }
 
@@ -431,8 +667,7 @@ return "redirect:/";
     @ResponseBody
     public ResponseEntity<Integer> addToCart(@PathVariable int itemId, @PathVariable int quantity, HttpSession session) {
         // Retrieve item details from API or database
-        CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class
-        );
+        CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class);
 
         // Retrieve cart from session
         List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
@@ -441,14 +676,28 @@ return "redirect:/";
             session.setAttribute("cartItems", cartItems);
         }
 
-        // Add item to cart with the specified quantity
-        for (int i = 0; i < quantity; i++) {
+        // Check if the item is already in the cart
+        boolean itemExists = false;
+        for (CartItems cartItem : cartItems) {
+            if (cartItem.getItem_id() == item.getItem_id()) {
+                cartItem.setTotalQuantity(cartItem.getTotalQuantity() + quantity);
+                itemExists = true;
+                break;
+            }
+        }
+
+        // If the item is not in the cart, add it with the specified quantity
+        if (!itemExists) {
+            item.setTotalQuantity(quantity);
             cartItems.add(item);
         }
-        session.setAttribute("countcartItems", cartItems.size());
+
+        // Update the total number of items in the cart
+        int totalItems = cartItems.stream().mapToInt(CartItems::getTotalQuantity).sum();
+        session.setAttribute("countcartItems", totalItems);
 
         // Return the new cart item count
-        return ResponseEntity.ok(cartItems.size());
+        return ResponseEntity.ok(totalItems);
     }
 
     @GetMapping("/")
@@ -503,18 +752,18 @@ return "redirect:/";
         for (CartItems item : cartItems) {
             if (mergedCart.containsKey(item.getItem_id())) {
                 CartItems existingItem = mergedCart.get(item.getItem_id());
-                existingItem.setTotalQuantity(existingItem.getTotalQuantity() + 1);
+                existingItem.setTotalQuantity(existingItem.getTotalQuantity() + item.getTotalQuantity());
             } else {
                 CartItems newItem = new CartItems();
                 newItem.setItem_id(item.getItem_id());
                 newItem.setName(item.getName());
                 newItem.setPrice(item.getPrice());
                 newItem.setImage(item.getImage());
-                newItem.setTotalQuantity(1);
+                newItem.setTotalQuantity(item.getTotalQuantity());
                 mergedCart.put(item.getItem_id(), newItem);
             }
 
-            totalPrice = totalPrice.add(item.getPrice());
+            totalPrice = totalPrice.add(item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())));
         }
 
         if (session.getAttribute("countcartItems") != null) {
@@ -533,14 +782,145 @@ return "redirect:/";
 
     @GetMapping("/checkout")
     public String checkout(Model model, HttpSession session) {
-        if (session.getAttribute("countcartItems") != null) {
+        if (session.getAttribute("user") != null) {
+
+            if (session.getAttribute("countcartItems") != null) {
+                int count = (int) session.getAttribute("countcartItems");
+                model.addAttribute("countcartItems", count);
+            } else {
+                model.addAttribute("countcartItems", 0);
+            }
+            model.addAttribute("account", new Users());
+            return "user/checkout";
+        } else {
+
+            return "redirect:/login";
+        }
+
+    }
+
+    @PostMapping("/checkout")
+    public String processCheckout(@ModelAttribute("account") Users account, HttpSession session, Model model) {
+        String email = (String) session.getAttribute("user");
+        if (email == null) {
+            model.addAttribute("message", "User not logged in.");
+            return "user/checkout";
+        }
+
+        Users users;
+        try {
+            users = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+        } catch (Exception e) {
+            model.addAttribute("message", "Failed to retrieve user details.");
+            return "user/checkout";
+        }
+
+        List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
+        if (cartItems == null || cartItems.isEmpty()) {
+            model.addAttribute("message", "Your cart is empty.");
+            return "user/checkout";
+        }
+
+        BigDecimal totalPrice = cartItems.stream()
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        session.setAttribute("totalPrice", totalPrice);
+
+        Orders order = new Orders();
+        order.setUsers(users);
+        order.setTotal_amount(totalPrice);
+        order.setOrder_date(new Date());
+        order.setStatus("Pending");
+        order.setCreated_dt(new Date());
+
+        Orders savedOrder;
+        savedOrder = rt.postForObject(urlorders, order, Orders.class);
+
+        List<OrderItems> orderItems = new ArrayList<>();
+        for (CartItems cartItem : cartItems) {
+            try {
+                Items items = rt.getForObject(urlitems + "/" + cartItem.getItem_id(), Items.class);
+                OrderItems orderItem = new OrderItems();
+                orderItem.setOrders(savedOrder);
+                orderItem.setItem(items);
+                orderItem.setQuantity(cartItem.getTotalQuantity());
+                orderItem.setPrice(cartItem.getPrice().multiply(BigDecimal.valueOf(cartItem.getTotalQuantity())));
+                orderItem.setCreated_dt(new Date());
+
+                OrderItems savedOrderItem = rt.postForObject(urlorderitems, orderItem, OrderItems.class);
+                orderItems.add(savedOrderItem);
+            } catch (Exception e) {
+                model.addAttribute("message", "Failed to save order item for " + cartItem.getItem_id());
+                return "user/checkout";
+            }
+        }
+
+        session.removeAttribute("cartItems");
+        session.setAttribute("countcartItems", 0);
+        session.setAttribute("totalPrice", BigDecimal.ZERO);
+
+        // Create MultiValueMap to hold the request parts
+        MultiValueMap<String, Object> parts = new LinkedMultiValueMap<>();
+        parts.add("users", users);
+        parts.add("orders", savedOrder);
+        parts.add("orderItems", orderItems);
+
+        // Send the request using a POST request with multipart/form-data
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(parts, headers);
+
+        rt.postForEntity(urlorders + "/sendbillmail", requestEntity, Void.class);
+
+        model.addAttribute("message", "Your order has been placed successfully.");
+        return "user/checkout";
+    }
+
+    @GetMapping("/informationLine")
+    public String informationLine(Model model, HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if (email == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            Users users = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+
+            ResponseEntity<List<Orders>> responseEntity = rt.exchange(
+                    urlorders + "/users/" + users.getUser_id(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Orders>>() {
+            }
+            );
+            List<Orders> orders = responseEntity.getBody();
+
+            Map<Integer, List<OrderItems>> orderItemsMap = new HashMap<>();
+            for (Orders order : orders) {
+                List<OrderItems> items = rt.exchange(
+                        urlorderitems + "/order/" + order.getOrder_id(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<List<OrderItems>>() {
+                }
+                ).getBody();
+                orderItemsMap.put(order.getOrder_id(), items);
+            }
+
+            model.addAttribute("orders", orders);
+            model.addAttribute("orderItemsMap", orderItemsMap);
+            if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
             model.addAttribute("countcartItems", count);
         } else {
             model.addAttribute("countcartItems", 0);
         }
-        model.addAttribute("account", new Users());
-        return "user/checkout";
+            return "user/informationLine";
+
+        } catch (RestClientException e) {
+            model.addAttribute("message", "Failed to retrieve data: " + e.getMessage());
+            return "user/informationLine";
+        }
     }
 
     @GetMapping("/contact")
@@ -669,29 +1049,63 @@ return "redirect:/";
     }
 
     @PostMapping("/updatecart")
-    public String updateCart(@RequestParam(name = "itemId", defaultValue = "") List<Integer> itemIds, @RequestParam(name = "quantity", defaultValue = "") List<Integer> quantities, HttpSession session) {
-        List<CartItems> cartItems = new ArrayList<>();
-        if (itemIds.isEmpty()) {
+    public String updateCart(@RequestParam(name = "itemId", defaultValue = "") List<Integer> itemIds,
+            @RequestParam(name = "quantity", defaultValue = "") List<Integer> quantities,
+            HttpSession session) {
+        if (itemIds.isEmpty() || quantities.isEmpty()) {
             return "redirect:/cart?error=empty";
-        } else {
-            for (int i = 0; i < itemIds.size(); i++) {
-                int itemId = itemIds.get(i);
-                int quantity = quantities.get(i);
-
-                CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class
-                );
-
-                for (int j = 0; j < quantity; j++) {
-                    cartItems.add(item);
-                }
-            }
-
-            session.setAttribute("cartItems", cartItems);
-            session.setAttribute("countcartItems", cartItems.size());
-
-            return "redirect:/cart";
         }
 
+        List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
+        if (cartItems == null) {
+            cartItems = new ArrayList<>();
+        }
+
+        // Create a map to store updated quantities
+        Map<Integer, Integer> quantityMap = new LinkedHashMap<>();
+        for (int i = 0; i < itemIds.size(); i++) {
+            quantityMap.put(itemIds.get(i), quantities.get(i));
+        }
+
+        List<CartItems> updatedCartItems = new ArrayList<>();
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        int totalItemCount = 0;
+
+        for (CartItems item : cartItems) {
+            if (quantityMap.containsKey(item.getItem_id())) {
+                int newQuantity = quantityMap.get(item.getItem_id());
+                if (newQuantity > 0) {
+                    item.setTotalQuantity(newQuantity);
+                    updatedCartItems.add(item);
+                    totalPrice = totalPrice.add(item.getPrice().multiply(BigDecimal.valueOf(newQuantity)));
+                    totalItemCount += newQuantity;
+                }
+                quantityMap.remove(item.getItem_id());
+            } else {
+                updatedCartItems.add(item);
+                totalPrice = totalPrice.add(item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())));
+                totalItemCount += item.getTotalQuantity();
+            }
+        }
+
+        // Add any new items that were not in the original cart
+        for (Map.Entry<Integer, Integer> entry : quantityMap.entrySet()) {
+            int itemId = entry.getKey();
+            int quantity = entry.getValue();
+            if (quantity > 0) {
+                CartItems newItem = rt.getForObject(urlitems + "/" + itemId, CartItems.class);
+                newItem.setTotalQuantity(quantity);
+                updatedCartItems.add(newItem);
+                totalPrice = totalPrice.add(newItem.getPrice().multiply(BigDecimal.valueOf(quantity)));
+                totalItemCount += quantity;
+            }
+        }
+
+        session.setAttribute("cartItems", updatedCartItems);
+        session.setAttribute("countcartItems", totalItemCount);
+        session.setAttribute("totalPrice", totalPrice);
+
+        return "redirect:/cart";
     }
 
     @GetMapping("/deletecart/{itemId}")
@@ -699,8 +1113,15 @@ return "redirect:/";
         List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
         if (cartItems != null) {
             cartItems.removeIf(item -> item.getItem_id() == itemId);
+            BigDecimal totalPrice = BigDecimal.ZERO;
+            int totalItemCount = 0;
+            for (CartItems item : cartItems) {
+                totalPrice = totalPrice.add(item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())));
+                totalItemCount += item.getTotalQuantity();
+            }
             session.setAttribute("cartItems", cartItems);
-            session.setAttribute("countcartItems", cartItems.size());
+            session.setAttribute("countcartItems", totalItemCount);
+            session.setAttribute("totalPrice", totalPrice);
         }
         return "redirect:/cart";
     }

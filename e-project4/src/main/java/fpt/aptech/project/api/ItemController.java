@@ -63,34 +63,42 @@ public class ItemController {
     public void delete(@PathVariable int itemId) {
         service.deleteItem(itemId);
     }
-    
+
     @GetMapping("/item")
-@ResponseStatus(HttpStatus.OK)
-public List<Items> list(@RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
-                        @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
-    // Ensure pageNumber and pageSize are not null
-    int validPageNumber = (pageNumber != null) ? pageNumber : 0;
-    int validPageSize = (pageSize != null) ? pageSize : 5;
+    @ResponseStatus(HttpStatus.OK)
+    public List<Items> list(@RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
+        // Ensure pageNumber and pageSize are not null
+        int validPageNumber = (pageNumber != null) ? pageNumber : 0;
+        int validPageSize = (pageSize != null) ? pageSize : 5;
 
-    return service.page(validPageNumber, validPageSize);
-}
+        return service.page(validPageNumber, validPageSize);
+    }
 
-@GetMapping("/searchp/{name}")
-@ResponseStatus(HttpStatus.OK)
-public List<Items> search(@PathVariable("name") String name,@RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
-                        @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
-    // Ensure pageNumber and pageSize are not null
-    int validPageNumber = (pageNumber != null) ? pageNumber : 0;
-    int validPageSize = (pageSize != null) ? pageSize : 5;
+    @GetMapping("/searchp/{name}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Items> search(@PathVariable("name") String name, @RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
+        // Ensure pageNumber and pageSize are not null
+        int validPageNumber = (pageNumber != null) ? pageNumber : 0;
+        int validPageSize = (pageSize != null) ? pageSize : 5;
 
-    return service.searchpage(name, validPageNumber, validPageSize);
-}
+        return service.searchpage(name, validPageNumber, validPageSize);
+    }
 
-@GetMapping("/search/{name}")
-@ResponseStatus(HttpStatus.OK)
-public List<Items> search(@PathVariable("name") String name) {
-    // Ensure pageNumber and pageSize are not null
+    @GetMapping("/search/{name}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Items> search(@PathVariable("name") String name) {
+        // Ensure pageNumber and pageSize are not null
 
-    return service.search(name);
-}
+        return service.search(name);
+    }
+
+    @GetMapping("/searchid/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Items> search(@PathVariable("id") int id) {
+        // Ensure pageNumber and pageSize are not null
+
+        return service.searchbyid(id);
+    }
 }

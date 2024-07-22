@@ -109,8 +109,7 @@
                                 </ul>
                             </li>
                             <li><a th:href="@{/shop}">Shop</a></li>
-                            <li><a href="#">Catalogue</a></li>
-                            <li><a href="#">New Arrivals</a></li>
+                            <li th:if="${session.user != null}"><a th:href="@{/informationLine}">Information Line</a></li>
                             <li><a th:href="@{/contact}">Contact</a></li>
                         </ul>
                     </div>

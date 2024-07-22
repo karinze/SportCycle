@@ -30,4 +30,6 @@ public interface IItemService {
     public List<Items> search(String name);
     
     public List<Items> page(int pageNumber,int pageSize);
+    
+    public List<Items> searchbyid(int id);
 }

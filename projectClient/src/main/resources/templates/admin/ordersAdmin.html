@@ -80,7 +80,7 @@
 
                 <!-- Nav Item - Users -->
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/indexAdminUsers}">
+                    <a class="nav-link" th:href="@{/indexAdminItems}">
                         <i class="fas fa-fw fa-table"></i>
                         <span>Users</span></a>
                 </li>
@@ -97,6 +97,7 @@
                         <i class="fas fa-fw fa-table"></i>
                         <span>Orders</span></a>
                 </li>
+
                 <!-- Divider -->
                 <hr class="sidebar-divider d-none d-md-block">
 
@@ -324,61 +325,45 @@
                     <!-- Begin Page Content -->
                     <div class="container-fluid">
 
+                        <!-- Page Heading -->
                         
                         <!-- DataTales Example -->
                         <div class="card shadow mb-4">
                             <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                                <h6 class="m-0 font-weight-bold text-primary">Items List</h6>
-                                <div class="text-right">
-                                    <a class="btn btn-warning mt-2" th:href="@{/createAdminItems}">Add new</a>
-                                </div>
+                                <h6 class="m-0 font-weight-bold text-primary">Orders List</h6>
+                                
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                         <thead>
                                             <tr>
-                                                <th>#Id</th>
-                                                <th>Name</th>
-                                                <th>Brand</th>
-                                                <th>Description</th>
-                                                <th>Price</th>
-                                                <th>Stock</th>
-                                                <th>Type</th>
-                                                <th>Image</th>
-                                                <th>Created Date</th>
-                                                <th>Actions</th>
+                                                <th>Id</th>
+                                                <th>Email</th>
+                                                <th>Total Amount</th>
+                                                <th>Order Date</th>
+                                                <th>Status</th>
+                                                <th>Create_dt</th>
                                             </tr>
                                         </thead>
                                         <tfoot>
                                             <tr>
-                                                <th>#Id</th>
-                                                <th>Name</th>
-                                                <th>Brand</th>
-                                                <th>Description</th>
-                                                <th>Price</th>
-                                                <th>Stock</th>
-                                                <th>Type</th>
-                                                <th>Image</th>
-                                                <th>Created Date</th>
-                                                <th>Actions</th>
+                                                <th>Id</th>
+                                                <th>Email</th>
+                                                <th>Total Amount</th>
+                                                <th>Order Date</th>
+                                                <th>Status</th>
+                                                <th>Create_dt</th>
                                             </tr>
                                         </tfoot>
-                                        <tbody>
-                                            <tr th:each="f : ${list}">
-                                                <td th:text="${f.item_id}"></td>
-                                                <td th:text="${f.name}"></td>
-                                                <td th:text="${f.brand}"></td>
-                                                <td th:text="${f.description}"></td>
-                                                <td th:id="'price-' + ${f.item_id}" th:text="'$'+${f.price}"></td>
-                                                <td th:text="${f.stock}"></td>
-                                                <td th:text="${f.type}"></td>
-                                                <td><img th:src="@{'/images/'+${f.image}}" width="100" height="auto"/></td>
+                                        <tbody th:with="counter=${#numbers.sequence(1, list.size())}">
+                                            <tr th:each="f, iterStat : ${list}">
+                                                <td th:text="${counter[iterStat.index]}"></td>
+                                                <td th:text="${f.users.email}"></td>
+                                                <td th:text="${f.total_amount}"></td>
+                                                <td th:text="${f.order_date}"></td>
+                                                <td th:text="${f.status}"></td>
                                                 <td th:text="${f.created_dt}"></td>
-                                                <td>
-                                                    <a th:href="@{/editAdminItems/{id}(id=${f.item_id})}" class="btn btn-info">Edit</a>
-                                                    <a th:href="@{/deleteAdminItems/{id}(id=${f.item_id})}" class="btn btn-danger">Delete</a>
-                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>

@@ -92,6 +92,11 @@ public List<Items> page(int pageNumber, int pageSize) {
     public List<Items> search(String name) {
         return itemRepository.searchByName('%'+name+'%');
     }
+
+    @Override
+    public List<Items> searchbyid(int id) {
+        return itemRepository.searchByid(id);
+    }
     
 
     
