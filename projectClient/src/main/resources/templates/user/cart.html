@@ -148,7 +148,7 @@
                                             <td class="product-name">
                                                 <h2 class="h5 text-black" th:text="${item.name}"></h2>
                                             </td>
-                                            <td th:text="${item.price}"></td>
+                                            <td th:text="${item.price.intValue()} + ' $'"></td>
                                             <td>
                                                 <div class="input-group mb-3" style="max-width: 120px;">
                                                     <div class="input-group-prepend">
@@ -161,7 +161,7 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td th:text="${item.price.multiply(item.totalQuantity)}"></td>
+                                            <td th:text="${item.price.multiply(item.totalQuantity).intValue() + ' $'}"></td>
                                             <td><a th:href="@{/deletecart/{itemId}(itemId=${item.item_id})}" class="btn btn-primary btn-sm">X</a></td>
                                         </tr>
                                     </tbody>
@@ -206,7 +206,7 @@
                                             <span class="text-black">Subtotal</span>
                                         </div>
                                         <div class="col-md-6 text-right">
-                                            <strong class="text-black" th:text="${totalPrice}"></strong>
+                                            <strong class="text-black" th:text="${totalPrice.intValue()} + ' $'"></strong>
                                         </div>
                                     </div>
                                     <div class="row mb-5">
@@ -214,7 +214,7 @@
                                             <span class="text-black">Total</span>
                                         </div>
                                         <div class="col-md-6 text-right">
-                                            <strong class="text-black" th:text="${totalPrice}"></strong>
+                                            <strong class="text-black" th:text="${totalPrice.intValue()} + ' $'"></strong>
                                         </div>
                                     </div>
                                     <div class="row">
@@ -299,7 +299,21 @@
                 </div>
             </footer>
         </div>
-
+        <script>
+            function formatScientificNotation() {
+                let priceElements = document.querySelectorAll('[id^="price-"]');
+                priceElements.forEach(element => {
+                    let scientificNotation = element.innerText;
+                    if (scientificNotation !== null && scientificNotation !== '') {
+                        let decimalNumber = Number(scientificNotation);
+                        if (!isNaN(decimalNumber)) {
+                            element.innerText = decimalNumber;
+                        }
+                    }
+                });
+            }
+            window.onload = formatScientificNotation;
+        </script>
         <script src="js/jquery-3.3.1.min.js"></script>
         <script src="js/jquery-ui.js"></script>
         <script src="js/popper.min.js"></script>

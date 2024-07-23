@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @RestController
 @RequestMapping("/api/bikeproperties/")
 public class BikePropertiesController {
+
     @Autowired
     IBikePropertiesService service;
 
@@ -58,5 +59,11 @@ public class BikePropertiesController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int bikePropertiesId) {
         service.deleteBikeProperties(bikePropertiesId);
+    }
+
+    @GetMapping("/item/{itemId}")
+    @ResponseStatus(HttpStatus.OK)
+    public BikeProperties findByItemId(@PathVariable("itemId") int itemId) {
+        return service.findByItemId(itemId);
     }
 }

@@ -19,13 +19,21 @@
 
         <link rel="stylesheet" th:href="@{/css/style.css}">
         <style>
-    .site-block-top-search {
-        display: flex;
-        align-items: center;
-    }
-    .site-block-top-search .form-control {
-        flex-grow: 1;
-    }
+            .site-block-top-search {
+                display: flex;
+                align-items: center;
+            }
+            .site-block-top-search .form-control {
+                flex-grow: 1;
+            }
+            .clickable {
+                cursor: pointer;
+            }
+
+            .toggle-arrow {
+                font-size: 0.8em;
+                margin-left: 10px;
+            }
         </style>
     </head>
     <body>
@@ -37,9 +45,9 @@
                         <div class="row align-items-center">
 
                             <div class="col-6 col-md-4 order-2 order-md-1 site-search-icon text-left">
-                                <form th:action="@{/shopsearch}" class="site-block-top-search d-flex align-items-center">
+                                <form th:action="@{/shop}" class="site-block-top-search d-flex align-items-center">
                                     <span class="icon icon-search2 mr-2"></span>
-                                    <input type="text" name="name" class="form-control border-0 mr-2" placeholder="Search...">
+                                    <input type="text" name="name" class="form-control border-0 mr-2" th:value="${name}" placeholder="Search...">
                                     <button type="submit" class="btn border-0"><i class="icon-search"></i></button>
                                 </form>
                             </div>
@@ -132,30 +140,7 @@
 
                             <div class="row">
                                 <div class="col-md-12 mb-5">
-                                    <div class="float-md-left mb-4"><h2 class="text-black h5">Shop All</h2></div>
-                                    <div class="d-flex">
-                                        <div class="dropdown mr-1 ml-md-auto">
-                                            <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" id="dropdownMenuOffset" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                Latest
-                                            </button>
-                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuOffset">
-                                                <a class="dropdown-item" href="#">Men</a>
-                                                <a class="dropdown-item" href="#">Women</a>
-                                                <a class="dropdown-item" href="#">Children</a>
-                                            </div>
-                                        </div>
-                                        <div class="btn-group">
-                                            <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" id="dropdownMenuReference" data-toggle="dropdown">Reference</button>
-                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuReference">
-                                                <a class="dropdown-item" href="#">Relevance</a>
-                                                <a class="dropdown-item" href="#">Name, A to Z</a>
-                                                <a class="dropdown-item" href="#">Name, Z to A</a>
-                                                <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item" href="#">Price, low to high</a>
-                                                <a class="dropdown-item" href="#">Price, high to low</a>
-                                            </div>
-                                        </div>
-                                    </div>
+
                                 </div>
                             </div>
                             <div class="row mb-5" >
@@ -168,7 +153,7 @@
                                         <div class="block-4-text p-4">
                                             <h3><a th:href="@{/shopdetail/{id}(id=${f.item_id})}" th:text="${f.name}"></a></h3>
                                             <p class="mb-0" th:text="${f.brand}"></p>
-                                            <p class="text-primary font-weight-bold" th:text="${f.price}"></p>
+                                            <p class="text-primary font-weight-bold" th:text="${f.price.intValue()} + ' $'"></p>
                                         </div>
                                     </div>
                                 </div>
@@ -176,68 +161,39 @@
 
 
                             </div>
-                            <div th:with="math=${T(java.lang.Math)}" class="row" data-aos="fade-up" th:if="${name != null && totalPages > 1}">
+
+                            <div th:with="math=${T(java.lang.Math)}" class="row" data-aos="fade-up" th:if="${totalPages > 1}">
                                 <div class="col-md-12 text-center">
                                     <div class="site-block-27">
                                         <ul>
                                             <li th:classappend="${currentPage == 0} ? ' disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
-                                                <a th:href="@{/shopsearch(name=${name},pageNumber=0,pageSize=${pageSize})}" class="li-pagination">&lt;&lt;</a>
+                                                <a th:href="@{/shop(pageNumber=0, pageSize=${pageSize}, name=${name}, brand=${brand}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}">&lt;&lt;</a>
                                             </li>
                                             <li th:classappend="${currentPage == 0} ? ' disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
-                                                <a th:href="@{/shopsearch(name=${name},pageNumber=${currentPage - 1},pageSize=${pageSize})}" class="li-pagination">&lt;</a>
+                                                <a th:href="@{/shop(pageNumber=${currentPage - 1}, pageSize=${pageSize}, name=${name}, brand=${brand}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}">&lt;</a>
                                             </li>
-                                            <li th:class="${currentPage > 5} ? 'page-item' : 'd-none'">
-                                                <span class="page-link">...</span>
+                                            <li th:classappend="${currentPage > 2} ? ' page-item' : ' d-none'">
+                                                <span>...</span>
                                             </li>
-                                            <th:block th:each="pageNumber : ${#numbers.sequence(math.max(0, currentPage - 2), math.min(totalPages - 1, currentPage + 2))}">
-                                                <li th:classappend="${pageNumber == currentPage} ? ' active'">
-                                                    <a th:href="@{/shopsearch(name=${name},pageNumber=${pageNumber},pageSize=${pageSize})}"class="li-pagination" th:text="${pageNumber + 1}"></a>
+                                            <th:block th:each="page : ${#numbers.sequence(math.max(0, currentPage - 2), math.min(totalPages - 1, currentPage + 2))}">
+                                                <li th:classappend="${page == currentPage} ? ' active'">
+                                                    <a th:href="@{/shop(pageNumber=${page}, pageSize=${pageSize}, name=${name}, brand=${brand}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}" th:text="${page + 1}"></a>
                                                 </li>
                                             </th:block>
-                                            <li th:class="${currentPage < totalPages - 6} ? 'page-item' : 'd-none'">
-                                                <span class="page-link">...</span>
+                                            <li th:classappend="${currentPage < totalPages - 3} ? ' page-item' : ' d-none'">
+                                                <span>...</span>
                                             </li>
                                             <li th:classappend="${currentPage >= totalPages - 1} ? ' disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
-                                                <a th:href="@{/shopsearch(name=${name},pageNumber=${currentPage + 1},pageSize=${pageSize})}" class="li-pagination">&gt;</a>
+                                                <a th:href="@{/shop(pageNumber=${currentPage + 1}, pageSize=${pageSize}, name=${name}, brand=${brand}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}">&gt;</a>
                                             </li>
                                             <li th:classappend="${currentPage >= totalPages - 1} ? ' disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
-                                                <a th:href="@{/shopsearch(name=${name},pageNumber=${totalPages - 1},pageSize=${pageSize})}" class="li-pagination">&gt;&gt;</a>
+                                                <a th:href="@{/shop(pageNumber=${totalPages - 1}, pageSize=${pageSize}, name=${name}, brand=${brand}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}">&gt;&gt;</a>
                                             </li>
                                         </ul>
                                     </div>
                                 </div>
                             </div>
-                            <div th:with="math=${T(java.lang.Math)}" class="row" data-aos="fade-up" th:if="${name == null && totalPages > 1}">
-                                <div class="col-md-12 text-center">
-                                    <div class="site-block-27">
-                                        <ul>
-                                            <li th:classappend="${currentPage == 0} ? ' disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
-                                                <a th:href="@{/shop(pageNumber=0,pageSize=${pageSize})}" class="li-pagination">&lt;&lt;</a>
-                                            </li>
-                                            <li th:classappend="${currentPage == 0} ? ' disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
-                                                <a th:href="@{/shop(pageNumber=${currentPage - 1},pageSize=${pageSize})}" class="li-pagination">&lt;</a>
-                                            </li>
-                                            <li th:classappend="${currentPage > 5} ? ' page-item' : ' d-none'">
-                                                <span class="li-pagination">...</span>
-                                            </li>
-                                            <th:block th:each="pageNumber : ${#numbers.sequence(math.max(0, currentPage - 2), math.min(totalPages - 1, currentPage + 2))}">
-                                                <li class="li-pagination" th:classappend="${pageNumber == currentPage} ? ' active'">
-                                                    <a th:href="@{/shop(pageNumber=${pageNumber},pageSize=${pageSize})}" class="li-pagination" th:text="${pageNumber + 1}"></a>
-                                                </li>
-                                            </th:block>
-                                            <li th:classappend="${currentPage < totalPages - 6} ? ' page-item' : ' d-none'">
-                                                <span class="li-pagination">...</span>
-                                            </li>
-                                            <li th:classappend="${currentPage >= totalPages - 1} ? ' disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
-                                                <a th:href="@{/shop(pageNumber=${currentPage + 1},pageSize=${pageSize})}" class="li-pagination">&gt;</a>
-                                            </li>
-                                            <li th:classappend="${currentPage >= totalPages - 1} ? ' disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
-                                                <a th:href="@{/shop(pageNumber=${totalPages - 1},pageSize=${pageSize})}" class="li-pagination">&gt;&gt;</a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+
 
                         </div>
 
@@ -245,47 +201,192 @@
                             <div class="border p-4 rounded mb-4">
                                 <h3 class="mb-3 h6 text-uppercase text-black d-block">Categories</h3>
                                 <ul class="list-unstyled mb-0">
-                                    <li class="mb-1"><a href="#" class="d-flex"><span>Men</span> <span class="text-black ml-auto">(2,220)</span></a></li>
-                                    <li class="mb-1"><a href="#" class="d-flex"><span>Women</span> <span class="text-black ml-auto">(2,550)</span></a></li>
-                                    <li class="mb-1"><a href="#" class="d-flex"><span>Children</span> <span class="text-black ml-auto">(2,124)</span></a></li>
+                                    <li class="mb-1">
+                                        <a th:href="@{'/shop'(type='Bike', name=${name}, brand=${brand}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}" class="d-flex">
+                                            <span>Bike</span> <span class="text-black ml-auto"></span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-1">
+                                        <a th:href="@{'/shop'(type='Accessory', name=${name}, brand=${brand}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}" class="d-flex">
+                                            <span>Accessory</span> <span class="text-black ml-auto"></span>
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
+                            <div th:if="${type != 'Accessory'}" class="border p-4 rounded mb-4">
+                                <form th:action="@{/shop}" method="get">
+                                    <input type="hidden" name="name" th:value="${name}">
+                                    <input type="hidden" name="type" th:value="${type}">
+                                    <!-- Filter by Price -->
+                                    <div class="mb-4">
+                                        <h3 class="mb-3 h6 text-uppercase text-black d-block">Filter by Price</h3>
+                                        <div class="form-group">
+                                            <label for="minPrice">Min Price: <span id="minPriceValue">0</span></label>
+                                            <input type="range" name="minPrice" id="minPrice" min="0" max="5000" step="50" value="0" class="form-control-range mb-2" oninput="document.getElementById('minPriceValue').textContent = this.value">
+                                            <label for="maxPrice">Max Price: <span id="maxPriceValue">5000</span></label>
+                                            <input type="range" name="maxPrice" id="maxPrice" min="0" max="5000" step="50" value="5000" class="form-control-range" oninput="document.getElementById('maxPriceValue').textContent = this.value">
+                                        </div>
+                                    </div>
 
-                            <div class="border p-4 rounded mb-4">
-                                <div class="mb-4">
-                                    <h3 class="mb-3 h6 text-uppercase text-black d-block">Filter by Price</h3>
-                                    <div id="slider-range" class="border-primary"></div>
-                                    <input type="text" name="text" id="amount" class="form-control border-0 pl-0 bg-white" disabled="" />
-                                </div>
+                                    <!-- Filter by Bike Size -->
+                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('brand')">Brand <span class="toggle-arrow">&#9660;</span></h3>
+                                    <ul class="mb-4" id="brand" style="display:none;">
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="brand" value="GIANT" id="brand">
+                                            <label class="form-check-label" for="GIANT"><img th:src="@{/images/giant.png}" style="width: 130px"></label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="brand" value="GTIX" id="brand">
+                                            <label class="form-check-label" for="GTIX"><img th:src="@{/images/GTIX.jpg}" style="width: 130px"></label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="brand" value="MAX" id="brand">
+                                            <label class="form-check-label" for="MAX"><img th:src="@{/images/maxbike.png}" style="width: 130px"></label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="brand" value="MOMENTUM" id="brand">
+                                            <label class="form-check-label" for="MOMENTUM"><img th:src="@{/images/momentum_02.png}" style="width: 130px"></label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="brand" value="TOTEM" id="brand">
+                                            <label class="form-check-label" for="TOTEM"><img th:src="@{/images/totem-4.png}" style="width: 130px"></label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="brand" value="TRINX" id="brand">
+                                            <label class="form-check-label" for="TRINX"><img th:src="@{/images/TRINX-3.png}" style="width: 130px"></label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="brand" value="VINBIKE" id="brand">
+                                            <label class="form-check-label" for="VINBIKE"><img th:src="@{/images/Vinbike-3.png}" style="width: 130px"></label>
+                                        </li>
+                                        
+                                    </ul>
+                                    
+                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeSize')">Bike Size <span class="toggle-arrow">&#9660;</span></h3>
+                                    <ul class="mb-4" id="bikeSize" style="display:none;">
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeSize" value="S" id="sizeSmall">
+                                            <label class="form-check-label" for="sizeSmall">Small</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeSize" value="M" id="sizeMedium">
+                                            <label class="form-check-label" for="sizeMedium">Medium</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeSize" value="L" id="sizeLarge">
+                                            <label class="form-check-label" for="sizeLarge">Large</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeSize" value="XL" id="sizeExtraLarge">
+                                            <label class="form-check-label" for="sizeExtraLarge">Extra Large</label>
+                                        </li>
+                                    </ul>
 
-                                <div class="mb-4">
-                                    <h3 class="mb-3 h6 text-uppercase text-black d-block">Size</h3>
-                                    <label for="s_sm" class="d-flex">
-                                        <input type="checkbox" id="s_sm" class="mr-2 mt-1"> <span class="text-black">Small (2,319)</span>
-                                    </label>
-                                    <label for="s_md" class="d-flex">
-                                        <input type="checkbox" id="s_md" class="mr-2 mt-1"> <span class="text-black">Medium (1,282)</span>
-                                    </label>
-                                    <label for="s_lg" class="d-flex">
-                                        <input type="checkbox" id="s_lg" class="mr-2 mt-1"> <span class="text-black">Large (1,392)</span>
-                                    </label>
-                                </div>
+                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeWheelSize')">Bike Wheel Size <span class="toggle-arrow">&#9660;</span></h3>
+                                    <ul class="mb-4" id="bikeWheelSize" style="display:none;">
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeWheelSize" value="700C" id="wheel700C">
+                                            <label class="form-check-label" for="wheel700C">700C</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeWheelSize" value="26" id="wheel26">
+                                            <label class="form-check-label" for="wheel26">26"</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeWheelSize" value="27.5" id="wheel27.5">
+                                            <label class="form-check-label" for="wheel27.5">27.5"</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeWheelSize" value="29" id="wheel29">
+                                            <label class="form-check-label" for="wheel29">29"</label>
+                                        </li>
+                                    </ul>
 
-                                <div class="mb-4">
-                                    <h3 class="mb-3 h6 text-uppercase text-black d-block">Color</h3>
-                                    <a href="#" class="d-flex color-item align-items-center" >
-                                        <span class="bg-danger color d-inline-block rounded-circle mr-2"></span> <span class="text-black">Red (2,429)</span>
-                                    </a>
-                                    <a href="#" class="d-flex color-item align-items-center" >
-                                        <span class="bg-success color d-inline-block rounded-circle mr-2"></span> <span class="text-black">Green (2,298)</span>
-                                    </a>
-                                    <a href="#" class="d-flex color-item align-items-center" >
-                                        <span class="bg-info color d-inline-block rounded-circle mr-2"></span> <span class="text-black">Blue (1,075)</span>
-                                    </a>
-                                    <a href="#" class="d-flex color-item align-items-center" >
-                                        <span class="bg-primary color d-inline-block rounded-circle mr-2"></span> <span class="text-black">Purple (1,075)</span>
-                                    </a>
-                                </div>
+                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeBrakeType')">Bike Brake Type <span class="toggle-arrow">&#9660;</span></h3>
+                                    <ul class="mb-4" id="bikeBrakeType" style="display:none;">
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeBrakeType" value="OilDiscBrakes" id="brakeOil">
+                                            <label class="form-check-label" for="brakeOil">Oil Disc Brakes</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeBrakeType" value="MechanicalDiscBrakes" id="brakeMechanical">
+                                            <label class="form-check-label" for="brakeMechanical">Mechanical Disc Brakes</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeBrakeType" value="GumBrake" id="brakeGum">
+                                            <label class="form-check-label" for="brakeGum">Gum Brake</label>
+                                        </li>
+                                    </ul>
+
+                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeMaterial')">Bike Material <span class="toggle-arrow">&#9660;</span></h3>
+                                    <ul class="mb-4" id="bikeMaterial" style="display:none;">
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeMaterial" value="Aluminum" id="materialAluminum">
+                                            <label class="form-check-label" for="materialAluminum">Aluminum</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeMaterial" value="Composite/Carbon" id="materialComposite">
+                                            <label class="form-check-label" for="materialComposite">Composite/Carbon</label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeMaterial" value="Magie" id="materialMagie">
+                                            <label class="form-check-label" for="materialMagie">Magie</label>
+                                        </li>
+                                    </ul>
+
+                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeColor')">Color <span class="toggle-arrow">&#9660;</span></h3>
+                                    <ul class="mb-4" id="bikeColor" style="display:none;">
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeColor" value="Red" id="colorRed">
+                                            <label class="form-check-label" for="colorRed">
+                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: red; border: 1px solid #000; margin-right: 5px;"></span>Red
+                                            </label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeColor" value="Black" id="colorBlack">
+                                            <label class="form-check-label" for="colorBlack">
+                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: black; border: 1px solid #000; margin-right: 5px;"></span>Black
+                                            </label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeColor" value="Blue" id="colorBlue">
+                                            <label class="form-check-label" for="colorBlue">
+                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: blue; border: 1px solid #000; margin-right: 5px;"></span>Blue
+                                            </label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeColor" value="White" id="colorWhite">
+                                            <label class="form-check-label" for="colorWhite">
+                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: white; border: 1px solid #000; margin-right: 5px;"></span>White
+                                            </label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeColor" value="Grey" id="colorGrey">
+                                            <label class="form-check-label" for="colorGrey">
+                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: grey; border: 1px solid #000; margin-right: 5px;"></span>Grey
+                                            </label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeColor" value="Titanium" id="colorTitanium">
+                                            <label class="form-check-label" for="colorTitanium">
+                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: #b0b0b0; border: 1px solid #000; margin-right: 5px;"></span>Titanium
+                                            </label>
+                                        </li>
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="bikeColor" value="Brown" id="colorBrown">
+                                            <label class="form-check-label" for="colorBrown">
+                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: brown; border: 1px solid #000; margin-right: 5px;"></span>Brown
+                                            </label>
+                                        </li>
+                                    </ul>
+
+
+                                    <!-- Submit Button -->
+                                    <div class="mb-4 text-center">
+                                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                    </div>
+                                </form>
+
 
                             </div>
                         </div>
@@ -411,6 +512,21 @@
                 </div>
             </footer>
         </div>
+
+        <script>
+            function toggleVisibility(id) {
+                var element = document.getElementById(id);
+                var arrow = element.previousElementSibling.querySelector('.toggle-arrow');
+                if (element.style.display === "none") {
+                    element.style.display = "block";
+                    arrow.innerHTML = "&#9650;";  // Change arrow to up
+                } else {
+                    element.style.display = "none";
+                    arrow.innerHTML = "&#9660;";  // Change arrow to down
+                }
+            }
+            
+        </script>
 
         <script src="js/jquery-3.3.1.min.js"></script>
         <script src="js/jquery-ui.js"></script>

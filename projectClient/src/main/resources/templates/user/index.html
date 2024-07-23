@@ -228,7 +228,7 @@
                                         <div class="block-4-text p-4">
                                             <h3><a th:href="@{/shopdetail/{id}(id=${f.item_id})}" th:text="${f.name}"></a></h3>
                                             <p class="mb-0" th:text="${f.brand}"></p>
-                                            <p class="text-primary font-weight-bold" th:text="${f.price}"></p>
+                                            <p class="text-primary font-weight-bold" th:text="${f.price.intValue()} + ' $'"></p>
                                         </div>
                                     </div>
                                 </div>

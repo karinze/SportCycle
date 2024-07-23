@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.PathVariable;
  * @author Manh_Chien
  */
 public interface OrderItemsRepository extends JpaRepository<OrderItems, Integer> {
-    @Query("Select e From OrderItems e Where e.orders = :orders ")
-    List<OrderItems> searchByOrderItemsid(@PathVariable("orders") Orders orders);
+    @Query("SELECT e FROM OrderItems e WHERE e.orders = :orders")
+    List<OrderItems> searchByOrderItemsid(@Param("orders") Orders orders);
+    
+    @Query("SELECT e FROM OrderItems e WHERE e.item = :item")
+    List<OrderItems> searchByItemsid(@Param("item") Items item);
 }

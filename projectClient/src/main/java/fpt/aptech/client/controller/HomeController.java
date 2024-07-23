@@ -6,8 +6,10 @@ package fpt.aptech.client.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fpt.aptech.client.dto.BikePropertiesDTO;
 import fpt.aptech.client.dto.ItemsDTO;
 import fpt.aptech.client.dto.UsersDTO;
+import fpt.aptech.client.models.BikeProperties;
 import fpt.aptech.client.models.CartItems;
 import fpt.aptech.client.models.ExternalTokens;
 import fpt.aptech.client.models.Items;
@@ -477,38 +479,92 @@ public class HomeController {
     }
 
     @PostMapping("/createAdminItems")
-    public String docreate(Model model, @Valid
-            @ModelAttribute("items") ItemsDTO items, BindingResult bindingResult) throws IOException {
-        if (bindingResult.hasErrors()) {
+    public String docreate(Model model, @Valid @ModelAttribute("items") ItemsDTO items, BindingResult bindingResult) throws IOException {
+        MultipartFile multipartFile = items.getImage();
+
+        if (bindingResult.hasErrors() || (multipartFile != null && !multipartFile.isEmpty() && !multipartFile.getContentType().startsWith("image/"))) {
             System.out.println("Binding Result Errors: " + bindingResult.getAllErrors());
 
-            MultipartFile multipartFile = items.getImage();
-            if (multipartFile != null && !multipartFile.isEmpty()) {
-                model.addAttribute("items", items);
-                return "admin/createAdminItems";
-            } else {
-                model.addAttribute("items", items);
-                bindingResult.rejectValue("image", "error.items", "Image file is required.");
-                return "admin/createAdminItems";
+            if (multipartFile != null && !multipartFile.isEmpty() && !multipartFile.getContentType().startsWith("image/")) {
+                bindingResult.rejectValue("image", "error.items", "Only image files are allowed.");
             }
 
+            model.addAttribute("items", items);
+            return "admin/createAdminItems";
         } else {
-            MultipartFile multipartFile = items.getImage();
             if (multipartFile != null && !multipartFile.isEmpty()) {
                 String fileName = multipartFile.getOriginalFilename();
                 FileCopyUtils.copy(items.getImage().getBytes(), new File(FileUpload, fileName));
                 items.setCreated_dt(Date.from(Instant.now()));
 
-                Items newItem = new Items(items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), items.getStock(), items.getType(), fileName, items.isIs_visible(), items.getCreated_dt());
-                model
-                        .addAttribute("Items", rt.postForEntity(urlitems, newItem, Items.class
-                        ));
-                return "redirect:/indexAdminItems";
+                Items newItem = new Items(
+                        items.getName(), items.getBrand(), items.getDescription(),
+                        items.getPrice(), items.getStock(), items.getType(),
+                        fileName, items.isIs_visible(), items.getCreated_dt()
+                );
+
+                ResponseEntity<Items> response = rt.postForEntity(urlitems, newItem, Items.class);
+                Items item = response.getBody();
+
+                if ("Bike".equals(items.getType())) {
+                    return "redirect:/createAdminBikeProperties?itemId=" + item.getItem_id();
+                } else {
+                    return "redirect:/indexAdminItems";
+                }
             } else {
                 bindingResult.rejectValue("image", "error.items", "Image file is required.");
                 return "admin/createAdminItems";
             }
         }
+    }
+
+    @GetMapping("/createAdminBikeProperties")
+    public String createBikeProperties(Model model, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+            model.addAttribute("bikeProperties", new BikeProperties());
+            return "admin/createAdminBikeProperties";
+        } else {
+            return "redirect:/login";
+        }
+
+    }
+
+    @PostMapping("/createAdminBikeProperties")
+    public String docreateBikeProperties(Model model, @RequestParam("itemId") Long itemId, @Valid @ModelAttribute("bikeProperties") BikePropertiesDTO bikeProperties, BindingResult bindingResult) {
+
+        Items item = rt.getForObject(urlitems + "/" + itemId, Items.class);
+        bikeProperties.setCreated_dt(Date.from(Instant.now()));
+
+        BikeProperties newBikeProperties = new BikeProperties(item, bikeProperties.getBike_size(), bikeProperties.getBike_wheel_size(), bikeProperties.getBike_color(), bikeProperties.getBike_material(), bikeProperties.getBike_brake_type(), bikeProperties.getCreated_dt());
+        model.addAttribute("BikeProperties", rt.postForEntity(urlbikeproperties, newBikeProperties, BikeProperties.class));
+        return "redirect:/indexAdminItems";
+
+    }
+    
+    @GetMapping("/editAdminBikeProperties/{id}")
+    public String editAdminBikeProperties(Model model, @PathVariable String id, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+            BikeProperties p = rt.getForObject(urlbikeproperties + "/" + id, BikeProperties.class
+            );
+            model.addAttribute("bikeProperties", p);
+            return "admin/editAdminBikeProperties";
+        } else {
+
+            return "redirect:/login";
+        }
+
+    }
+    
+    @PostMapping("/editAdminBikeProperties")
+    public String doeditAdminBikeProperties(Model model, @RequestParam("itemId") Long itemId, @Valid @ModelAttribute("bikeProperties") BikePropertiesDTO bikeProperties, BindingResult bindingResult) {
+
+        BikeProperties item = rt.getForObject(urlbikeproperties + "/" + bikeProperties.getBike_property_id(), BikeProperties.class);
+        bikeProperties.setCreated_dt(Date.from(Instant.now()));
+
+        BikeProperties newBikeProperties = new BikeProperties(item.getBike_property_id(), item.getItem(), bikeProperties.getBike_size(), bikeProperties.getBike_wheel_size(), bikeProperties.getBike_color(), bikeProperties.getBike_brake_type(), bikeProperties.getBike_material(), item.getCreated_dt());
+        model.addAttribute("BikeProperties", rt.postForEntity(urlbikeproperties, newBikeProperties, BikeProperties.class));
+        return "redirect:/indexAdminItems";
+
     }
 
     @GetMapping("/editAdminItems/{id}")
@@ -526,51 +582,68 @@ public class HomeController {
     }
 
     @PostMapping("/saveAdminItems")
-    public String doedit(Model model, @Valid
-            @ModelAttribute("items") ItemsDTO item, BindingResult bindingResult) throws IOException {
-        Items items = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class
-        );
+    public String doedit(Model model, @Valid @ModelAttribute("items") ItemsDTO item, BindingResult bindingResult) throws IOException {
+        Items items = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class);
 
         if (bindingResult.hasErrors()) {
-            Items p = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class
-            );
+            Items p = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class);
             model.addAttribute("items", item);
             return "admin/editAdminItems";
         } else {
-
             MultipartFile multipartFile = item.getImage();
             String fileName = multipartFile.getOriginalFilename();
             item.setCreated_dt(items.getCreated_dt());
 
-            if (item.getImage().isEmpty()) {
+            if (!multipartFile.isEmpty()) {
+                // Check if the uploaded file is an image
+                String contentType = multipartFile.getContentType();
+                if (contentType == null || !contentType.startsWith("image/")) {
+                    model.addAttribute("fileError", "The uploaded file is not an image.");
+                    return "admin/editAdminItems";
+                }
+            }
+
+            if (multipartFile.isEmpty()) {
                 String file = items.getImage();
                 Items editItems = new Items(item.getItem_id(), item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), file, item.isIs_visible(), item.getCreated_dt());
-                model
-                        .addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class
-                        ));
+                model.addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class));
                 return "redirect:/indexAdminItems";
-
             } else {
-                FileCopyUtils.copy(item.getImage().getBytes(), new File(FileUpload, fileName));
+                FileCopyUtils.copy(multipartFile.getBytes(), new File(FileUpload, fileName));
                 Items editItems = new Items(item.getItem_id(), item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), fileName, item.isIs_visible(), item.getCreated_dt());
-                model
-                        .addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class
-                        ));
+                model.addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class));
                 return "redirect:/indexAdminItems";
             }
         }
     }
 
     @GetMapping("/deleteAdminItems/{id}")
-    public String delete(Model model, @PathVariable String id, HttpSession session) {
+    public String delete(Model model, @PathVariable Integer id, HttpSession session) {
         if (session.getAttribute("admin") != null) {
-            rt.delete(urlitems + "/" + id, Items.class
-            );
-            return "redirect:/indexAdminItems";
+            BikeProperties p = rt.getForObject(urlbikeproperties + "/item/" + id, BikeProperties.class);
+
+            // Change this line to handle a list of OrderItems
+            OrderItems[] orderItemsArray = rt.getForObject(urlorderitems + "/items/" + id, OrderItems[].class);
+
+            if (orderItemsArray == null || orderItemsArray.length == 0) {
+                if(p == null){
+                    rt.delete(urlitems + "/" + id, Items.class);
+                return "redirect:/indexAdminItems";
+                }else{
+                    rt.delete(urlbikeproperties + "/" + p.getBike_property_id());
+                rt.delete(urlitems + "/" + id, Items.class);
+                return "redirect:/indexAdminItems";
+                }
+                
+            } else {
+                List<Items> f = rt.getForObject(urlitems + "/", List.class);
+                model.addAttribute("error", "Products that have been sold cannot be deleted");
+                model.addAttribute("list", f);
+                return "admin/itemsAdmin";
+            }
         } else {
             return "redirect:/login";
         }
-
     }
 
     @GetMapping("/searchAdminItems")
@@ -612,7 +685,8 @@ public class HomeController {
     }
 
     @GetMapping("/indexAdminUsers")
-    public String indexAdminUsers(Model model, HttpSession session) {
+    public String
+            indexAdminUsers(Model model, HttpSession session) {
 //            @RequestParam(defaultValue = "0") int pageNumber,
 //            @RequestParam(defaultValue = "5") int pageSize
         if (session.getAttribute("admin") != null) {
@@ -648,12 +722,14 @@ public class HomeController {
             return "redirect:/login";
         }
     }
-    
+
     @GetMapping("/indexAdminOrders")
-    public String indexAdminOrders(Model model, HttpSession session) {
+    public String
+            indexAdminOrders(Model model, HttpSession session) {
         if (session.getAttribute("admin") != null) {
 
-            List<Items> p = rt.getForObject(urlorders + "/", List.class);
+            List<Items> p = rt.getForObject(urlorders + "/", List.class
+            );
 
             model.addAttribute("list", p);
 
@@ -667,7 +743,8 @@ public class HomeController {
     @ResponseBody
     public ResponseEntity<Integer> addToCart(@PathVariable int itemId, @PathVariable int quantity, HttpSession session) {
         // Retrieve item details from API or database
-        CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class);
+        CartItems item = rt.getForObject(urlitems + "/" + itemId, CartItems.class
+        );
 
         // Retrieve cart from session
         List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
@@ -808,8 +885,10 @@ public class HomeController {
         }
 
         Users users;
+
         try {
-            users = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            users = rt.getForObject(urlusers + "/findemail/" + email, Users.class
+            );
         } catch (Exception e) {
             model.addAttribute("message", "Failed to retrieve user details.");
             return "user/checkout";
@@ -834,12 +913,16 @@ public class HomeController {
         order.setCreated_dt(new Date());
 
         Orders savedOrder;
-        savedOrder = rt.postForObject(urlorders, order, Orders.class);
+        savedOrder
+                = rt.postForObject(urlorders, order, Orders.class
+                );
 
         List<OrderItems> orderItems = new ArrayList<>();
+
         for (CartItems cartItem : cartItems) {
             try {
-                Items items = rt.getForObject(urlitems + "/" + cartItem.getItem_id(), Items.class);
+                Items items = rt.getForObject(urlitems + "/" + cartItem.getItem_id(), Items.class
+                );
                 OrderItems orderItem = new OrderItems();
                 orderItem.setOrders(savedOrder);
                 orderItem.setItem(items);
@@ -847,7 +930,8 @@ public class HomeController {
                 orderItem.setPrice(cartItem.getPrice().multiply(BigDecimal.valueOf(cartItem.getTotalQuantity())));
                 orderItem.setCreated_dt(new Date());
 
-                OrderItems savedOrderItem = rt.postForObject(urlorderitems, orderItem, OrderItems.class);
+                OrderItems savedOrderItem = rt.postForObject(urlorderitems, orderItem, OrderItems.class
+                );
                 orderItems.add(savedOrderItem);
             } catch (Exception e) {
                 model.addAttribute("message", "Failed to save order item for " + cartItem.getItem_id());
@@ -870,7 +954,9 @@ public class HomeController {
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(parts, headers);
 
-        rt.postForEntity(urlorders + "/sendbillmail", requestEntity, Void.class);
+        rt
+                .postForEntity(urlorders + "/sendbillmail", requestEntity, Void.class
+                );
 
         model.addAttribute("message", "Your order has been placed successfully.");
         return "user/checkout";
@@ -881,10 +967,12 @@ public class HomeController {
         String email = (String) session.getAttribute("user");
         if (email == null) {
             return "redirect:/login";
+
         }
 
         try {
-            Users users = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            Users users = rt.getForObject(urlusers + "/findemail/" + email, Users.class
+            );
 
             ResponseEntity<List<Orders>> responseEntity = rt.exchange(
                     urlorders + "/users/" + users.getUser_id(),
@@ -910,11 +998,11 @@ public class HomeController {
             model.addAttribute("orders", orders);
             model.addAttribute("orderItemsMap", orderItemsMap);
             if (session.getAttribute("countcartItems") != null) {
-            int count = (int) session.getAttribute("countcartItems");
-            model.addAttribute("countcartItems", count);
-        } else {
-            model.addAttribute("countcartItems", 0);
-        }
+                int count = (int) session.getAttribute("countcartItems");
+                model.addAttribute("countcartItems", count);
+            } else {
+                model.addAttribute("countcartItems", 0);
+            }
             return "user/informationLine";
 
         } catch (RestClientException e) {
@@ -936,21 +1024,81 @@ public class HomeController {
     }
 
     @GetMapping("/shop")
-    public String shop(Model model, HttpSession session, @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "9") int pageSize) {
+    public String shop(Model model, HttpSession session,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "9") int pageSize,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "brand", required = false) String brand,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
+            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
+            @RequestParam(value = "bikeSize", required = false) String bikeSize,
+            @RequestParam(value = "bikeWheelSize", required = false) String bikeWheelSize,
+            @RequestParam(value = "bikeColor", required = false) String bikeColor,
+            @RequestParam(value = "bikeMaterial", required = false) String bikeMaterial,
+            @RequestParam(value = "bikeBrakeType", required = false) String bikeBrakeType) {
+
+        String filterUrl = urlitems + "/filter?pageNumber=" + pageNumber + "&pageSize=" + pageSize;
+        String showfilterUrl = urlitems + "/showfilter?name=" + (name != null ? name : "");
+
+        if (name != null) {
+            filterUrl += "&name=" + name;
+        }
+        if (brand != null) {
+            filterUrl += "&brand=" + brand;
+            showfilterUrl += "&brand=" + brand;
+        }
+        if (type != null) {
+            filterUrl += "&type=" + type;
+            showfilterUrl += "&type=" + type;
+        }
+        if (minPrice != null) {
+            filterUrl += "&minPrice=" + minPrice;
+            showfilterUrl += "&minPrice=" + minPrice;
+        }
+        if (maxPrice != null) {
+            filterUrl += "&maxPrice=" + maxPrice;
+            showfilterUrl += "&maxPrice=" + maxPrice;
+        }
+        if (bikeSize != null) {
+            filterUrl += "&bikeSize=" + bikeSize;
+            showfilterUrl += "&bikeSize=" + bikeSize;
+        }
+        if (bikeWheelSize != null) {
+            filterUrl += "&bikeWheelSize=" + bikeWheelSize;
+            showfilterUrl += "&bikeWheelSize=" + bikeWheelSize;
+        }
+        if (bikeColor != null) {
+            filterUrl += "&bikeColor=" + bikeColor;
+            showfilterUrl += "&bikeColor=" + bikeColor;
+        }
+        if (bikeMaterial != null) {
+            filterUrl += "&bikeMaterial=" + bikeMaterial;
+            showfilterUrl += "&bikeMaterial=" + bikeMaterial;
+        }
+        if (bikeBrakeType != null) {
+            filterUrl += "&bikeBrakeType=" + bikeBrakeType;
+            showfilterUrl += "&bikeBrakeType=" + bikeBrakeType;
+        }
+
         ResponseEntity<List<Items>> response = rt.exchange(
-                urlitems + "/item" + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
+                filterUrl,
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<List<Items>>() {
-        }
-        );
-        List<Items> p = rt.getForObject(urlitems + "/", List.class
-        );
+        });
 
         List<Items> itemList = response.getBody();
 
-        int totalItems = p.size(); // Ensure totalItems is calculated correctly
+        ResponseEntity<List<Items>> allItemsResponse = rt.exchange(
+                urlitems,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<Items>>() {
+        });
+
+        List<Items> allItems = rt.getForObject(showfilterUrl, List.class);
+        int totalItems = allItems.size();
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
 
         if (session.getAttribute("countcartItems") != null) {
@@ -964,6 +1112,17 @@ public class HomeController {
         model.addAttribute("currentPage", pageNumber);
         model.addAttribute("pageSize", pageSize);
         model.addAttribute("totalPages", totalPages);
+
+        model.addAttribute("name", name);
+        model.addAttribute("brand", brand);
+        model.addAttribute("type", type);
+        model.addAttribute("minPrice", minPrice);
+        model.addAttribute("maxPrice", maxPrice);
+        model.addAttribute("bikeSize", bikeSize);
+        model.addAttribute("bikeWheelSize", bikeWheelSize);
+        model.addAttribute("bikeColor", bikeColor);
+        model.addAttribute("bikeMaterial", bikeMaterial);
+        model.addAttribute("bikeBrakeType", bikeBrakeType);
 
         return "user/shop";
     }
@@ -1001,8 +1160,7 @@ public class HomeController {
             model.addAttribute("name", name);
             return "user/shop";
         } else {
-            // Call index method if name is empty or null
-            return shop(model, session, pageNumber, pageSize);
+            return "redirect:/shop";
         }
     }
 
@@ -1092,8 +1250,10 @@ public class HomeController {
         for (Map.Entry<Integer, Integer> entry : quantityMap.entrySet()) {
             int itemId = entry.getKey();
             int quantity = entry.getValue();
+
             if (quantity > 0) {
-                CartItems newItem = rt.getForObject(urlitems + "/" + itemId, CartItems.class);
+                CartItems newItem = rt.getForObject(urlitems + "/" + itemId, CartItems.class
+                );
                 newItem.setTotalQuantity(quantity);
                 updatedCartItems.add(newItem);
                 totalPrice = totalPrice.add(newItem.getPrice().multiply(BigDecimal.valueOf(quantity)));

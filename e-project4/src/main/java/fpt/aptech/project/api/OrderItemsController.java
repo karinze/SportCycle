@@ -5,6 +5,7 @@
 package fpt.aptech.project.api;
 
 import fpt.aptech.project.entities.BikeRentals;
+import fpt.aptech.project.entities.Items;
 import fpt.aptech.project.entities.OrderItems;
 import fpt.aptech.project.entities.Orders;
 import fpt.aptech.project.inteface.IBikeRentalsService;
@@ -66,5 +67,11 @@ public class OrderItemsController {
     @ResponseStatus(HttpStatus.OK)
     public List<OrderItems> list(Orders orders) {
         return service.findbyorderitemsid(orders);
+    }
+    
+    @GetMapping("/items/{itemId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<OrderItems> list(@PathVariable Integer itemId) {
+        return service.findbyitemitemsid(itemId);
     }
 }

@@ -57,7 +57,7 @@
                 <hr class="sidebar-divider my-0">
 
                 <!-- Nav Item - Dashboard -->
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" th:href="@{/dashboard}">
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Dashboard</span></a>
@@ -86,7 +86,7 @@
                 </li>
 
                 <!-- Nav Item - Items -->
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link" th:href="@{/indexAdminItems}">
                         <i class="fas fa-fw fa-table"></i>
                         <span>Items</span></a>
@@ -324,7 +324,7 @@
                     <!-- Begin Page Content -->
                     <div class="container-fluid">
 
-                        
+
                         <!-- DataTales Example -->
                         <div class="card shadow mb-4">
                             <div class="card-header py-3 d-flex justify-content-between align-items-center">
@@ -333,6 +333,7 @@
                                     <a class="btn btn-warning mt-2" th:href="@{/createAdminItems}">Add new</a>
                                 </div>
                             </div>
+                            <p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
@@ -341,7 +342,6 @@
                                                 <th>#Id</th>
                                                 <th>Name</th>
                                                 <th>Brand</th>
-                                                <th>Description</th>
                                                 <th>Price</th>
                                                 <th>Stock</th>
                                                 <th>Type</th>
@@ -355,7 +355,6 @@
                                                 <th>#Id</th>
                                                 <th>Name</th>
                                                 <th>Brand</th>
-                                                <th>Description</th>
                                                 <th>Price</th>
                                                 <th>Stock</th>
                                                 <th>Type</th>
@@ -364,20 +363,19 @@
                                                 <th>Actions</th>
                                             </tr>
                                         </tfoot>
-                                        <tbody>
-                                            <tr th:each="f : ${list}">
-                                                <td th:text="${f.item_id}"></td>
+                                        <tbody th:with="counter=${#numbers.sequence(1, list.size())}">
+                                            <tr th:each="f, iterStat : ${list}">
+                                                <td th:text="${counter[iterStat.index]}"></td>
                                                 <td th:text="${f.name}"></td>
                                                 <td th:text="${f.brand}"></td>
-                                                <td th:text="${f.description}"></td>
-                                                <td th:id="'price-' + ${f.item_id}" th:text="'$'+${f.price}"></td>
+                                                <td th:text="${f.price.intValue()} + ' $'"></td>
                                                 <td th:text="${f.stock}"></td>
                                                 <td th:text="${f.type}"></td>
                                                 <td><img th:src="@{'/images/'+${f.image}}" width="100" height="auto"/></td>
                                                 <td th:text="${f.created_dt}"></td>
                                                 <td>
                                                     <a th:href="@{/editAdminItems/{id}(id=${f.item_id})}" class="btn btn-info">Edit</a>
-                                                    <a th:href="@{/deleteAdminItems/{id}(id=${f.item_id})}" class="btn btn-danger">Delete</a>
+                                                    <a th:href="@{/deleteAdminItems/{id}(id=${f.item_id})}" onclick="confirmDeletion(event)" class="btn btn-danger">Delete</a>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -433,6 +431,14 @@
             </div>
         </div>
 
+        <script>
+            function confirmDeletion(event) {
+                if (!confirm('Are you sure to delete?')) {
+                    event.preventDefault();
+                }
+            }
+
+        </script>
         <!-- Bootstrap core JavaScript-->
         <script th:src="@{/vendor/jquery/jquery.min.js}"></script>
         <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>

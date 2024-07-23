@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import fpt.aptech.project.inteface.IItemService;
+import java.math.BigDecimal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +35,7 @@ public class ItemController {
     @Autowired
     IItemService service;
 
-    @GetMapping("")
+    @GetMapping()
     @ResponseStatus(HttpStatus.OK)
     public List<Items> list() {
         return service.findAll();
@@ -48,8 +49,8 @@ public class ItemController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void post(@RequestBody Items newItem) {
-        service.createItem(newItem);
+    public Items post(@RequestBody Items newItem) {
+        return service.createItem(newItem);
     }
 
     @PutMapping
@@ -68,10 +69,8 @@ public class ItemController {
     @ResponseStatus(HttpStatus.OK)
     public List<Items> list(@RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
-        // Ensure pageNumber and pageSize are not null
         int validPageNumber = (pageNumber != null) ? pageNumber : 0;
         int validPageSize = (pageSize != null) ? pageSize : 5;
-
         return service.page(validPageNumber, validPageSize);
     }
 
@@ -79,10 +78,8 @@ public class ItemController {
     @ResponseStatus(HttpStatus.OK)
     public List<Items> search(@PathVariable("name") String name, @RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
-        // Ensure pageNumber and pageSize are not null
         int validPageNumber = (pageNumber != null) ? pageNumber : 0;
         int validPageSize = (pageSize != null) ? pageSize : 5;
-
         return service.searchpage(name, validPageNumber, validPageSize);
     }
 
@@ -100,5 +97,59 @@ public class ItemController {
         // Ensure pageNumber and pageSize are not null
 
         return service.searchbyid(id);
+    }
+
+    @GetMapping("/filter")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Items> filter(@RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "brand", required = false) String brand,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
+            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
+            @RequestParam(value = "bikeSize", required = false) String bikeSize,
+            @RequestParam(value = "bikeWheelSize", required = false) String bikeWheelSize,
+            @RequestParam(value = "bikeColor", required = false) String bikeColor,
+            @RequestParam(value = "bikeMaterial", required = false) String bikeMaterial,
+            @RequestParam(value = "bikeBrakeType", required = false) String bikeBrakeType,
+            @RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
+        int validPageNumber = (pageNumber != null) ? pageNumber : 0;
+        int validPageSize = (pageSize != null) ? pageSize : 5;
+        return service.filterItems(name, brand,type ,minPrice, maxPrice, bikeSize, bikeWheelSize, bikeColor, bikeMaterial, bikeBrakeType, validPageNumber, validPageSize);
+    }
+
+    public List<Items> searchByType(String type, String name, String brand, int pageNumber, int pageSize) {
+        if ("Bike".equalsIgnoreCase(type)) {
+            return service.filterItems(name, brand, type,null, null, null, null, null, null, null, pageNumber, pageSize);
+        } else if ("Accessory".equalsIgnoreCase(type)) {
+            return service.searchpage(name, pageNumber, pageSize);
+        } else {
+            throw new IllegalArgumentException("Invalid type: " + type);
+        }
+    }
+    
+    @GetMapping("/showfilter")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Items> showfilter(@RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "brand", required = false) String brand,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
+            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
+            @RequestParam(value = "bikeSize", required = false) String bikeSize,
+            @RequestParam(value = "bikeWheelSize", required = false) String bikeWheelSize,
+            @RequestParam(value = "bikeColor", required = false) String bikeColor,
+            @RequestParam(value = "bikeMaterial", required = false) String bikeMaterial,
+            @RequestParam(value = "bikeBrakeType", required = false) String bikeBrakeType) {
+        return service.searchItems(name, brand,type ,minPrice, maxPrice, bikeSize, bikeWheelSize, bikeColor, bikeMaterial, bikeBrakeType);
+    }
+
+    public List<Items> searchByType(String type, String name, String brand) {
+        if ("Bike".equalsIgnoreCase(type)) {
+            return service.searchItems(name, brand, type,null, null, null, null, null, null, null);
+        } else if ("Accessory".equalsIgnoreCase(type)) {
+            return service.search(name);
+        } else {
+            throw new IllegalArgumentException("Invalid type: " + type);
+        }
     }
 }

@@ -4,6 +4,7 @@
  */
 package fpt.aptech.project.inteface;
 
+import fpt.aptech.project.entities.Items;
 import fpt.aptech.project.entities.OrderItems;
 import fpt.aptech.project.entities.Orders;
 import java.util.List;
@@ -24,4 +25,6 @@ public interface IOrderItemsService {
     public void deleteOrderItems(int orderItemsId);
     
     public List<OrderItems> findbyorderitemsid(Orders orders);
+    
+    public List<OrderItems> findbyitemitemsid(int item);
 }

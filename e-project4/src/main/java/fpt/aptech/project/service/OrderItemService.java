@@ -4,10 +4,13 @@
  */
 package fpt.aptech.project.service;
 
+import fpt.aptech.project.entities.Items;
 import fpt.aptech.project.entities.OrderItems;
 import fpt.aptech.project.entities.Orders;
 import fpt.aptech.project.inteface.IOrderItemsService;
+import fpt.aptech.project.repository.ItemRepository;
 import fpt.aptech.project.repository.OrderItemsRepository;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,9 @@ import org.springframework.stereotype.Service;
 public class OrderItemService implements IOrderItemsService{
     @Autowired
     OrderItemsRepository orderItemsRepository;
+    
+    @Autowired
+    ItemRepository itemRepository;
     
     @Override
     public List<OrderItems> findAll() {
@@ -49,6 +55,15 @@ public class OrderItemService implements IOrderItemsService{
     @Override
     public List<OrderItems> findbyorderitemsid(Orders orders) {
         return orderItemsRepository.searchByOrderItemsid(orders);
+    }
+
+    @Override
+    public List<OrderItems> findbyitemitemsid(int itemId) {
+        Items item = itemRepository.findById(itemId).orElse(null);
+        if (item == null) {
+            return new ArrayList<>(); // Return an empty list if no item found
+        }
+        return orderItemsRepository.searchByItemsid(item);
     }
     
 }

@@ -22,4 +22,6 @@ public interface IBikePropertiesService {
     public void updateBikeProperties(BikeProperties bikeProperties);
 
     public void deleteBikeProperties(int bikePropertiesId);
+    
+    public BikeProperties findByItemId(int itemId);
 }
