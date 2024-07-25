@@ -148,7 +148,7 @@
                             <h5 class="mb-0">ORDER</h5>
                             <form th:if="${order.status == 'Pending'}" th:action="@{/CancelOrderlast}" th:object="${order}" method="post" class="form-inline">
                                 <input type="hidden" th:field="*{order_id}" />
-                                <input type="hidden" th:field="*{status}" value="Cancel" />
+                                <input type="hidden" id="status" name="status" value="Cancel" />
                                 <button type="submit" class="btn btn-danger btn-sm">Cancel Order</button>
                             </form>
                         </div>

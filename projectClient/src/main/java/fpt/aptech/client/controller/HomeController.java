@@ -680,6 +680,20 @@ public class HomeController {
         }
     }
 
+    @GetMapping("/indexAdminRentals")
+    public String indexAdminRentals(Model model, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+
+            List<Items> p = rt.getForObject(urlbikerentals + "/", List.class);
+
+            model.addAttribute("list", p);
+
+            return "admin/rentalsAdmin";
+        } else {
+            return "redirect:/login";
+        }
+    }
+    
     @PostMapping("/editAdminOrders")
     public String editAdminOrders(Model model, @Valid @ModelAttribute("order") OrdersDTO order, BindingResult bindingResult, HttpSession session) {
         if (session.getAttribute("admin") != null) {
@@ -700,6 +714,24 @@ public class HomeController {
 
         Orders o = new Orders(orders.getOrder_id(), orders.getUsers(), orders.getTotal_amount(), orders.getOrder_date(), order.getStatus(), orders.getCreated_dt());
         rt.postForEntity(urlorders, o, Orders.class);
+        OrderItems[] orderItems = rt.getForObject(urlorderitems + "/order/" + order.getOrder_id(), OrderItems[].class);
+
+        // Loop through each order item to update the stock
+        for (OrderItems orderItem : orderItems) {
+            Items items = rt.getForObject(urlitems + "/" + orderItem.getItem().getItem_id(), Items.class);
+
+            // Update the stock
+            int newStock = items.getStock() + orderItem.getQuantity();
+            items.setStock(newStock);
+
+            // Set visibility based on the new stock
+            if (newStock > 0) {
+                items.setIs_visible(true);
+            }
+            Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), newStock, items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
+            // Update the item details
+            rt.postForObject(urlitems + "/", item, Items.class);
+        }
 
         return "redirect:/latestOrder";
     }
@@ -710,6 +742,24 @@ public class HomeController {
 
         Orders o = new Orders(orders.getOrder_id(), orders.getUsers(), orders.getTotal_amount(), orders.getOrder_date(), order.getStatus(), orders.getCreated_dt());
         rt.postForEntity(urlorders, o, Orders.class);
+        OrderItems[] orderItems = rt.getForObject(urlorderitems + "/order/" + order.getOrder_id(), OrderItems[].class);
+
+        // Loop through each order item to update the stock
+        for (OrderItems orderItem : orderItems) {
+            Items items = rt.getForObject(urlitems + "/" + orderItem.getItem().getItem_id(), Items.class);
+
+            // Update the stock
+            int newStock = items.getStock() + orderItem.getQuantity();
+            items.setStock(newStock);
+
+            // Set visibility based on the new stock
+            if (newStock > 0) {
+                items.setIs_visible(true);
+            }
+            Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), newStock, items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
+            // Update the item details
+            rt.postForObject(urlitems + "/", item, Items.class);
+        }
 
         return "redirect:/informationLine";
     }
@@ -789,7 +839,7 @@ public class HomeController {
         model.addAttribute("account", new Users());
         return "user/about";
     }
-    
+
 //    @GetMapping("/rentals")
 //    public String rentals(Model model, HttpSession session) {
 //        String email = (String) session.getAttribute("user");
@@ -803,7 +853,6 @@ public class HomeController {
 //        model.addAttribute("rentals", rentals);
 //        return "user/rentals";
 //    }
-
     @GetMapping("/rentals")
     public String rentals(@RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "2") int pageSize,
@@ -817,8 +866,8 @@ public class HomeController {
         Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
         // Fetch the rentals and total count separately
         List<BikeRentals> rentalsPage = rt.getForObject(
-                urlbikerentals + "/userpage/" + user.getUser_id() + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize
-                ,List.class);
+                urlbikerentals + "/userpage/" + user.getUser_id() + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
+                List.class);
 
         List<BikeRentals> totalItems = rt.getForObject(urlbikerentals + "/user/" + user.getUser_id(), List.class);
         int totalRentals = totalItems.size();
@@ -830,7 +879,7 @@ public class HomeController {
         model.addAttribute("totalPages", totalPages);
         return "user/rentals";
     }
-    
+
     @GetMapping("/forrent")
     public String forrent(@RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "2") int pageSize,
@@ -844,8 +893,8 @@ public class HomeController {
         Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
         // Fetch the rentals and total count separately
         List<BikeRentals> rentalsPage = rt.getForObject(
-                urlbikerentals + "/userpages/" + user.getUser_id() + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize
-                ,List.class);
+                urlbikerentals + "/userpages/" + user.getUser_id() + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
+                List.class);
 
         List<BikeRentals> totalItems = rt.getForObject(urlbikerentals + "/users/" + user.getUser_id(), List.class);
         int totalRentals = totalItems.size();
@@ -857,7 +906,6 @@ public class HomeController {
         model.addAttribute("totalPages", totalPages);
         return "user/forrent";
     }
-
 
     @PostMapping("/rentBicycle")
     public String rentBicycle(@RequestParam("itemId") int itemId, @RequestParam("rentalHours") int rentalHours, HttpSession session, Model model) {
@@ -1053,8 +1101,14 @@ public class HomeController {
                 orderItem.setPrice(cartItem.getPrice().multiply(BigDecimal.valueOf(cartItem.getTotalQuantity())));
                 orderItem.setCreated_dt(new Date());
 
-                OrderItems savedOrderItem = rt.postForObject(urlorderitems, orderItem, OrderItems.class
-                );
+                OrderItems savedOrderItem = rt.postForObject(urlorderitems, orderItem, OrderItems.class);
+
+                int sub = items.getStock() - cartItem.getTotalQuantity();
+                if (sub <= 0) {
+                    items.setIs_visible(false);
+                }
+                Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), sub, items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
+                rt.postForObject(urlitems + "/", item, Items.class);
                 orderItems.add(savedOrderItem);
             } catch (Exception e) {
                 model.addAttribute("message", "Failed to save order item for " + cartItem.getItem_id());
@@ -1116,12 +1170,13 @@ public class HomeController {
                 }
                 ).getBody();
                 orderItemsMap.put(order.getOrder_id(), items);
+                model.addAttribute("oorder", order);
             }
 
             model.addAttribute("currentPage", pageNumber);
             model.addAttribute("pageSize", pageSize);
             model.addAttribute("totalPages", totalPages);
-            model.addAttribute("oorder", new Orders());
+            
             model.addAttribute("orders", orders);
             model.addAttribute("orderItemsMap", orderItemsMap);
             if (session.getAttribute("countcartItems") != null) {

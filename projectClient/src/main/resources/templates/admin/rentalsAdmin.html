@@ -92,17 +92,18 @@
                         <span>Items</span></a>
                 </li>
 
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" th:href="@{/indexAdminOrders}">
                         <i class="fas fa-fw fa-table"></i>
                         <span>Orders</span></a>
                 </li>
-
-                <li class="nav-item">
+                
+                <li class="nav-item active">
                     <a class="nav-link" th:href="@{/indexAdminRentals}">
                         <i class="fas fa-fw fa-table"></i>
                         <span>Rentals</span></a>
                 </li>
+
                 <!-- Divider -->
                 <hr class="sidebar-divider d-none d-md-block">
 
@@ -331,12 +332,12 @@
                     <div class="container-fluid">
 
                         <!-- Page Heading -->
-
+                        
                         <!-- DataTales Example -->
                         <div class="card shadow mb-4">
                             <div class="card-header py-3 d-flex justify-content-between align-items-center">
                                 <h6 class="m-0 font-weight-bold text-primary">Orders List</h6>
-
+                                
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -344,33 +345,31 @@
                                         <thead>
                                             <tr>
                                                 <th>Id</th>
-                                                <th>Email</th>
-                                                <th>Total Amount</th>
-                                                <th>Order Date</th>
-                                                <th>Status</th>
-                                                <th>Action</th>
+                                                <th>Item</th>
+                                                <th>User</th>
+                                                <th>Rental Start Date</th>
+                                                <th>Rental Start Date</th>
+                                                <th>Active</th>
                                             </tr>
                                         </thead>
                                         <tfoot>
                                             <tr>
                                                 <th>Id</th>
-                                                <th>Email</th>
-                                                <th>Total Amount</th>
-                                                <th>Order Date</th>
-                                                <th>Status</th>
-                                                <th>Action</th>
+                                                <th>Item</th>
+                                                <th>User</th>
+                                                <th>Rental Start Date</th>
+                                                <th>Rental Start Date</th>
+                                                <th>Active</th>
                                             </tr>
                                         </tfoot>
                                         <tbody th:with="counter=${#numbers.sequence(1, list.size())}">
                                             <tr th:each="f, iterStat : ${list}">
                                                 <td th:text="${counter[iterStat.index]}"></td>
+                                                <td th:text="${f.item.name}"></td>
                                                 <td th:text="${f.users.email}"></td>
-                                                <td th:text="${f.total_amount}"></td>
-                                                <td th:text="${f.order_date}"></td>
-                                                <td th:text="${f.status}"></td>
-                                                <td>
-                                                    <a th:href="@{/viewAdminOrder/{id}(id=${f.order_id})}" class="btn btn-primary">View Order Detail</a>
-                                                </td>
+                                                <td th:text="${f.rental_start_date}"></td>
+                                                <td th:text="${f.rental_end_date}"></td>
+                                                <td th:text="${f.is_active ? 'Active' : 'Inactive'}"></td>
                                             </tr>
                                         </tbody>
                                     </table>

@@ -152,7 +152,7 @@
 
             <div class="container">
                 <h1 class="my-4">My Rentals</h1>
-                
+
                 <div th:if="${rentals.isEmpty()}">
                     <div class="alert alert-warning" role="alert">
                         No rentals found.
@@ -160,19 +160,19 @@
                 </div>
                 <div th:each="rental : ${rentals}"> 
                     <div th:if="${!rentals.isEmpty()}" class="card-header d-flex justify-content-between align-items-center" style="background-color: #7971ea; color: white;">
-                    <h5 class="mb-0">RENTAL</h5>
-                </div>
-                <div class="rental card p-3" th:data-start-time="${rental.rental_start_date}" th:data-end-time="${rental.rental_end_date}" th:data-rental-id="${rental.bike_rental_id}">
-                    <p><strong style="color: #000">Bicycle:</strong> <span th:text="${rental.item.name}"></span></p>
-                    <p><strong style="color: #000">Rental Start Date:</strong> <span th:id="'start-time-' + ${rental.bike_rental_id}"></span></p>
-                    <p><strong style="color: #000">Rental End Date:</strong> <span th:id="'end-time-' + ${rental.bike_rental_id}"></span></p>
-                    <p><strong style="color: #000">Status:</strong> <span th:text="${rental.is_active ? 'Active' : 'Inactive'}"></span></p>
-                    <div th:if="${rental.is_active}">
-                        <p><strong style="color: #000">Time Remaining:</strong> <span th:id="'countdown-' + ${rental.bike_rental_id}"></span></p>
+                        <h5 class="mb-0">RENTAL</h5>
+                    </div>
+                    <div class="rental card p-3" th:data-start-time="${rental.rental_start_date}" th:data-end-time="${rental.rental_end_date}" th:data-rental-id="${rental.bike_rental_id}">
+                        <p><strong style="color: #000">Bicycle:</strong> <span th:text="${rental.item.name}"></span></p>
+                        <p><strong style="color: #000">Rental Start Date:</strong> <span th:id="'start-time-' + ${rental.bike_rental_id}"></span></p>
+                        <p><strong style="color: #000">Rental End Date:</strong> <span th:id="'end-time-' + ${rental.bike_rental_id}"></span></p>
+                        <p><strong style="color: #000">Status:</strong> <span th:text="${rental.is_active ? 'Active' : 'Inactive'}" th:id="'status-' + ${rental.bike_rental_id}"></span></p>
+                        <div th:if="${rental.is_active}">
+                            <p><strong style="color: #000">Time Remaining:</strong> <span th:id="'countdown-' + ${rental.bike_rental_id}"></span></p>
+                        </div>
                     </div>
                 </div>
-                </div>
-                
+
 
                 <div>
                     <nav aria-label="Page navigation" th:if="${totalPages > 1}">
@@ -286,15 +286,8 @@
                     if (distance < 0) {
                         clearInterval(x);
                         document.getElementById(`countdown-${rentalId}`).innerHTML = "Rental period is over.";
-                        const xhr = new XMLHttpRequest();
-                        xhr.open("POST", "/endRental", true);
-                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                        xhr.onreadystatechange = function () {
-                            if (xhr.readyState === 4 && xhr.status === 200) {
-                                console.log("Rental ended and stock updated");
-                            }
-                        };
-                        xhr.send("rentalId=" + rentalId);
+                        document.getElementById(`status-${rentalId}`).innerHTML = "Inactive";
+                        endRental(rentalId);
                     } else {
                         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -302,6 +295,23 @@
                         document.getElementById(`countdown-${rentalId}`).innerHTML = `${hours}h ${minutes}m ${seconds}s`;
                     }
                 }, 1000);
+            }
+
+            function endRental(rentalId) {
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "/endRental", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        console.log("Rental ended and stock updated");
+                    }
+                };
+                xhr.send("rentalId=" + rentalId);
+            }
+
+            function formatDate(dateString) {
+                const options = {year: 'numeric', month: 'long', day: 'numeric'};
+                return new Date(dateString).toLocaleDateString(undefined, options);
             }
 
             window.onload = function () {

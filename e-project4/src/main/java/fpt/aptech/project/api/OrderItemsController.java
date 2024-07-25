@@ -74,4 +74,5 @@ public class OrderItemsController {
     public List<OrderItems> list(@PathVariable Integer itemId) {
         return service.findbyitemitemsid(itemId);
     }
+    
 }
