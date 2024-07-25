@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
     <head>
@@ -19,9 +20,6 @@
 
         <link rel="stylesheet" th:href="@{/css/style.css}">
         <style>
-            .logout :hover{
-                color: #7971ea;
-            }
             .site-block-top-search {
                 display: flex;
                 align-items: center;
@@ -29,8 +27,18 @@
             .site-block-top-search .form-control {
                 flex-grow: 1;
             }
+            .rental {
+                margin-bottom: 20px;
+            }
+            .pagination {
+                justify-content: center;
+            }
+            .nav-links {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 20px;
+            }
         </style>
-
     </head>
     <body>
 
@@ -89,31 +97,31 @@
                     <div class="container">
                         <ul class="site-menu js-clone-nav d-none d-md-block">
                             <li>
-                                <a class="active" th:href="@{/}">Home</a>
-<!--                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                    <li class="has-children">
-                                        <a href="#">Sub Menu</a>
-                                        <ul class="dropdown">
-                                            <li><a href="#">Menu One</a></li>
-                                            <li><a href="#">Menu Two</a></li>
-                                            <li><a href="#">Menu Three</a></li>
-                                        </ul>
-                                    </li>
-                                </ul>-->
+                                <a th:href="@{/}">Home</a>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                    <li class="has-children">
+                                                                        <a href="#">Sub Menu</a>
+                                                                        <ul class="dropdown">
+                                                                            <li><a href="#">Menu One</a></li>
+                                                                            <li><a href="#">Menu Two</a></li>
+                                                                            <li><a href="#">Menu Three</a></li>
+                                                                        </ul>
+                                                                    </li>
+                                                                </ul>-->
                             </li>
                             <li >
-                                <a  th:href="@{/about}">About</a>
-<!--                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                </ul>-->
+                                <a th:href="@{/about}">About</a>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                </ul>-->
                             </li>
                             <li><a th:href="@{/shop}">Shop</a></li>
-                            <li class="has-children" th:if="${session.user != null}">
+                            <li class="has-children active" th:if="${session.user != null}">
                                 <a href="#">Rentals</a>
                                 <ul class="dropdown">
                                     <li><a th:href="@{/rentals}">My Rentals</a></li>
@@ -127,152 +135,67 @@
                                     <li><a th:href="@{/latestOrder}">Latest Order</a></li>
                                 </ul>
                             </li>
-                            
-                            <li><a  th:href="@{/contact}">Contact</a></li>
+                            <li><a th:href="@{/contact}">Contact</a></li>
                         </ul>
                     </div>
                 </nav>
             </header>
 
-            <div class="site-blocks-cover" style="background-image: url(/images/temp/hero_1.png); background-color:aquamarine; background-size: contain; background-position: 20px center;"  data-aos="fade">
-                <div class="container">
-                    <div class="row align-items-start align-items-md-center justify-content-end">
-                        <div class="col-md-4 text-center text-md-left pt-5 pt-md-0">
-                            <h1 class="mb-2">Finding Your Perfect Shoes</h1>
-                            <div class="intro-text text-center text-md-left">
-                                <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at iaculis quam. Integer accumsan tincidunt fringilla. </p>
-                                <p>
-                                    <a href="@{/shop}" class="btn btn-sm btn-primary">Shop Now</a>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="site-section site-section-sm site-blocks-1">
+            <div class="bg-light py-3">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-6 col-lg-4 d-lg-flex mb-4 mb-lg-0 pl-4" data-aos="fade-up" data-aos-delay="">
-                            <div class="icon mr-4 align-self-start">
-                                <span class="icon-truck"></span>
-                            </div>
-                            <div class="text">
-                                <h2 class="text-uppercase">Free Shipping</h2>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at iaculis quam. Integer accumsan tincidunt fringilla.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 d-lg-flex mb-4 mb-lg-0 pl-4" data-aos="fade-up" data-aos-delay="100">
-                            <div class="icon mr-4 align-self-start">
-                                <span class="icon-refresh2"></span>
-                            </div>
-                            <div class="text">
-                                <h2 class="text-uppercase">Free Returns</h2>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at iaculis quam. Integer accumsan tincidunt fringilla.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 d-lg-flex mb-4 mb-lg-0 pl-4" data-aos="fade-up" data-aos-delay="200">
-                            <div class="icon mr-4 align-self-start">
-                                <span class="icon-help"></span>
-                            </div>
-                            <div class="text">
-                                <h2 class="text-uppercase">Customer Support</h2>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at iaculis quam. Integer accumsan tincidunt fringilla.</p>
-                            </div>
-                        </div>
+                        <div class="col-md-12 mb-0"><a th:href="@{/}">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Rentals</strong></div>
                     </div>
+                </div>
+            </div>  
+
+
+            <div class="container">
+                <h1 class="my-4">My Rentals</h1>
+                
+                <div th:if="${rentals.isEmpty()}">
+                    <div class="alert alert-warning" role="alert">
+                        No rentals found.
+                    </div>
+                </div>
+                <div th:each="rental : ${rentals}"> 
+                    <div th:if="${!rentals.isEmpty()}" class="card-header d-flex justify-content-between align-items-center" style="background-color: #7971ea; color: white;">
+                    <h5 class="mb-0">RENTAL</h5>
+                </div>
+                <div class="rental card p-3" th:data-start-time="${rental.rental_start_date}" th:data-end-time="${rental.rental_end_date}" th:data-rental-id="${rental.bike_rental_id}">
+                    <p><strong style="color: #000">Bicycle:</strong> <span th:text="${rental.item.name}"></span></p>
+                    <p><strong style="color: #000">Rental Start Date:</strong> <span th:id="'start-time-' + ${rental.bike_rental_id}"></span></p>
+                    <p><strong style="color: #000">Rental End Date:</strong> <span th:id="'end-time-' + ${rental.bike_rental_id}"></span></p>
+                    <p><strong style="color: #000">Status:</strong> <span th:text="${rental.is_active ? 'Active' : 'Inactive'}"></span></p>
+                    <div th:if="${rental.is_active}">
+                        <p><strong style="color: #000">Time Remaining:</strong> <span th:id="'countdown-' + ${rental.bike_rental_id}"></span></p>
+                    </div>
+                </div>
+                </div>
+                
+
+                <div>
+                    <nav aria-label="Page navigation" th:if="${totalPages > 1}">
+                        <ul class="pagination">
+                            <li th:classappend="${currentPage == 0} ? 'disabled'">
+                                <a class="page-link" th:href="@{'/rentals?pageNumber=' + (${currentPage} - 1) + '&pageSize=' + ${pageSize}}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}" class="page-item" th:classappend="${page == currentPage} ? 'active'">
+                                <a class="page-link" th:href="@{'/rentals?pageNumber=' + ${page} + '&pageSize=' + ${pageSize}}" th:text="${page + 1}">1</a>
+                            </li>
+                            <li th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{'/rentals?pageNumber=' + (${currentPage} + 1) + '&pageSize=' + ${pageSize}}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
 
-            <div class="site-section site-blocks-2">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-sm-6 col-md-6 col-lg-4 mb-4 mb-lg-0" data-aos="fade" data-aos-delay="">
-                            <a class="block-2-item" href="#">
-                                <figure class="image">
-                                    <img src="images/women.jpg" alt="" class="img-fluid">
-                                </figure>
-                                <div class="text">
-                                    <span class="text-uppercase">Collections</span>
-                                    <h3>Women</h3>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-6 col-md-6 col-lg-4 mb-5 mb-lg-0" data-aos="fade" data-aos-delay="100">
-                            <a class="block-2-item" href="#">
-                                <figure class="image">
-                                    <img src="images/children.jpg" alt="" class="img-fluid">
-                                </figure>
-                                <div class="text">
-                                    <span class="text-uppercase">Collections</span>
-                                    <h3>Children</h3>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-sm-6 col-md-6 col-lg-4 mb-5 mb-lg-0" data-aos="fade" data-aos-delay="200">
-                            <a class="block-2-item" href="#">
-                                <figure class="image">
-                                    <img src="images/men.jpg" alt="" class="img-fluid">
-                                </figure>
-                                <div class="text">
-                                    <span class="text-uppercase">Collections</span>
-                                    <h3>Men</h3>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="site-section block-3 site-blocks-2 bg-light">
-                <div class="container">
-                    <div class="row justify-content-center">
-                        <div class="col-md-7 site-section-heading text-center pt-4">
-                            <h2>New Products</h2>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="nonloop-block-3 owl-carousel">
-                                <div class="item" th:each="f : ${top10}">
-                                    <div class="block-4 text-center">
-                                        <figure class="block-4-image">
-                                            <img th:src="@{'/images/' + ${f.image}}" alt="Image placeholder" class="img-fluid">
-                                        </figure>
-                                        <div class="block-4-text p-4">
-                                            <h3><a th:href="@{/shopdetail/{id}(id=${f.item_id})}" th:text="${f.name}"></a></h3>
-                                            <p class="mb-0" th:text="${f.brand}"></p>
-                                            <p class="text-primary font-weight-bold" th:text="${f.price.intValue()} + ' $'"></p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="site-section block-8">
-                <div class="container">
-                    <div class="row justify-content-center  mb-5">
-                        <div class="col-md-7 site-section-heading text-center pt-4">
-                            <h2>Big Sale!</h2>
-                        </div>
-                    </div>
-                    <div class="row align-items-center">
-                        <div class="col-md-12 col-lg-7 mb-5">
-                            <a href="#"><img src="images/temp/big.jpg" alt="Image placeholder" class="img-fluid rounded"></a>
-                        </div>
-                        <div class="col-md-12 col-lg-5 text-center pl-md-5">
-                            <h2><a href="#">50% less in all items</a></h2>
-                            <p class="post-meta mb-4">By <a href="#">Carl Smith</a> <span class="block-8-sep">&bullet;</span> September 3, 2018</p>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quisquam iste dolor accusantium facere corporis ipsum animi deleniti fugiat. Ex, veniam?</p>
-                            <p><a href="@{/shop}" class="btn btn-primary btn-sm">Shop Now</a></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <footer class="site-footer border-top">
                 <div class="container">
@@ -314,7 +237,7 @@
                                 <h3 class="footer-heading mb-4">Contact Info</h3>
                                 <ul class="list-unstyled">
                                     <li class="address">203 Fake St. Mountain View, San Francisco, California, USA</li>
-                                    <li class="phone"><a>+2 392 3929 210</a></li>
+                                    <li class="phone"><a >+2 392 3929 210</a></li>
                                     <li class="email">emailaddress@domain.com</li>
                                 </ul>
                             </div>
@@ -343,7 +266,59 @@
                 </div>
             </footer>
         </div>
+        <script>
+            function formatDate(dateStr) {
+                const date = new Date(dateStr);
+                const year = date.getFullYear();
+                const month = ('0' + (date.getMonth() + 1)).slice(-2);
+                const day = ('0' + date.getDate()).slice(-2);
+                const hours = ('0' + date.getHours()).slice(-2);
+                const minutes = ('0' + date.getMinutes()).slice(-2);
+                const seconds = ('0' + date.getSeconds()).slice(-2);
+                return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            }
 
+            function startCountdown(endTime, rentalId) {
+                const end = new Date(endTime).getTime();
+                const x = setInterval(function () {
+                    const now = new Date().getTime();
+                    const distance = end - now;
+                    if (distance < 0) {
+                        clearInterval(x);
+                        document.getElementById(`countdown-${rentalId}`).innerHTML = "Rental period is over.";
+                        const xhr = new XMLHttpRequest();
+                        xhr.open("POST", "/endRental", true);
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                        xhr.onreadystatechange = function () {
+                            if (xhr.readyState === 4 && xhr.status === 200) {
+                                console.log("Rental ended and stock updated");
+                            }
+                        };
+                        xhr.send("rentalId=" + rentalId);
+                    } else {
+                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                        document.getElementById(`countdown-${rentalId}`).innerHTML = `${hours}h ${minutes}m ${seconds}s`;
+                    }
+                }, 1000);
+            }
+
+            window.onload = function () {
+                document.querySelectorAll('.rental').forEach(function (rental) {
+                    const endTime = rental.dataset.endTime;
+                    const rentalId = rental.dataset.rentalId;
+                    if (endTime && rentalId) {
+                        startCountdown(endTime, rentalId);
+                    }
+                    const startTime = rental.dataset.startTime;
+                    const endTimeFormatted = formatDate(endTime);
+                    const startTimeFormatted = formatDate(startTime);
+                    document.getElementById(`start-time-${rentalId}`).innerText = startTimeFormatted;
+                    document.getElementById(`end-time-${rentalId}`).innerText = endTimeFormatted;
+                });
+            }
+        </script>
         <script src="js/jquery-3.3.1.min.js"></script>
         <script src="js/jquery-ui.js"></script>
         <script src="js/popper.min.js"></script>

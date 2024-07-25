@@ -4,16 +4,21 @@
  */
 package fpt.aptech.project.service;
 
+import fpt.aptech.project.entities.Items;
 import fpt.aptech.project.entities.OrderItems;
 import fpt.aptech.project.inteface.IOrderService;
 import fpt.aptech.project.entities.Orders;
 import fpt.aptech.project.entities.Users;
 import fpt.aptech.project.repository.OrderRepository;
+import fpt.aptech.project.repository.UserRepository;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -28,6 +33,9 @@ public class OrderService implements IOrderService {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    UserRepository userRepository;
 
     final JavaMailSender javaMailSender;
 
@@ -54,25 +62,34 @@ public class OrderService implements IOrderService {
     public void sendBillMail(Users users, Orders order, List<OrderItems> orderItems) {
         try {
             StringBuilder billContent = new StringBuilder();
-            billContent.append("<html><body>")
-                    .append("<h3>Dear ").append(users.getUsername()).append(",</h3>")
+            billContent.append("<html><body style='font-family: Arial, sans-serif; color: #333;'>")
+                    .append("<h3 style='color: #4CAF50;'>Dear ").append(users.getUsername()).append(",</h3>")
                     .append("<p>Thank you for your order. Here are the details:</p>")
                     .append("<p><strong>Order ID:</strong> ").append(order.getOrder_id()).append("</p>")
                     .append("<p><strong>Order Date:</strong> ").append(order.getOrder_date()).append("</p>")
-                    .append("<p><strong>Total Amount:</strong> ").append(order.getTotal_amount()).append("</p>")
-                    .append("<h4>Items:</h4>")
-                    .append("<ul>");
+                    .append("<p><strong>Total Amount:</strong> $").append(order.getTotal_amount()).append("</p>")
+                    .append("<h4 style='color: #4CAF50;'>Items:</h4>")
+                    .append("<table style='width: 100%; border-collapse: collapse;'>")
+                    .append("<thead>")
+                    .append("<tr style='background-color: #f2f2f2;'>")
+                    .append("<th style='border: 1px solid #ddd; padding: 8px;'>Item</th>")
+                    .append("<th style='border: 1px solid #ddd; padding: 8px;'>Quantity</th>")
+                    .append("<th style='border: 1px solid #ddd; padding: 8px;'>Price</th>")
+                    .append("</tr>")
+                    .append("</thead>")
+                    .append("<tbody>");
 
             for (OrderItems item : orderItems) {
-                billContent.append("<li>")
-                        .append(item.getItem().getName())
-                        .append(" x ").append(item.getQuantity())
-                        .append(": ").append(item.getPrice())
-                        .append("</li>");
+                billContent.append("<tr>")
+                        .append("<td style='border: 1px solid #ddd; padding: 8px;'>").append(item.getItem().getName()).append("</td>")
+                        .append("<td style='border: 1px solid #ddd; padding: 8px; text-align: center;'>").append(item.getQuantity()).append("</td>")
+                        .append("<td style='border: 1px solid #ddd; padding: 8px; text-align: right;'>$").append(item.getPrice()).append("</td>")
+                        .append("</tr>");
             }
 
-            billContent.append("</ul>")
-                    .append("<p>Best regards,<br>XYZ Team</p>")
+            billContent.append("</tbody>")
+                    .append("</table>")
+                    .append("<p style='margin-top: 20px;'>Best regards,<br>XYZ Team</p>")
                     .append("</body></html>");
 
             MimeMessage message = javaMailSender.createMimeMessage();
@@ -95,6 +112,24 @@ public class OrderService implements IOrderService {
     @Override
     public List<Orders> findAll() {
         return orderRepository.findAll();
+    }
+
+    @Override
+    public List<Orders> page(Users users, int pageNumber, int pageSize) {
+        try {
+            int validatedPageSize = (pageSize < 1) ? 5 : pageSize;
+            Pageable pageable = PageRequest.of(pageNumber, validatedPageSize);
+            Page<Orders> pageItems = this.orderRepository.searchOrderByUserId(users.getUser_id(), pageable);
+            return pageItems.getContent();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException("Failed to fetch paginated items: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public Users findUser(UUID uuid) {
+        return userRepository.findById(uuid).get();
     }
 
 }

@@ -32,9 +32,9 @@
             .site-block-top-search .form-control {
                 flex-grow: 1;
             }
-            
+
         </style>
-        
+
 
     </head>
     <body>
@@ -93,57 +93,70 @@
                 <nav class="site-navigation text-right text-md-center" role="navigation">
                     <div class="container">
                         <ul class="site-menu js-clone-nav d-none d-md-block">
-                            <li class="has-children active">
+                            <li>
                                 <a th:href="@{/}">Home</a>
-                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                    <li class="has-children">
-                                        <a href="#">Sub Menu</a>
-                                        <ul class="dropdown">
-                                            <li><a href="#">Menu One</a></li>
-                                            <li><a href="#">Menu Two</a></li>
-                                            <li><a href="#">Menu Three</a></li>
-                                        </ul>
-                                    </li>
-                                </ul>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                    <li class="has-children">
+                                                                        <a href="#">Sub Menu</a>
+                                                                        <ul class="dropdown">
+                                                                            <li><a href="#">Menu One</a></li>
+                                                                            <li><a href="#">Menu Two</a></li>
+                                                                            <li><a href="#">Menu Three</a></li>
+                                                                        </ul>
+                                                                    </li>
+                                                                </ul>-->
                             </li>
-                            <li class="has-children">
-                                <a th:href="@{/about}">About</a>
-                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                </ul>
+                            <li >
+                                <a  th:href="@{/about}">About</a>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                </ul>-->
                             </li>
                             <li><a th:href="@{/shop}">Shop</a></li>
-                            <li th:if="${session.user != null}"><a th:href="@{/informationLine}">Information Line</a></li>
-                            <li><a th:href="@{/contact}">Contact</a></li>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Rentals</a>
+                                <ul class="dropdown">
+                                    <li><a th:href="@{/rentals}">My Rentals</a></li>
+                                    <li><a th:href="@{/forrent}">For Rent</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-children active" th:if="${session.user != null}">
+                                <a href="#">Information Line</a>
+                                <ul class="dropdown">
+                                    <li><a th:href="@{/informationLine}">Order History</a></li>
+                                    <li><a th:href="@{/latestOrder}">Latest Order</a></li>
+                                </ul>
+                            </li>
+                            <li><a  th:href="@{/contact}">Contact</a></li>
                         </ul>
                     </div>
                 </nav>
             </header>
 
             <div class="container mt-5">
-                <h2 class="mb-4">Order Information</h2>
+                <h2 class="mb-4">Order History</h2>
                 <div th:if="${orders != null}">
                     <div class="accordion" id="orderAccordion">
-                        <div th:each="order, iterStat : ${orders}" class="card mb-2">
-                            <div class="card-header" th:id="'heading-' + ${iterStat.index}">
-                                <h5 class="mb-0">
-                                    <button class="btn btn-link" type="button" th:attr="data-toggle='collapse', data-target='#collapse-' + ${iterStat.index}, aria-expanded='false', aria-controls='collapse-' + ${iterStat.index}">
-                                        Order ID: <span th:text="${order.order_id}"></span>
-                                    </button>
-                                </h5>
+                        <div th:each="order, iterStat : ${orders}" class="card mb-3 shadow-sm">
+                            <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #7971ea; color: white;">
+                                <h5 class="mb-0">ORDER</h5>
+                                <form th:if="${order.status == 'Pending'}" th:action="@{/CancelOrder}" th:object="${oorder}" method="post" class="form-inline">
+                                    <input type="hidden" th:field="*{order_id}" />
+                                    <input type="hidden" th:field="*{status}" value="Cancel" />
+                                    <button type="submit" class="btn btn-danger btn-sm">Cancel Order</button>
+                                </form>
                             </div>
-
-                            <div th:id="'collapse-' + ${iterStat.index}" class="collapse" th:classappend="${iterStat.index == 0} ? 'show'" th:attr="aria-labelledby='heading-' + ${iterStat.index}" data-parent="#orderAccordion">
+                            <div th:id="'collapse-' + ${iterStat.index}" class="collapse" th:classappend="${iterStat.index == 0} ? 'show'"
+                                 th:attr="aria-labelledby='heading-' + ${iterStat.index}" data-parent="#orderAccordion">
                                 <div class="card-body">
                                     <p><strong>Order Date:</strong> <span th:text="${order.order_date}"></span></p>
                                     <p><strong>Order Status:</strong> <span th:text="${order.status}"></span></p>
-                                    <p><strong>Total Amount:</strong> $<span th:text="${order.total_amount}"></span></p>
-
+                                    <p><strong>Total Amount:</strong> <span th:text="${order.total_amount.intValue()} + ' $'"></span></p>
                                     <h4 class="mt-4">Order Items</h4>
                                     <table class="table table-bordered table-hover">
                                         <thead class="thead-light">
@@ -159,7 +172,7 @@
                                                 <td th:text="${item.order_item_id}"></td>
                                                 <td th:text="${item.item.name}"></td>
                                                 <td th:text="${item.quantity}"></td>
-                                                <td>$<span th:text="${item.price}"></span></td>
+                                                <td><span th:text="${item.price.intValue()} + ' $'"></span></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -172,6 +185,23 @@
                     <p>No orders found.</p>
                 </div>
             </div>
+            <nav aria-label="Page navigation" th:if="${totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/informationLine(pageNumber=${currentPage - 1}, pageSize=${pageSize})}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/informationLine(pageNumber=${i}, pageSize=${pageSize})}" th:text="${i + 1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                        <a class="page-link" th:href="@{/informationLine(pageNumber=${currentPage + 1}, pageSize=${pageSize})}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
 
             <!-- Information Line Section -->
 

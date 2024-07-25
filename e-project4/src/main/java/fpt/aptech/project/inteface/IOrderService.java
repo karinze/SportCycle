@@ -17,7 +17,9 @@ import java.util.UUID;
 public interface IOrderService {
     public List<Orders> findAll();
     public Orders createOrder(Orders orders);
+    public Users findUser(UUID uuid);
     public void sendBillMail(Users users, Orders order, List<OrderItems> orderItems);
     public Orders findOne(int orderId);
     public List<Orders> findUser(Users users);
+    public List<Orders> page(Users users,int pageNumber,int pageSize);
 }

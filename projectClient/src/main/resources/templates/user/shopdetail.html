@@ -27,6 +27,57 @@
             .site-block-top-search .form-control {
                 flex-grow: 1;
             }
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                padding-top: 100px;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgb(0,0,0);
+                background-color: rgba(0,0,0,0.4);
+            }
+
+            /* Modal Content/Box */
+            .modal-content {
+                background-color: #fefefe;
+                margin: auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+                max-width: 500px;
+                border-radius: 10px;
+            }
+
+            /* The Close Button */
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            .no-scroll {
+                overflow: hidden;
+                position: fixed;
+                width: 100%;
+            }
+
+            /* Responsive adjustments */
+            @media screen and (max-width: 600px) {
+                .modal-content {
+                    width: 90%;
+                }
+            }
         </style>
     </head>
     <body>
@@ -85,33 +136,46 @@
                 <nav class="site-navigation text-right text-md-center" role="navigation">
                     <div class="container">
                         <ul class="site-menu js-clone-nav d-none d-md-block">
-                            <li class="has-children">
+                            <li>
                                 <a th:href="@{/}">Home</a>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                    <li class="has-children">
+                                                                        <a href="#">Sub Menu</a>
+                                                                        <ul class="dropdown">
+                                                                            <li><a href="#">Menu One</a></li>
+                                                                            <li><a href="#">Menu Two</a></li>
+                                                                            <li><a href="#">Menu Three</a></li>
+                                                                        </ul>
+                                                                    </li>
+                                                                </ul>-->
+                            </li>
+                            <li >
+                                <a  th:href="@{/about}">About</a>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                </ul>-->
+                            </li>
+                            <li><a class="active" th:href="@{/shop}">Shop</a></li>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Rentals</a>
                                 <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                    <li class="has-children">
-                                        <a href="#">Sub Menu</a>
-                                        <ul class="dropdown">
-                                            <li><a href="#">Menu One</a></li>
-                                            <li><a href="#">Menu Two</a></li>
-                                            <li><a href="#">Menu Three</a></li>
-                                        </ul>
-                                    </li>
+                                    <li><a th:href="@{/rentals}">My Rentals</a></li>
+                                    <li><a th:href="@{/forrent}">For Rent</a></li>
                                 </ul>
                             </li>
-                            <li class="has-children">
-                                <a th:href="@{/about}">About</a>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Information Line</a>
                                 <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
+                                    <li><a th:href="@{/informationLine}">Order History</a></li>
+                                    <li><a th:href="@{/latestOrder}">Latest Order</a></li>
                                 </ul>
                             </li>
-                            <li class="has-children active"><a th:href="@{/shop}">Shop</a></li>
-                            <li th:if="${session.user != null}"><a th:href="@{/informationLine}">Information Line</a></li>
-                            <li><a th:href="@{/contact}">Contact</a></li>
+                            <li><a  th:href="@{/contact}">Contact</a></li>
                         </ul>
                     </div>
                 </nav>
@@ -120,7 +184,7 @@
             <div class="bg-light py-3">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-12 mb-0"><a th:href="@{/}">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Tank Top T-Shirt</strong></div>
+                        <div class="col-md-12 mb-0"><a th:href="@{/}">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black" th:text="${items.name}"></strong></div>
                     </div>
                 </div>
             </div>  
@@ -133,25 +197,23 @@
                         </div>
                         <div class="col-md-6">
                             <h2 class="text-black" th:text="${items.name}"></h2>
-                            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur, vitae, explicabo? Incidunt facere, natus soluta dolores iusto! Molestiae expedita veritatis nesciunt doloremque sint asperiores fuga voluptas, distinctio, aperiam, ratione dolore.</p>
-                            <p class="mb-4">Ex numquam veritatis debitis minima quo error quam eos dolorum quidem perferendis. Quos repellat dignissimos minus, eveniet nam voluptatibus molestias omnis reiciendis perspiciatis illum hic magni iste, velit aperiam quis.</p>
-                            <p><strong class="text-primary h4" th:text="${items.price}"></strong></p>
+
+
+                            <p class="mb-4">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Pariatur, vitae, explicabo? Incidunt facere, natus soluta dolores iusto! Molestiae expedita veritatis nesciunt doloremque sint asperiores fuga voluptas, distinctio, aperiam, ratione dolore.</p>
+                            <p th:text="${items.description}"></p>
+                            <p><strong style="color: #000">Brand:</strong> <span style="color: #777777" th:text="${items.brand}"></span></p>
+                            <p><strong style="color: #000">Available Stock:</strong> <span style="color: #777777" th:text="${items.stock}"></span></p>
+                            <div th:if="${bikeProperties.bike_size != null}">
+                                <p><strong style="color: #000">Wheel Size:</strong> <span style="color: #777777" th:text="${bikeProperties.bike_wheel_size}"></span></p>
+                                <p><strong style="color: #000">Material:</strong> <span style="color: #777777" th:text="${bikeProperties.bike_material}"></span></p>
+                                <p><strong style="color: #000">Brake Type:</strong> <span th:if="${bikeProperties.bike_brake_type == 'OilDiscBrakes'}" style="color: #777777">Oil Disc Brakes</span> <span th:if="${bikeProperties.bike_brake_type == 'MechanicalDiscBrakes'}" style="color: #777777">Mechanical Disc Brakes</span> <span th:if="${bikeProperties.bike_brake_type == 'GumBrake'}" style="color: #777777">Gum Brake</span></p>
+                            </div>
+                            <p><strong class="text-primary h3" th:text="${items.price.intValue()} + ' $'"></strong></p>
                             <div class="mb-1 d-flex">
-                                <label for="option-sm" class="d-flex mr-3 mb-3">
-                                    <span class="d-inline-block mr-2" style="top:-2px; position: relative;"><input type="radio" id="option-sm" name="shop-sizes"></span> <span class="d-inline-block text-black">Small</span>
-                                </label>
-                                <label for="option-md" class="d-flex mr-3 mb-3">
-                                    <span class="d-inline-block mr-2" style="top:-2px; position: relative;"><input type="radio" id="option-md" name="shop-sizes"></span> <span class="d-inline-block text-black">Medium</span>
-                                </label>
-                                <label for="option-lg" class="d-flex mr-3 mb-3">
-                                    <span class="d-inline-block mr-2" style="top:-2px; position: relative;"><input type="radio" id="option-lg" name="shop-sizes"></span> <span class="d-inline-block text-black">Large</span>
-                                </label>
-                                <label for="option-xl" class="d-flex mr-3 mb-3">
-                                    <span class="d-inline-block mr-2" style="top:-2px; position: relative;"><input type="radio" id="option-xl" name="shop-sizes"></span> <span class="d-inline-block text-black"> Extra Large</span>
-                                </label>
+                                <!-- Additional properties can be added here if needed -->
                             </div>
                             <div class="mb-5">
-                                <form class="add-to-cart-form" th:data-item-id="${items.item_id}">
+                                <form class="add-to-cart-form" th:data-item-id="${items.item_id}" th:data-stock="${items.stock}">
                                     <div class="input-group mb-3" style="max-width: 120px;">
                                         <div class="input-group-prepend">
                                             <button class="btn btn-outline-primary js-btn-minus" type="button">&minus;</button>
@@ -162,15 +224,14 @@
                                         </div>
                                     </div>
                                     <button type="button" class="buy-now btn btn-sm btn-primary" onclick="addToCart(this)">Add To Cart</button>
+                                    <button type="button" id="rentButton" style="background-color: darkblue; color: white" class="buy-now btn btn-sm btn-primary rent-now">Rent a Bicycle</button>
                                 </form>
                             </div>
-
-
-
                         </div>
                     </div>
                 </div>
             </div>
+
             <div id="messageArea" style="display: none"></div>
             <div class="site-section block-3 site-blocks-2 bg-light">
                 <div class="container">
@@ -190,7 +251,7 @@
                                         <div class="block-4-text p-4">
                                             <h3><a th:href="@{/shopdetail/{id}(id=${f.item_id})}" th:text="${f.name}"></a></h3>
                                             <p class="mb-0" th:text="${f.brand}"></p>
-                                            <p class="text-primary font-weight-bold" th:text="${f.price}"></p>
+                                            <p class="text-primary font-weight-bold" th:text="${f.price.intValue()} + ' $'"></p>
                                         </div>
                                     </div>
                                 </div>
@@ -200,6 +261,7 @@
                     </div>
                 </div>
             </div>
+
 
             <footer class="site-footer border-top">
                 <div class="container">
@@ -270,6 +332,20 @@
                 </div>
             </footer>
         </div>
+        <div id="rentModal" class="modal" style="margin-top: 10%">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Rent a Bicycle</h2>
+                <form th:action="@{/rentBicycle}" method="post">
+                    <input type="hidden" th:value="${items.item_id}" name="itemId" id="itemId">
+                    <label for="rentalHours">Select Rental Period (hours):</label>
+                    <select name="rentalHours" id="rentalHours" required>
+                        <option th:each="i : ${#numbers.sequence(1, 12)}" th:value="${i}" th:text="${i}"></option>
+                    </select>
+                    <button type="submit">Rent</button>
+                </form>
+            </div>
+        </div>
 
         <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
         <script th:src="@{/js/jquery-ui.js}"></script>
@@ -285,14 +361,22 @@
             function addToCart(button) {
                 var form = button.closest('form');
                 var itemId = form.getAttribute("data-item-id");
+                var stock = parseInt(form.getAttribute("data-stock"));
                 var quantityInput = form.querySelector('.item-quantity');
                 var quantity = parseInt(quantityInput.value);
 
                 console.log("Retrieved item ID:", itemId);
                 console.log("Retrieved quantity:", quantity);
+                console.log("Available stock:", stock);
 
                 if (!itemId || isNaN(itemId) || !quantity || isNaN(quantity) || quantity < 1) {
                     alert("Invalid item ID or quantity");
+                    return;
+                }
+
+                // Check if the requested quantity exceeds the available stock
+                if (quantity > stock) {
+                    alert("Cannot add more than the available stock");
                     return;
                 }
 
@@ -324,6 +408,34 @@
                 };
 
                 xhr.send();
+            }
+
+            var modal = document.getElementById("rentModal");
+
+            // Get the button that opens the modal
+            var btn = document.getElementById("rentButton");
+
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+
+            // When the user clicks the button, open the modal and prevent scrolling
+            btn.onclick = function () {
+                modal.style.display = "block";
+                document.body.classList.add("no-scroll"); // Add no-scroll class to body
+            }
+
+            // When the user clicks on <span> (x), close the modal and allow scrolling
+            span.onclick = function () {
+                modal.style.display = "none";
+                document.body.classList.remove("no-scroll"); // Remove no-scroll class from body
+            }
+
+            // When the user clicks anywhere outside of the modal, close it and allow scrolling
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                    document.body.classList.remove("no-scroll"); // Remove no-scroll class from body
+                }
             }
         </script>
     </body>

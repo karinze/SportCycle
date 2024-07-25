@@ -343,7 +343,7 @@
                                                 <th>Total Amount</th>
                                                 <th>Order Date</th>
                                                 <th>Status</th>
-                                                <th>Create_dt</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tfoot>
@@ -353,7 +353,7 @@
                                                 <th>Total Amount</th>
                                                 <th>Order Date</th>
                                                 <th>Status</th>
-                                                <th>Create_dt</th>
+                                                <th>Action</th>
                                             </tr>
                                         </tfoot>
                                         <tbody th:with="counter=${#numbers.sequence(1, list.size())}">
@@ -363,7 +363,9 @@
                                                 <td th:text="${f.total_amount}"></td>
                                                 <td th:text="${f.order_date}"></td>
                                                 <td th:text="${f.status}"></td>
-                                                <td th:text="${f.created_dt}"></td>
+                                                <td>
+                                                    <a th:href="@{/viewAdminOrder/{id}(id=${f.order_id})}" class="btn btn-primary">View Order Detail</a>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>

@@ -8,8 +8,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fpt.aptech.client.dto.BikePropertiesDTO;
 import fpt.aptech.client.dto.ItemsDTO;
+import fpt.aptech.client.dto.OrdersDTO;
 import fpt.aptech.client.dto.UsersDTO;
 import fpt.aptech.client.models.BikeProperties;
+import fpt.aptech.client.models.BikeRentals;
 import fpt.aptech.client.models.CartItems;
 import fpt.aptech.client.models.ExternalTokens;
 import fpt.aptech.client.models.Items;
@@ -24,6 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,6 +41,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -100,19 +107,6 @@ public class HomeController {
     private final String authUrl = "https://accounts.google.com/o/oauth2/v2/auth";
     private final String tokenUrl = "https://oauth2.googleapis.com/token";
     private final String userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
-
-    @Value("${facebook.client.id}")
-    private String facebookClientId;
-
-    @Value("${facebook.client.secret}")
-    private String facebookClientSecret;
-
-    @Value("${facebook.redirect.uri}")
-    private String facebookRedirectUri;
-
-    private final String facebookAuthUrl = "https://www.facebook.com/v12.0/dialog/oauth";
-    private final String facebookTokenUrl = "https://graph.facebook.com/v12.0/oauth/access_token";
-    private final String facebookUserInfoUrl = "https://graph.facebook.com/me?fields=id,name,email";
 
     // Start Login
     @GetMapping("/login")
@@ -199,72 +193,6 @@ public class HomeController {
         externalToken.setAccess_token(accessToken);
         externalToken.setRefresh_token(refreshToken);
         externalToken.setToken_expires(tokenExpires);
-        externalToken.setCreated_dt(new Date());
-        externalToken.setUsers(user);
-        restTemplate.postForEntity(urlexternaltoken, externalToken, ExternalTokens.class);
-
-        session.setAttribute("user", email);
-
-        return new ModelAndView("redirect:/");
-    }
-
-    @GetMapping("/loginFacebook")
-    public RedirectView loginFacebook() {
-        String url = String.format("%s?client_id=%s&redirect_uri=%s&response_type=code&scope=email,public_profile",
-                facebookAuthUrl, facebookClientId, facebookRedirectUri);
-        return new RedirectView(url);
-    }
-
-    @GetMapping("/oauth2/facebook/callback")
-    public ModelAndView facebookCallback(@RequestParam("code") String code, HttpSession session) throws IOException {
-        RestTemplate restTemplate = new RestTemplate();
-
-        // Exchange authorization code for access token
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        String body = String.format(
-                "client_id=%s&redirect_uri=%s&client_secret=%s&code=%s",
-                facebookClientId, facebookRedirectUri, facebookClientSecret, code);
-        HttpEntity<String> request = new HttpEntity<>(body, headers);
-        ResponseEntity<String> response = restTemplate.exchange(facebookTokenUrl, HttpMethod.POST, request, String.class);
-
-        // Extract access token from response
-        String responseBody = response.getBody();
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode responseJson = mapper.readTree(responseBody);
-        String accessToken = responseJson.get("access_token").asText();
-
-        // Fetch user info
-        String userInfo = restTemplate.getForObject(facebookUserInfoUrl + "&access_token=" + accessToken, String.class);
-        JsonNode userInfoJson = mapper.readTree(userInfo);
-        String email = userInfoJson.get("email").asText();
-        String username = userInfoJson.get("name").asText();
-
-        // Check if the user already exists
-        Users user = restTemplate.getForObject(urlusers + "/findemail/" + email, Users.class);
-        if (user == null) {
-            // Create new user if not found
-            user = new Users();
-            user.setUser_id(UUID.randomUUID());
-            user.setEmail(email);
-            user.setUsername(username);
-            user.setRole(false); // Set default role or based on logic
-            user.setCreated_dt(new Date());
-            restTemplate.postForEntity(urlusers, user, Users.class);
-        } else {
-            // Check if the user already has a valid token
-            ExternalTokens existingToken = restTemplate.getForObject(urlexternaltoken + "/findbyuser/" + user.getUser_id(), ExternalTokens.class);
-            if (existingToken != null && existingToken.getToken_expires().after(new Date())) {
-                // Token is still valid, set user in session and redirect
-                session.setAttribute("user", email);
-                return new ModelAndView("redirect:/");
-            }
-        }
-
-        // Save new access token and other details
-        ExternalTokens externalToken = new ExternalTokens();
-        externalToken.setAccess_token(accessToken);
-        externalToken.setToken_expires(null); // Facebook tokens do not expire
         externalToken.setCreated_dt(new Date());
         externalToken.setUsers(user);
         restTemplate.postForEntity(urlexternaltoken, externalToken, ExternalTokens.class);
@@ -540,7 +468,7 @@ public class HomeController {
         return "redirect:/indexAdminItems";
 
     }
-    
+
     @GetMapping("/editAdminBikeProperties/{id}")
     public String editAdminBikeProperties(Model model, @PathVariable String id, HttpSession session) {
         if (session.getAttribute("admin") != null) {
@@ -554,7 +482,7 @@ public class HomeController {
         }
 
     }
-    
+
     @PostMapping("/editAdminBikeProperties")
     public String doeditAdminBikeProperties(Model model, @RequestParam("itemId") Long itemId, @Valid @ModelAttribute("bikeProperties") BikePropertiesDTO bikeProperties, BindingResult bindingResult) {
 
@@ -618,7 +546,7 @@ public class HomeController {
     }
 
     @GetMapping("/deleteAdminItems/{id}")
-    public String delete(Model model, @PathVariable Integer id, HttpSession session) {
+    public String delete(Model model, @PathVariable Integer id, HttpSession session, RedirectAttributes redirectAttributes) {
         if (session.getAttribute("admin") != null) {
             BikeProperties p = rt.getForObject(urlbikeproperties + "/item/" + id, BikeProperties.class);
 
@@ -626,20 +554,18 @@ public class HomeController {
             OrderItems[] orderItemsArray = rt.getForObject(urlorderitems + "/items/" + id, OrderItems[].class);
 
             if (orderItemsArray == null || orderItemsArray.length == 0) {
-                if(p == null){
+                if (p == null) {
                     rt.delete(urlitems + "/" + id, Items.class);
-                return "redirect:/indexAdminItems";
-                }else{
+                    return "redirect:/indexAdminItems";
+                } else {
                     rt.delete(urlbikeproperties + "/" + p.getBike_property_id());
-                rt.delete(urlitems + "/" + id, Items.class);
-                return "redirect:/indexAdminItems";
+                    rt.delete(urlitems + "/" + id, Items.class);
+                    return "redirect:/indexAdminItems";
                 }
-                
+
             } else {
-                List<Items> f = rt.getForObject(urlitems + "/", List.class);
-                model.addAttribute("error", "Products that have been sold cannot be deleted");
-                model.addAttribute("list", f);
-                return "admin/itemsAdmin";
+                redirectAttributes.addFlashAttribute("error", "Products that have been sold cannot be deleted");
+                return "redirect:/indexAdminItems";
             }
         } else {
             return "redirect:/login";
@@ -739,6 +665,55 @@ public class HomeController {
         }
     }
 
+    @GetMapping("/viewAdminOrder/{id}")
+    public String viewOrderDetail(@PathVariable("id") int orderId, Model model, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+            Orders order = rt.getForObject(urlorders + "/" + orderId, Orders.class);
+            List<OrderItems> orderItems = rt.getForObject(urlorderitems + "/order/" + orderId, List.class);
+
+            model.addAttribute("order", order);
+            model.addAttribute("orderItems", orderItems);
+
+            return "admin/viewOrdersAdmin";
+        } else {
+            return "redirect:/login";
+        }
+    }
+
+    @PostMapping("/editAdminOrders")
+    public String editAdminOrders(Model model, @Valid @ModelAttribute("order") OrdersDTO order, BindingResult bindingResult, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+            Orders orders = rt.getForObject(urlorders + "/" + order.getOrder_id(), Orders.class);
+
+            Orders o = new Orders(orders.getOrder_id(), orders.getUsers(), orders.getTotal_amount(), orders.getOrder_date(), order.getStatus(), orders.getCreated_dt());
+            rt.postForEntity(urlorders, o, Orders.class);
+
+            return "redirect:/indexAdminOrders";
+        } else {
+            return "redirect:/login";
+        }
+    }
+
+    @PostMapping("/CancelOrderlast")
+    public String CancelOrderlast(Model model, @Valid @ModelAttribute("order") OrdersDTO order, BindingResult bindingResult, HttpSession session) {
+        Orders orders = rt.getForObject(urlorders + "/" + order.getOrder_id(), Orders.class);
+
+        Orders o = new Orders(orders.getOrder_id(), orders.getUsers(), orders.getTotal_amount(), orders.getOrder_date(), order.getStatus(), orders.getCreated_dt());
+        rt.postForEntity(urlorders, o, Orders.class);
+
+        return "redirect:/latestOrder";
+    }
+
+    @PostMapping("/CancelOrder")
+    public String CancelOrder(Model model, @Valid @ModelAttribute("oorder") OrdersDTO order, BindingResult bindingResult, HttpSession session) {
+        Orders orders = rt.getForObject(urlorders + "/" + order.getOrder_id(), Orders.class);
+
+        Orders o = new Orders(orders.getOrder_id(), orders.getUsers(), orders.getTotal_amount(), orders.getOrder_date(), order.getStatus(), orders.getCreated_dt());
+        rt.postForEntity(urlorders, o, Orders.class);
+
+        return "redirect:/informationLine";
+    }
+
     @PostMapping("/addToCart/{itemId}/{quantity}")
     @ResponseBody
     public ResponseEntity<Integer> addToCart(@PathVariable int itemId, @PathVariable int quantity, HttpSession session) {
@@ -814,6 +789,142 @@ public class HomeController {
         model.addAttribute("account", new Users());
         return "user/about";
     }
+    
+//    @GetMapping("/rentals")
+//    public String rentals(Model model, HttpSession session) {
+//        String email = (String) session.getAttribute("user");
+//        if (email == null) {
+//            return "redirect:/login";
+//        }
+//
+//        Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+//        List<BikeRentals> rentals = rt.getForObject(urlbikerentals + "/user/" + user.getUser_id(), List.class);
+//
+//        model.addAttribute("rentals", rentals);
+//        return "user/rentals";
+//    }
+
+    @GetMapping("/rentals")
+    public String rentals(@RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "2") int pageSize,
+            Model model,
+            HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if (email == null) {
+            return "redirect:/login";
+        }
+
+        Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+        // Fetch the rentals and total count separately
+        List<BikeRentals> rentalsPage = rt.getForObject(
+                urlbikerentals + "/userpage/" + user.getUser_id() + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize
+                ,List.class);
+
+        List<BikeRentals> totalItems = rt.getForObject(urlbikerentals + "/user/" + user.getUser_id(), List.class);
+        int totalRentals = totalItems.size();
+        int totalPages = (int) Math.ceil((double) totalRentals / pageSize);
+
+        model.addAttribute("rentals", rentalsPage);
+        model.addAttribute("pageSize", pageSize);
+        model.addAttribute("currentPage", pageNumber);
+        model.addAttribute("totalPages", totalPages);
+        return "user/rentals";
+    }
+    
+    @GetMapping("/forrent")
+    public String forrent(@RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "2") int pageSize,
+            Model model,
+            HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if (email == null) {
+            return "redirect:/login";
+        }
+
+        Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+        // Fetch the rentals and total count separately
+        List<BikeRentals> rentalsPage = rt.getForObject(
+                urlbikerentals + "/userpages/" + user.getUser_id() + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize
+                ,List.class);
+
+        List<BikeRentals> totalItems = rt.getForObject(urlbikerentals + "/users/" + user.getUser_id(), List.class);
+        int totalRentals = totalItems.size();
+        int totalPages = (int) Math.ceil((double) totalRentals / pageSize);
+
+        model.addAttribute("rentals", rentalsPage);
+        model.addAttribute("pageSize", pageSize);
+        model.addAttribute("currentPage", pageNumber);
+        model.addAttribute("totalPages", totalPages);
+        return "user/forrent";
+    }
+
+
+    @PostMapping("/rentBicycle")
+    public String rentBicycle(@RequestParam("itemId") int itemId, @RequestParam("rentalHours") int rentalHours, HttpSession session, Model model) {
+        String email = (String) session.getAttribute("user");
+        if (email == null) {
+            return "redirect:/login";
+        }
+
+        if (rentalHours < 1 || rentalHours > 12) {
+            model.addAttribute("error", "Rental period must be between 1 and 12 hours.");
+            return "redirect:/rentBicycle";
+        }
+
+        Items item = rt.getForObject(urlitems + "/" + itemId, Items.class);
+        Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+        if (item == null || item.getStock() <= 0) {
+            model.addAttribute("error", "Item is not available.");
+            return "redirect:/forrent";
+        }
+
+        BikeRentals bikeRental = new BikeRentals();
+        bikeRental.setItem(item);
+        bikeRental.setUsers(user);
+        Instant now = Instant.now();
+        bikeRental.setRental_start_date(Date.from(now));
+
+        // Compute the end date based on rental hours
+        Instant endInstant = now.plus(rentalHours, ChronoUnit.HOURS);
+        bikeRental.setRental_end_date(Date.from(endInstant));
+
+        bikeRental.setIs_active(true);
+        bikeRental.setCreated_dt(Date.from(now));
+
+        item.setStock(item.getStock() - 1);
+
+        Items it = new Items(itemId, item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), item.getImage(), item.isIs_visible(), item.getCreated_dt());
+        BikeRentals rentals = rt.postForObject(urlbikerentals + "/", bikeRental, BikeRentals.class);
+        Items i = rt.postForObject(urlitems + "/", it, Items.class);
+
+        return "redirect:/forrent";
+    }
+
+    @PostMapping("/endRental")
+    @ResponseBody
+    public ResponseEntity<String> endRental(@RequestParam("rentalId") int rentalId, HttpSession session) {
+        String email = (String) session.getAttribute("user");
+
+        BikeRentals rental = rt.getForObject(urlbikerentals + "/" + rentalId, BikeRentals.class);
+        if (rental == null) {
+            return ResponseEntity.badRequest().body("Rental not found");
+        }
+        if (!rental.isIs_active()) {
+            return ResponseEntity.badRequest().body("Rental is already inactive");
+        }
+
+        Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+        Items item = rental.getItem();
+        Items i = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class);
+        item.setStock(item.getStock() + 1);
+        rental.setIs_active(false);
+
+        Items it = new Items(item.getItem_id(), i.getName(), i.getBrand(), i.getDescription(), i.getPrice(), item.getStock(), i.getType(), i.getImage(), i.isIs_visible(), i.getCreated_dt());
+        rt.postForObject(urlitems + "/", it, Items.class);
+        rt.postForObject(urlbikerentals + "/", rental, BikeRentals.class);
+
+        return ResponseEntity.ok("Rental ended and stock updated");
+    }
 
     @GetMapping("/cart")
     public String cart(Model model, HttpSession session) {
@@ -861,6 +972,19 @@ public class HomeController {
     public String checkout(Model model, HttpSession session) {
         if (session.getAttribute("user") != null) {
 
+            List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
+            if (cartItems == null) {
+                cartItems = new ArrayList<>(); // Initialize empty list if null
+            }
+
+            BigDecimal totalPrice = BigDecimal.ZERO;
+            for (CartItems item : cartItems) {
+                totalPrice = totalPrice.add(item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())));
+            }
+
+            model.addAttribute("cartItems", cartItems);
+            model.addAttribute("totalPrice", totalPrice);
+
             if (session.getAttribute("countcartItems") != null) {
                 int count = (int) session.getAttribute("countcartItems");
                 model.addAttribute("countcartItems", count);
@@ -870,7 +994,6 @@ public class HomeController {
             model.addAttribute("account", new Users());
             return "user/checkout";
         } else {
-
             return "redirect:/login";
         }
 
@@ -954,34 +1077,34 @@ public class HomeController {
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(parts, headers);
 
-        rt
-                .postForEntity(urlorders + "/sendbillmail", requestEntity, Void.class
-                );
+        rt.postForEntity(urlorders + "/sendbillmail", requestEntity, Void.class);
 
-        model.addAttribute("message", "Your order has been placed successfully.");
-        return "user/checkout";
+        return "user/thankyou";
     }
 
     @GetMapping("/informationLine")
-    public String informationLine(Model model, HttpSession session) {
+    public String orderHistory(Model model, HttpSession session,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "1") int pageSize) {
         String email = (String) session.getAttribute("user");
         if (email == null) {
             return "redirect:/login";
-
         }
 
         try {
-            Users users = rt.getForObject(urlusers + "/findemail/" + email, Users.class
-            );
+            Users users = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            List<Orders> allOrders = rt.getForObject(urlorders + "/users/" + users.getUser_id(), List.class);
 
             ResponseEntity<List<Orders>> responseEntity = rt.exchange(
-                    urlorders + "/users/" + users.getUser_id(),
+                    urlorders + "/userpage/" + users.getUser_id() + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
                     HttpMethod.GET,
                     null,
                     new ParameterizedTypeReference<List<Orders>>() {
             }
             );
             List<Orders> orders = responseEntity.getBody();
+            int totalItems = allOrders.size();
+            int totalPages = (int) Math.ceil((double) totalItems / pageSize);
 
             Map<Integer, List<OrderItems>> orderItemsMap = new HashMap<>();
             for (Orders order : orders) {
@@ -995,6 +1118,10 @@ public class HomeController {
                 orderItemsMap.put(order.getOrder_id(), items);
             }
 
+            model.addAttribute("currentPage", pageNumber);
+            model.addAttribute("pageSize", pageSize);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("oorder", new Orders());
             model.addAttribute("orders", orders);
             model.addAttribute("orderItemsMap", orderItemsMap);
             if (session.getAttribute("countcartItems") != null) {
@@ -1008,6 +1135,62 @@ public class HomeController {
         } catch (RestClientException e) {
             model.addAttribute("message", "Failed to retrieve data: " + e.getMessage());
             return "user/informationLine";
+        }
+    }
+
+    @GetMapping("/latestOrder")
+    public String latestOrder(Model model, HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if (email == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            // Retrieve user details using email
+            Users users = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+
+            // Retrieve the orders for the user
+            ResponseEntity<List<Orders>> responseEntity = rt.exchange(
+                    urlorders + "/users/" + users.getUser_id(),
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Orders>>() {
+            }
+            );
+            List<Orders> orders = responseEntity.getBody();
+
+            // Ensure orders are sorted by date in descending order
+            if (orders != null && !orders.isEmpty()) {
+                orders.sort((o1, o2) -> o2.getOrder_date().compareTo(o1.getOrder_date())); // Replace 'getOrderDate()' with your date field getter method
+            }
+
+            Orders latestOrder = (orders == null || orders.isEmpty()) ? null : orders.get(0);
+
+            Map<Integer, List<OrderItems>> orderItemsMap = new HashMap<>();
+            if (latestOrder != null) {
+                List<OrderItems> items = rt.exchange(
+                        urlorderitems + "/order/" + latestOrder.getOrder_id(),
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<List<OrderItems>>() {
+                }
+                ).getBody();
+                orderItemsMap.put(latestOrder.getOrder_id(), items);
+            }
+
+            model.addAttribute("order", latestOrder);
+            model.addAttribute("orderItemsMap", orderItemsMap);
+            if (session.getAttribute("countcartItems") != null) {
+                int count = (int) session.getAttribute("countcartItems");
+                model.addAttribute("countcartItems", count);
+            } else {
+                model.addAttribute("countcartItems", 0);
+            }
+            return "user/latestOrder";
+
+        } catch (RestClientException e) {
+            model.addAttribute("message", "Failed to retrieve data: " + e.getMessage());
+            return "user/latestOrder";
         }
     }
 
@@ -1187,9 +1370,10 @@ public class HomeController {
         }
 
         model.addAttribute("top10", a);
-        Items items = rt.getForObject(urlitems + "/" + id, Items.class
-        );
+        Items items = rt.getForObject(urlitems + "/" + id, Items.class);
+        BikeProperties bikeProperties = rt.getForObject(urlbikeproperties + "/item/" + items.getItem_id(), BikeProperties.class);
         model.addAttribute("items", items);
+        model.addAttribute("bikeProperties", bikeProperties);
         return "user/shopdetail";
 
     }

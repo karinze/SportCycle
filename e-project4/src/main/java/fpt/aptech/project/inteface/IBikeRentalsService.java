@@ -6,7 +6,9 @@ package fpt.aptech.project.inteface;
 
 import fpt.aptech.project.entities.BikeProperties;
 import fpt.aptech.project.entities.BikeRentals;
+import fpt.aptech.project.entities.Users;
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 /**
  *
@@ -15,11 +17,21 @@ import java.util.List;
 public interface IBikeRentalsService {
     public List<BikeRentals> findAll();
 
-    public void createBikeRentals(BikeRentals bikeRentals);
+    public BikeRentals createBikeRentals(BikeRentals bikeRentals);
 
     public BikeRentals findOne(int bikeRentalsId);
 
     public void updateBikeRentals(BikeRentals bikeRentals);
 
     public void deleteBikeRentals(int bikeRentalsId);
+    
+    public List<BikeRentals> findUsers(Users users);
+    
+    public List<BikeRentals> pages(Users users,int pageNumber,int pageSize);
+    
+    public List<BikeRentals> findUser(Users users);
+    
+    public List<BikeRentals> page(Users users,int pageNumber,int pageSize);
+    
+    
 }

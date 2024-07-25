@@ -17,7 +17,7 @@ import lombok.*;
  */
 
 public class Users {
-    private UUID user_id;
+    public UUID user_id;
     public String username;
     public String password;
     public String email;

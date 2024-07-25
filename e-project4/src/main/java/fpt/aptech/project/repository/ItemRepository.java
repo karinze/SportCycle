@@ -41,7 +41,8 @@ public interface ItemRepository extends JpaRepository<Items, Integer> {
             + "(:bikeWheelSize IS NULL OR bp.bike_wheel_size LIKE %:bikeWheelSize%) AND "
             + "(:bikeColor IS NULL OR bp.bike_color LIKE %:bikeColor%) AND "
             + "(:bikeMaterial IS NULL OR bp.bike_material LIKE %:bikeMaterial%) AND "
-            + "(:bikeBrakeType IS NULL OR bp.bike_brake_type LIKE %:bikeBrakeType%)")
+            + "(:bikeBrakeType IS NULL OR bp.bike_brake_type LIKE %:bikeBrakeType%) AND "
+            + "i.is_visible = true")
     Page<Items> filterByBikeProperties(
             @Param("name") String name,
             @Param("brand") String brand,
@@ -54,7 +55,7 @@ public interface ItemRepository extends JpaRepository<Items, Integer> {
             @Param("bikeMaterial") String bikeMaterial,
             @Param("bikeBrakeType") String bikeBrakeType,
             Pageable pageable);
-    
+
     @Query("SELECT i FROM Items i WHERE i.price BETWEEN :minPrice AND :maxPrice")
     List<Items> searchByPrice(@Param("minPrice") BigDecimal minPrice, @Param("maxPrice") BigDecimal maxPrice);
 
@@ -68,7 +69,8 @@ public interface ItemRepository extends JpaRepository<Items, Integer> {
             + "(:bikeWheelSize IS NULL OR bp.bike_wheel_size LIKE %:bikeWheelSize%) AND "
             + "(:bikeColor IS NULL OR bp.bike_color LIKE %:bikeColor%) AND "
             + "(:bikeMaterial IS NULL OR bp.bike_material LIKE %:bikeMaterial%) AND "
-            + "(:bikeBrakeType IS NULL OR bp.bike_brake_type LIKE %:bikeBrakeType%)")
+            + "(:bikeBrakeType IS NULL OR bp.bike_brake_type LIKE %:bikeBrakeType%) AND "
+            + "i.is_visible = true")
     List<Items> searchByBikeProperties(
             @Param("name") String name,
             @Param("brand") String brand,
@@ -80,7 +82,6 @@ public interface ItemRepository extends JpaRepository<Items, Integer> {
             @Param("bikeColor") String bikeColor,
             @Param("bikeMaterial") String bikeMaterial,
             @Param("bikeBrakeType") String bikeBrakeType
-            );
+    );
 
-    
 }

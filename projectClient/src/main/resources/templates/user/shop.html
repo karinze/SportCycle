@@ -92,32 +92,45 @@
                 <nav class="site-navigation text-right text-md-center" role="navigation">
                     <div class="container">
                         <ul class="site-menu js-clone-nav d-none d-md-block">
-                            <li class="has-children">
+                            <li>
                                 <a th:href="@{/}">Home</a>
-                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                    <li class="has-children">
-                                        <a href="#">Sub Menu</a>
-                                        <ul class="dropdown">
-                                            <li><a href="#">Menu One</a></li>
-                                            <li><a href="#">Menu Two</a></li>
-                                            <li><a href="#">Menu Three</a></li>
-                                        </ul>
-                                    </li>
-                                </ul>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                    <li class="has-children">
+                                                                        <a href="#">Sub Menu</a>
+                                                                        <ul class="dropdown">
+                                                                            <li><a href="#">Menu One</a></li>
+                                                                            <li><a href="#">Menu Two</a></li>
+                                                                            <li><a href="#">Menu Three</a></li>
+                                                                        </ul>
+                                                                    </li>
+                                                                </ul>-->
                             </li>
-                            <li class="has-children">
+                            <li >
                                 <a th:href="@{/about}">About</a>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                </ul>-->
+                            </li>
+                            <li class="active"><a th:href="@{/shop}">Shop</a></li>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Rentals</a>
                                 <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
+                                    <li><a th:href="@{/rentals}">My Rentals</a></li>
+                                    <li><a th:href="@{/forrent}">For Rent</a></li>
                                 </ul>
                             </li>
-                            <li class="has-children active"><a th:href="@{/shop}">Shop</a></li>
-                            <li th:if="${session.user != null}"><a th:href="@{/informationLine}">Information Line</a></li>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Information Line</a>
+                                <ul class="dropdown">
+                                    <li><a th:href="@{/informationLine}">Order History</a></li>
+                                    <li><a th:href="@{/latestOrder}">Latest Order</a></li>
+                                </ul>
+                            </li>
                             <li><a th:href="@{/contact}">Contact</a></li>
                         </ul>
                     </div>
@@ -166,33 +179,41 @@
                                 <div class="col-md-12 text-center">
                                     <div class="site-block-27">
                                         <ul>
-                                            <li th:classappend="${currentPage == 0} ? ' disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
+                                            <!-- First page button -->
+                                            <li th:classappend="${currentPage == 0} ? 'disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
                                                 <a th:href="@{/shop(pageNumber=0, pageSize=${pageSize}, name=${name}, brand=${brand}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}">&lt;&lt;</a>
                                             </li>
-                                            <li th:classappend="${currentPage == 0} ? ' disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
+                                            <!-- Previous page button -->
+                                            <li th:classappend="${currentPage == 0} ? 'disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
                                                 <a th:href="@{/shop(pageNumber=${currentPage - 1}, pageSize=${pageSize}, name=${name}, brand=${brand}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}">&lt;</a>
                                             </li>
-                                            <li th:classappend="${currentPage > 2} ? ' page-item' : ' d-none'">
+                                            <!-- Ellipsis before the first page number -->
+                                            <li th:classappend="${currentPage > 2} ? 'page-item' : 'd-none'">
                                                 <span>...</span>
                                             </li>
+                                            <!-- Page numbers -->
                                             <th:block th:each="page : ${#numbers.sequence(math.max(0, currentPage - 2), math.min(totalPages - 1, currentPage + 2))}">
-                                                <li th:classappend="${page == currentPage} ? ' active'">
+                                                <li th:classappend="${page == currentPage} ? 'active'">
                                                     <a th:href="@{/shop(pageNumber=${page}, pageSize=${pageSize}, name=${name}, brand=${brand}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}" th:text="${page + 1}"></a>
                                                 </li>
                                             </th:block>
-                                            <li th:classappend="${currentPage < totalPages - 3} ? ' page-item' : ' d-none'">
+                                            <!-- Ellipsis after the last page number -->
+                                            <li th:classappend="${currentPage < totalPages - 3} ? 'page-item' : 'd-none'">
                                                 <span>...</span>
                                             </li>
-                                            <li th:classappend="${currentPage >= totalPages - 1} ? ' disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
+                                            <!-- Next page button -->
+                                            <li th:classappend="${currentPage >= totalPages - 1} ? 'disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
                                                 <a th:href="@{/shop(pageNumber=${currentPage + 1}, pageSize=${pageSize}, name=${name}, brand=${brand}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}">&gt;</a>
                                             </li>
-                                            <li th:classappend="${currentPage >= totalPages - 1} ? ' disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
+                                            <!-- Last page button -->
+                                            <li th:classappend="${currentPage >= totalPages - 1} ? 'disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
                                                 <a th:href="@{/shop(pageNumber=${totalPages - 1}, pageSize=${pageSize}, name=${name}, brand=${brand}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}">&gt;&gt;</a>
                                             </li>
                                         </ul>
                                     </div>
                                 </div>
                             </div>
+
 
 
                         </div>
@@ -259,9 +280,9 @@
                                             <input class="form-check-input" type="radio" name="brand" value="VINBIKE" id="brand">
                                             <label class="form-check-label" for="VINBIKE"><img th:src="@{/images/Vinbike-3.png}" style="width: 130px"></label>
                                         </li>
-                                        
+
                                     </ul>
-                                    
+
                                     <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeSize')">Bike Size <span class="toggle-arrow">&#9660;</span></h3>
                                     <ul class="mb-4" id="bikeSize" style="display:none;">
                                         <li class="form-check">
@@ -525,7 +546,7 @@
                     arrow.innerHTML = "&#9660;";  // Change arrow to down
                 }
             }
-            
+
         </script>
 
         <script src="js/jquery-3.3.1.min.js"></script>
