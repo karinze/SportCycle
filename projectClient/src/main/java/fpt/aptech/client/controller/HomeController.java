@@ -216,17 +216,12 @@ public class HomeController {
 
     @PostMapping("/doregister")
     public String doregister(Model model, @Valid @ModelAttribute("account") UsersDTO user, BindingResult bindingResult) throws IOException {
-
         if (bindingResult.hasErrors()) {
             model.addAttribute("account", user);
-
-            if (user.getEmail().isEmpty()) {
-                model.addAttribute("account", user);
-            } else {
+            if (!user.getEmail().isEmpty()) {
                 Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class);
                 if (users != null) {
                     bindingResult.rejectValue("email", "error.account", "Email already exists");
-                    model.addAttribute("account", user);
                 }
             }
             return "login/register";
@@ -235,7 +230,6 @@ public class HomeController {
                 Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class);
                 if (users != null) {
                     bindingResult.rejectValue("email", "error.account", "Email already exists");
-                    model.addAttribute("account", user);
                     return "login/register";
                 }
             }
@@ -693,7 +687,7 @@ public class HomeController {
             return "redirect:/login";
         }
     }
-    
+
     @PostMapping("/editAdminOrders")
     public String editAdminOrders(Model model, @Valid @ModelAttribute("order") OrdersDTO order, BindingResult bindingResult, HttpSession session) {
         if (session.getAttribute("admin") != null) {
@@ -859,6 +853,7 @@ public class HomeController {
             Model model,
             HttpSession session) {
         String email = (String) session.getAttribute("user");
+
         if (email == null) {
             return "redirect:/login";
         }
@@ -873,6 +868,12 @@ public class HomeController {
         int totalRentals = totalItems.size();
         int totalPages = (int) Math.ceil((double) totalRentals / pageSize);
 
+        if (session.getAttribute("countcartItems") != null) {
+            int count = (int) session.getAttribute("countcartItems");
+            model.addAttribute("countcartItems", count);
+        } else {
+            model.addAttribute("countcartItems", 0);
+        }
         model.addAttribute("rentals", rentalsPage);
         model.addAttribute("pageSize", pageSize);
         model.addAttribute("currentPage", pageNumber);
@@ -899,6 +900,12 @@ public class HomeController {
         List<BikeRentals> totalItems = rt.getForObject(urlbikerentals + "/users/" + user.getUser_id(), List.class);
         int totalRentals = totalItems.size();
         int totalPages = (int) Math.ceil((double) totalRentals / pageSize);
+        if (session.getAttribute("countcartItems") != null) {
+            int count = (int) session.getAttribute("countcartItems");
+            model.addAttribute("countcartItems", count);
+        } else {
+            model.addAttribute("countcartItems", 0);
+        }
 
         model.addAttribute("rentals", rentalsPage);
         model.addAttribute("pageSize", pageSize);
@@ -1176,7 +1183,7 @@ public class HomeController {
             model.addAttribute("currentPage", pageNumber);
             model.addAttribute("pageSize", pageSize);
             model.addAttribute("totalPages", totalPages);
-            
+
             model.addAttribute("orders", orders);
             model.addAttribute("orderItemsMap", orderItemsMap);
             if (session.getAttribute("countcartItems") != null) {

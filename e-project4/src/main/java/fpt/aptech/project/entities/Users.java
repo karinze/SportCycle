@@ -21,7 +21,6 @@ import lombok.*;
 @Getter
 public class Users {
     @Id
-    
     @Column(name = "user_id", columnDefinition = "UNIQUEIDENTIFIER")
     public UUID user_id;
     @Column(name = "username")

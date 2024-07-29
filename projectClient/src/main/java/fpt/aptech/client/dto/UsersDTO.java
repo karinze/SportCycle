@@ -1,5 +1,6 @@
 package fpt.aptech.client.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -31,7 +32,7 @@ public class UsersDTO {
     
     public boolean role;
 
-
+    
     public Date created_dt;
 
     public UsersDTO() {

@@ -4,6 +4,7 @@
  */
 package fpt.aptech.client.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class Users {
     public String password;
     public String email;
     public boolean role;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     public Date created_dt;
     
     public Users() {
