@@ -84,9 +84,9 @@
                 <nav class="site-navigation text-right text-md-center" role="navigation">
                     <div class="container">
                         <ul class="site-menu js-clone-nav d-none d-md-block">
-                            <li class="has-children">
+                            <li>
                                 <a th:href="@{/}">Home</a>
-                                <ul class="dropdown">
+<!--                                <ul class="dropdown">
                                     <li><a href="#">Menu One</a></li>
                                     <li><a href="#">Menu Two</a></li>
                                     <li><a href="#">Menu Three</a></li>
@@ -98,19 +98,31 @@
                                             <li><a href="#">Menu Three</a></li>
                                         </ul>
                                     </li>
-                                </ul>
+                                </ul>-->
                             </li>
-                            <li class="has-children">
+                            <li >
                                 <a th:href="@{/about}">About</a>
-                                <ul class="dropdown">
+<!--                                <ul class="dropdown">
                                     <li><a href="#">Menu One</a></li>
                                     <li><a href="#">Menu Two</a></li>
                                     <li><a href="#">Menu Three</a></li>
-                                </ul>
+                                </ul>-->
                             </li>
                             <li><a th:href="@{/shop}">Shop</a></li>
-                            <li><a href="#">Catalogue</a></li>
-                            <li><a href="#">New Arrivals</a></li>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Rentals</a>
+                                <ul class="dropdown">
+                                    <li><a th:href="@{/rentals}">My Rentals</a></li>
+                                    <li><a th:href="@{/forrent}">For Rent</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Information Line</a>
+                                <ul class="dropdown">
+                                    <li><a th:href="@{/informationLine}">Order History</a></li>
+                                    <li><a th:href="@{/latestOrder}">Latest Order</a></li>
+                                </ul>
+                            </li>
                             <li><a th:href="@{/contact}">Contact</a></li>
                         </ul>
                     </div>
@@ -149,7 +161,7 @@
                                             <td class="product-name">
                                                 <h2 class="h5 text-black" th:text="${item.name}"></h2>
                                             </td>
-                                            <td th:text="${item.price}"></td>
+                                            <td th:text="${item.price.intValue()} + ' $'"></td>
                                             <td>
                                                 <div class="input-group mb-3" style="max-width: 120px;">
                                                     <div class="input-group-prepend">
@@ -162,7 +174,7 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td th:text="${item.price.multiply(item.totalQuantity)}"></td>
+                                            <td th:text="${item.price.multiply(item.totalQuantity).intValue() + ' $'}"></td>
                                             <td><a th:href="@{/deletecart/{itemId}(itemId=${item.item_id})}" class="btn btn-primary btn-sm">X</a></td>
                                         </tr>
                                     </tbody>
@@ -207,7 +219,7 @@
                                             <span class="text-black">Subtotal</span>
                                         </div>
                                         <div class="col-md-6 text-right">
-                                            <strong class="text-black" th:text="${totalPrice}"></strong>
+                                            <strong class="text-black" th:text="${totalPrice.intValue()} + ' $'"></strong>
                                         </div>
                                     </div>
                                     <div class="row mb-5">
@@ -215,12 +227,13 @@
                                             <span class="text-black">Total</span>
                                         </div>
                                         <div class="col-md-6 text-right">
-                                            <strong class="text-black" th:text="${totalPrice}"></strong>
+                                            <strong class="text-black" th:text="${totalPrice.intValue()} + ' $'"></strong>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <button class="btn btn-primary btn-lg py-3 btn-block" onclick="window.location = '@{/checkout}'">Proceed To Checkout</button>
+                                            <a class="btn btn-primary btn-lg py-3 btn-block" th:classappend="${totalPrice <= 0} ? ' disabled'" th:style="${totalPrice <= 0} ? 'pointer-events: none;opacity: 0.5;'" th:href="@{/checkout}">Proceed To Checkout</a>
+
                                         </div>
                                     </div>
                                 </div>
@@ -299,7 +312,21 @@
                 </div>
             </footer>
         </div>
-
+        <script>
+            function formatScientificNotation() {
+                let priceElements = document.querySelectorAll('[id^="price-"]');
+                priceElements.forEach(element => {
+                    let scientificNotation = element.innerText;
+                    if (scientificNotation !== null && scientificNotation !== '') {
+                        let decimalNumber = Number(scientificNotation);
+                        if (!isNaN(decimalNumber)) {
+                            element.innerText = decimalNumber;
+                        }
+                    }
+                });
+            }
+            window.onload = formatScientificNotation;
+        </script>
         <script src="js/jquery-3.3.1.min.js"></script>
         <script src="js/jquery-ui.js"></script>
         <script src="js/popper.min.js"></script>

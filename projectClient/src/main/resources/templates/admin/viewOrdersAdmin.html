@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Order Detail</title>
+        <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.min.css}">
+    </head>
+    <body>
+        <div class="container">
+            <h1>Order Detail</h1>
+            <div>
+                <form th:action='@{/editAdminOrders}' th:object="${order}" method="post">
+                    <input type="hidden" th:field="*{order_id}">
+                    <h3>Order Information</h3>
+                <p><strong>Order ID:</strong> <span th:text="${order.order_id}"></span></p>
+                <p><strong>User Email:</strong> <span th:text="${order.users.email}"></span></p>
+                <p><strong>Total Amount:</strong> <span th:text="${order.total_amount}"></span></p>
+                <p><strong>Order Date:</strong> <span th:text="${order.order_date}"></span></p>
+                
+                <p th:if="${order.status == 'Cancel'}"><strong>Status:</strong> <span th:text="${order.status}"></span></p>
+                <label for="status"><strong>Status:</strong></label>
+                <select th:if="${order.status == 'Pending'}" th:field="*{status}" id="status" class="form-control">
+                            <option value="Pending">Pending</option>
+                            <option value="Deliver">Deliver</option>
+                            <option value="Received">Received</option>
+                </select>
+                <select th:if="${order.status == 'Deliver'}" th:field="*{status}" id="status" class="form-control">
+                            <option value="Deliver">Deliver</option>
+                            <option value="Received">Received</option>
+                </select>
+                <p th:if="${order.status == 'Received'}"><strong>Status:</strong> <span th:text="${order.status}"></span></p>
+                <input th:if="${order.status != 'Received' && order.status != 'Cancel'}" type="submit" value="Update Status">
+                </form>
+                
+            </div>
+            <div>
+                <h3>Order Items</h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody th:with="counter=${#numbers.sequence(1, orderItems.size())}">
+                        <tr th:each="item, iterStat : ${orderItems}">
+                            <td th:text="${counter[iterStat.index]}"></td>
+                            <td th:text="${item.item.name}"></td>
+                            <td th:text="${item.quantity}"></td>
+                            <td th:text="${item.price}"></td>
+                            <td th:text="${#numbers.formatDecimal(item.price.doubleValue() * item.quantity.doubleValue(), 2, 2)}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <a th:href="@{/indexAdminOrders}" class="btn btn-primary">Back to Orders</a>
+        </div>
+    </body>
+</html>

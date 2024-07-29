@@ -5,83 +5,146 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 -->
 <html xmlns:th="https://www.thymeleaf.org/">
 <head>
-    <title>Create New</title>
+    <title>Edit</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap CSS link -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
           integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    
+    <style>
+        body {
+            background-color: #f4f4f9;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+        }
+        h1 {
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+            color: #343a40;
+            text-transform: uppercase;
+        }
+        label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .form-group input, .form-group select, .form-check-input {
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            font-size: 1.25rem;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .btn-info {
+            background-color: #17a2b8;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            font-size: 1.25rem;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-info:hover {
+            background-color: #117a8b;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-danger {
+            font-size: 0.875rem;
+        }
+        img {
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h1>Update</h1>
-            <form th:action="@{/saveAdminItems}" th:object="${items}" method="post" enctype="multipart/form-data">
+    <div class="container mt-5">
+        <h1 class="text-center">Update Item</h1>
+        <form th:if="${items.type == 'Bike'}" th:action="@{/editAdminBikeProperties/{id}(id=${items.item_id})}" method="get" class="mb-3">
+            <button type="submit" class="btn btn-info btn-block">Edit Bike Properties</button>
+        </form>
+        <form th:action="@{/saveAdminItems}" th:object="${items}" method="post" enctype="multipart/form-data">
 
-                <!-- Hidden field -->
-                <input type="hidden" name="item_id" th:field="*{item_id}">
+            <!-- Hidden field -->
+            <input type="hidden" name="item_id" th:field="*{item_id}">
 
-                <!-- Form fields with Bootstrap styling -->
-                <div class="form-group">
-                    <label for="name">Enter Name:</label>
-                    <input type="text" id="name" name="name" class="form-control" th:field="*{name}">
-                    <p style="color: red" th:errors="*{name}" th:if="${#fields.hasErrors('name')}" class="error-message"></p>
-                </div>
+            <!-- Form fields with Bootstrap styling -->
+            <div class="form-group">
+                <label for="name">Enter Name:</label>
+                <input type="text" id="name" name="name" class="form-control" th:field="*{name}">
+                <p class="text-danger" th:errors="*{name}" th:if="${#fields.hasErrors('name')}"></p>
+            </div>
 
-                <div class="form-group">
-                    <label for="brand">Enter Brand:</label>
-                    <input type="text" id="brand" name="brand" class="form-control" th:field="*{brand}">
-                    <p style="color: red" th:errors="*{brand}" th:if="${#fields.hasErrors('brand')}" class="error-message"></p>
-                </div>
+            <div class="form-group">
+                <label for="brand">Enter Brand:</label>
+                <input type="text" id="brand" name="brand" class="form-control" th:field="*{brand}">
+                <p class="text-danger" th:errors="*{brand}" th:if="${#fields.hasErrors('brand')}"></p>
+            </div>
 
-                <div class="form-group">
-                    <label for="description">Enter Description:</label>
-                    <input type="text" id="description" name="description" class="form-control" th:field="*{description}">
-                    <p style="color: red" th:errors="*{description}" th:if="${#fields.hasErrors('description')}" class="error-message"></p>
-                </div>
+            <div class="form-group">
+                <label for="description">Enter Description:</label>
+                <input type="text" id="description" name="description" class="form-control" th:field="*{description}">
+                <p class="text-danger" th:errors="*{description}" th:if="${#fields.hasErrors('description')}"></p>
+            </div>
 
-                <div class="form-group">
-                    <label for="price">Enter Price:</label>
-                    <input type="text" id="price" name="price" class="form-control" th:field="*{price}">
-                    <p style="color: red" th:errors="*{price}" th:if="${#fields.hasErrors('price')}" class="error-message"></p>
-                </div>
+            <div class="form-group">
+                <label for="price">Enter Price:</label>
+                <input type="text" id="price" name="price" class="form-control" th:field="*{price}">
+                <p class="text-danger" th:errors="*{price}" th:if="${#fields.hasErrors('price')}"></p>
+            </div>
 
-                <div class="form-group">
-                    <label for="stock">Enter Stock:</label>
-                    <input type="text" id="stock" name="stock" class="form-control" th:field="*{stock}">
-                    <p style="color: red" th:errors="*{stock}" th:if="${#fields.hasErrors('stock')}" class="error-message"></p>
-                </div>
+            <div class="form-group">
+                <label for="stock">Enter Stock:</label>
+                <input type="text" id="stock" name="stock" class="form-control" th:field="*{stock}">
+                <p class="text-danger" th:errors="*{stock}" th:if="${#fields.hasErrors('stock')}"></p>
+            </div>
 
-                <div class="form-group">
-                    <label for="type">Enter Type:</label>
-                    <input type="text" id="type" name="type" class="form-control" th:field="*{type}">
-                    <p style="color: red" th:errors="*{type}" th:if="${#fields.hasErrors('type')}" class="error-message"></p>
-                </div>
-                
-                <div class="form-group">
-                    <label for="image">Enter Image:</label>
-                    <img th:src="@{'/images/'+${items.image}}" width="100" height="auto"/>
-                    <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
-                    <p style="color: red" th:errors="*{image}" th:if="${#fields.hasErrors('image')}" class="error-message"></p>
-                </div>
+            <div class="form-group">
+                <label for="type">Enter Type:</label>
+                <input type="text" id="type" name="type" class="form-control" th:field="*{type}">
+                <p class="text-danger" th:errors="*{type}" th:if="${#fields.hasErrors('type')}"></p>
+            </div>
 
-                <div class="form-check">
-                    <input type="checkbox" id="is_visible" name="is_visible" class="form-check-input" th:field="*{is_visible}">
-                    <label for="is_visible" class="form-check-label">Visible</label>
-                </div>
+            <div class="form-group">
+                <label for="image">Enter Image:</label>
+                <img th:src="@{'/images/'+${items.image}}" width="100" height="auto" class="d-block mb-2"/>
+                <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
+                <p class="text-danger" th:errors="*{image}" th:if="${#fields.hasErrors('image')}"></p>
+            </div>
 
-                <button type="submit" class="btn btn-primary mt-3">Update</button>
-            </form>
-        </div>
+            <div class="form-check">
+                <input type="checkbox" id="is_visible" name="is_visible" class="form-check-input" th:field="*{is_visible}">
+                <label for="is_visible" class="form-check-label">Visible</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3 btn-block" onclick="confirmUpdate(event)">Update</button>
+        </form>
     </div>
-</div>
+    <script>
+            function confirmUpdate(event) {
+                if (!confirm('Are you sure to update?')) {
+                    event.preventDefault();
+                }
+            }
+        </script>
 
-<!-- Bootstrap JS and dependencies (optional, if needed) -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
-        integrity="sha384-Vkoo8x4CGsGXP6D9w8rsQv9Lf1KuO8HvJGNIpz2mtm3U6sFOnq0s1Gt4AVR3uAiz"
-        crossorigin="anonymous"></script>
+    <!-- Bootstrap JS and dependencies (optional, if needed) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-pzjw8f+ua7Kw1TIqD2AIWM+8l68PHX3v52PiD7j+QvI5jv2xS4eAozpCOjI4BB8C" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTNZvyLQcREeMBmEzCqc5hHE/2e5vKTtwKPfGftrUN5Fxz2KNm" crossorigin="anonymous"></script>
 </body>
 </html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html xmlns:th="https://www.thymeleaf.org/">
+<head>
+    <title>Create New</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap CSS link -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            color: #343a40;
+        }
+        label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h1>Add Bike Properties</h1>
+                <form th:action="@{/createAdminBikeProperties(itemId=${param.itemId})}" th:object="${bikeProperties}" method="post">
+                    <div class="form-group">
+                        <label for="bikeSize">Bike Size:</label>
+                        <select th:field="*{bike_size}" id="bikeSize" class="form-control">
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bikeWheelSize">Bike Wheel Size:</label>
+                        <select th:field="*{bike_wheel_size}" id="bikeWheelSize" class="form-control">
+                            <option value="700C">700C</option>
+                            <option value="26">26"</option>
+                            <option value="27.5">27.5"</option>
+                            <option value="29">29"</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bikeColor">Bike Color:</label>
+                        <select th:field="*{bike_color}" id="bikeColor" class="form-control">
+                            <option value="Black">Black</option>
+                            <option value="White">White</option>
+                            <option value="Blue">Blue</option>
+                            <option value="Grey">Grey</option>
+                            <option value="Red">Red</option>
+                            <option value="Titanium">Titanium</option>
+                            <option value="Brown">Brown</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bikeBrakeType">Bike Brake Type:</label>
+                        <select th:field="*{bike_brake_type}" id="bikeBrakeType" class="form-control">
+                            <option value="OilDiscBrakes">Oil Disc Brakes</option>
+                            <option value="MechanicalDiscBrakes">Mechanical Disc Brakes</option>
+                            <option value="GumBrake">Gum Brake</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bikeMaterial">Bike Material:</label>
+                        <select th:field="*{bike_material}" id="bikeMaterial" class="form-control">
+                            <option value="Aluminum">Aluminum</option>
+                            <option value="Composite/Carbon">Composite/Carbon</option>
+                            <option value="Magie">Magie</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">CREATE</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies (optional, if needed) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-pzjw8f+ua7Kw1TIqD2AIWM+8l68PHX3v52PiD7j+QvI5jv2xS4eAozpCOjI4BB8C" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTNZvyLQcREeMBmEzCqc5hHE/2e5vKTtwKPfGftrUN5Fxz2KNm" crossorigin="anonymous"></script>
+</body>
+</html>

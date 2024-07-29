@@ -50,6 +50,16 @@ public class BikeProperties {
         this.created_dt = created_dt;
     }
     
+    public BikeProperties( Items item, String bike_size, String bike_wheel_size, String bike_color, String bike_material, String bike_brake_type, Date created_dt) {
+        this.item = item;
+        this.bike_size = bike_size;
+        this.bike_wheel_size = bike_wheel_size;
+        this.bike_color = bike_color;
+        this.bike_material = bike_material;
+        this.bike_brake_type = bike_brake_type;
+        this.created_dt = created_dt;
+    }
+    
     
 
     public int getBike_property_id() {

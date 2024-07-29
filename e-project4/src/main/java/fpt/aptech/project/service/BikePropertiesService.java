@@ -5,8 +5,10 @@
 package fpt.aptech.project.service;
 
 import fpt.aptech.project.entities.BikeProperties;
+import fpt.aptech.project.entities.Items;
 import fpt.aptech.project.inteface.IBikePropertiesService;
 import fpt.aptech.project.repository.BikePropertiesRepository;
+import fpt.aptech.project.repository.ItemRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ public class BikePropertiesService implements IBikePropertiesService{
 
     @Autowired
     BikePropertiesRepository bikePropertiesRepository;
+    @Autowired
+    private ItemRepository itemsRepository;
     
     @Override
     public List<BikeProperties> findAll() {
@@ -44,6 +48,12 @@ public class BikePropertiesService implements IBikePropertiesService{
     @Override
     public void deleteBikeProperties(int bikePropertiesId) {
         bikePropertiesRepository.deleteById(bikePropertiesId);
+    }
+
+    @Override
+    public BikeProperties findByItemId(int itemId) {
+        Items item = itemsRepository.findById(itemId).orElse(null);
+            return bikePropertiesRepository.listByItem(item);
     }
     
 }
