@@ -13,21 +13,22 @@
                     <h3>Order Information</h3>
                 <p><strong>Order ID:</strong> <span th:text="${order.order_id}"></span></p>
                 <p><strong>User Email:</strong> <span th:text="${order.users.email}"></span></p>
-                <p><strong>Total Amount:</strong> <span th:text="${order.total_amount}"></span></p>
+                <p><strong>Discount:</strong> <span th:if="${discount != 0}" th:text="'-'+${discount.intValue()}"></span> <span th:if="${discount == 0}" th:text="0"></span></p>
+                <p><strong>Total Amount:</strong> <span th:text="${order.total_amount.intValue()} + '$'"></span></p>
                 <p><strong>Order Date:</strong> <span th:text="${order.order_date}"></span></p>
                 
-                <p th:if="${order.status == 'Cancel'}"><strong>Status:</strong> <span th:text="${order.status}"></span></p>
-                <label for="status"><strong>Status:</strong></label>
+                
+                <label th:if="${order.status == 'Pending' || order.status == 'Deliver'}" for="status"><strong>Status:</strong></label>
                 <select th:if="${order.status == 'Pending'}" th:field="*{status}" id="status" class="form-control">
                             <option value="Pending">Pending</option>
                             <option value="Deliver">Deliver</option>
-                            <option value="Received">Received</option>
+                            <option value="Cancel">Cancel</option>
                 </select>
                 <select th:if="${order.status == 'Deliver'}" th:field="*{status}" id="status" class="form-control">
                             <option value="Deliver">Deliver</option>
                             <option value="Received">Received</option>
                 </select>
-                <p th:if="${order.status == 'Received'}"><strong>Status:</strong> <span th:text="${order.status}"></span></p>
+                <p th:if="${order.status == 'Received' || order.status == 'Cancel'}"><strong>Status:</strong> <span th:text="${order.status}"></span></p>
                 <input th:if="${order.status != 'Received' && order.status != 'Cancel'}" type="submit" value="Update Status">
                 </form>
                 
@@ -39,18 +40,18 @@
                         <tr>
                             <th>#</th>
                             <th>Item Name</th>
-                            <th>Quantity</th>
                             <th>Price</th>
-                            <th>Total</th>
+                            <th>Quantity</th>
+                            <th>Total Price</th>
                         </tr>
                     </thead>
                     <tbody th:with="counter=${#numbers.sequence(1, orderItems.size())}">
                         <tr th:each="item, iterStat : ${orderItems}">
                             <td th:text="${counter[iterStat.index]}"></td>
                             <td th:text="${item.item.name}"></td>
+                            <td th:text="${item.item.price.intValue()} + '$'"></td>
                             <td th:text="${item.quantity}"></td>
-                            <td th:text="${item.price}"></td>
-                            <td th:text="${#numbers.formatDecimal(item.price.doubleValue() * item.quantity.doubleValue(), 2, 2)}"></td>
+                            <td th:text="${item.price.intValue()} + '$'"></td>
                         </tr>
                     </tbody>
                 </table>

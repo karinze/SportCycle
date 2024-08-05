@@ -20,8 +20,8 @@ public class AuthService implements IAuthService{
     AuthRepository authRepository;
     
     @Override
-    public Users checklogin(String username, String password) {
-        return authRepository.checkLogin(username, password);
+    public Users checklogin(String email,String username, String password) {
+        return authRepository.checkLogin(email,username, password);
     }
     
 }

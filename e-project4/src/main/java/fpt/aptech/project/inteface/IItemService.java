@@ -42,4 +42,6 @@ public interface IItemService {
             String bikeSize, String bikeWheelSize, String bikeColor, String bikeMaterial,
             String bikeBrakeType);
     
+    
+    public List<Items> findTop10NewestItems();
 }

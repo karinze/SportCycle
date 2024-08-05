@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
     <head>
-        <title>Shoppers &mdash; Colorlib e-Commerce Template</title>
+        <title>About</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -46,7 +46,7 @@
 
                             <div class="col-12 mb-3 mb-md-0 col-md-4 order-1 order-md-2 text-center">
                                 <div class="site-logo">
-                                    <a th:href="@{/}" class="js-logo-clone">Shoppers</a>
+                                    <a th:href="@{/}" class="js-logo-clone">Sport Cycle</a>
                                 </div>
                             </div>
 
@@ -143,8 +143,8 @@
                         <div class="col-md-6">
                             <div class="block-16">
                                 <figure>
-                                    <img src="images/blog_1.jpg" alt="Image placeholder" class="img-fluid rounded">
-                                    <a href="https://vimeo.com/channels/staffpicks/93951774" class="play-button popup-vimeo"><span class="ion-md-play"></span></a>
+                                    <img th:src="@{'/images/temp/about1.jpg'}" alt="Image placeholder" class="img-fluid rounded">
+<!--                                    <a href="" class="play-button popup-vimeo"><span class="ion-md-play"></span></a>-->
 
                                 </figure>
                             </div>
@@ -177,7 +177,7 @@
                             <div class="block-38 text-center">
                                 <div class="block-38-img">
                                     <div class="block-38-header">
-                                        <img src="images/person_1.jpg" alt="Image placeholder" class="mb-4">
+                                        <img th:src="@{'/images/temp/person_1.jpg'}" alt="Image placeholder" class="mb-4">
                                         <h3 class="block-38-heading h4">Elizabeth Graham</h3>
                                         <p class="block-38-subheading">CEO/Co-Founder</p>
                                     </div>
@@ -191,7 +191,7 @@
                             <div class="block-38 text-center">
                                 <div class="block-38-img">
                                     <div class="block-38-header">
-                                        <img src="images/person_2.jpg" alt="Image placeholder" class="mb-4">
+                                        <img th:src="@{'/images/temp/person_2.jpg'}" alt="Image placeholder" class="mb-4">
                                         <h3 class="block-38-heading h4">Jennifer Greive</h3>
                                         <p class="block-38-subheading">Co-Founder</p>
                                     </div>
@@ -205,7 +205,7 @@
                             <div class="block-38 text-center">
                                 <div class="block-38-img">
                                     <div class="block-38-header">
-                                        <img src="images/person_3.jpg" alt="Image placeholder" class="mb-4">
+                                        <img th:src="@{'/images/temp/person_3.jpg'}" alt="Image placeholder" class="mb-4">
                                         <h3 class="block-38-heading h4">Patrick Marx</h3>
                                         <p class="block-38-subheading">Marketing</p>
                                     </div>
@@ -219,7 +219,7 @@
                             <div class="block-38 text-center">
                                 <div class="block-38-img">
                                     <div class="block-38-header">
-                                        <img src="images/person_4.jpg" alt="Image placeholder" class="mb-4">
+                                        <img th:src="@{'/images/temp/person_4.jpg'}" alt="Image placeholder" class="mb-4">
                                         <h3 class="block-38-heading h4">Mike Coolbert</h3>
                                         <p class="block-38-subheading">Sales Manager</p>
                                     </div>
@@ -315,13 +315,13 @@
                             </div>
 
                             <div class="block-7">
-                                <form action="#" method="post">
+<!--                                <form action="#" method="post">
                                     <label for="email_subscribe" class="footer-heading">Subscribe</label>
                                     <div class="form-group">
                                         <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
                                         <input type="submit" class="btn btn-sm btn-primary" value="Send">
                                     </div>
-                                </form>
+                                </form>-->
                             </div>
                         </div>
                     </div>
@@ -329,7 +329,7 @@
                         <div class="col-md-12">
                             <p>
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank" class="text-primary">Colorlib</a>
+                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                             </p>
                         </div>
@@ -339,15 +339,15 @@
             </footer>
         </div>
 
-        <script src="js/jquery-3.3.1.min.js"></script>
-        <script src="js/jquery-ui.js"></script>
-        <script src="js/popper.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-        <script src="js/owl.carousel.min.js"></script>
-        <script src="js/jquery.magnific-popup.min.js"></script>
-        <script src="js/aos.js"></script>
+        <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+        <script th:src="@{/js/jquery-ui.js}"></script>
+        <script th:src="@{/js/popper.min.js}"></script>
+        <script th:src="@{/js/bootstrap.min.js}"></script>
+        <script th:src="@{/js/owl.carousel.min.js}"></script>
+        <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+        <script th:src="@{/js/aos.js}"></script>
 
-        <script src="js/main.js"></script>
+        <script th:src="@{/js/main.js}"></script>
 
     </body>
 </html>

@@ -65,5 +65,10 @@ public class OrderItemService implements IOrderItemsService{
         }
         return orderItemsRepository.searchByItemsid(item);
     }
+
+    @Override
+    public Long getTotalQuantitySold() {
+        return orderItemsRepository.getTotalQuantitySold();
+    }
     
 }

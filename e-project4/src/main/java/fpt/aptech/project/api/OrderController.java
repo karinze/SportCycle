@@ -9,7 +9,9 @@ import fpt.aptech.project.entities.OrderItems;
 import fpt.aptech.project.entities.Orders;
 import fpt.aptech.project.entities.Users;
 import fpt.aptech.project.inteface.IOrderService;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -78,5 +80,29 @@ public class OrderController {
             @RequestPart("orders") Orders orders,
             @RequestPart("orderItems") List<OrderItems> orderItems) {
         service.sendBillMail(users, orders, orderItems);
+    }
+    
+    @GetMapping("/getMonthlyRevenue")
+    @ResponseStatus(HttpStatus.OK)
+    public BigDecimal getMonthlyRevenue() {
+        return service.getMonthlyRevenue();
+    }
+    
+    @GetMapping("/getTotalRevenue")
+    @ResponseStatus(HttpStatus.OK)
+    public BigDecimal getTotalRevenue() {
+        return service.getTotalRevenue();
+    }
+    
+    @GetMapping("/getPendingRequests")
+    @ResponseStatus(HttpStatus.OK)
+    public Long getPendingRequests() {
+        return service.getPendingRequests();
+    }
+    
+    @GetMapping("/findMonthlyEarnings")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Map<String, Object>> findMonthlyEarnings() {
+        return service.findMonthlyEarnings();
     }
 }

@@ -4,20 +4,35 @@
  */
 package fpt.aptech.client.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.paypal.api.payments.Amount;
+import com.paypal.api.payments.Links;
+import com.paypal.api.payments.Payer;
+import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.PaymentExecution;
+import com.paypal.api.payments.RedirectUrls;
+import com.paypal.api.payments.Transaction;
+import com.paypal.base.rest.APIContext;
+import com.paypal.base.rest.PayPalRESTException;
 import fpt.aptech.client.dto.BikePropertiesDTO;
+import fpt.aptech.client.dto.CouponsDTO;
 import fpt.aptech.client.dto.ItemsDTO;
 import fpt.aptech.client.dto.OrdersDTO;
+import fpt.aptech.client.dto.UserDetailsDTO;
 import fpt.aptech.client.dto.UsersDTO;
 import fpt.aptech.client.models.BikeProperties;
 import fpt.aptech.client.models.BikeRentals;
 import fpt.aptech.client.models.CartItems;
+import fpt.aptech.client.models.CouponUsers;
+import fpt.aptech.client.models.Coupons;
 import fpt.aptech.client.models.ExternalTokens;
 import fpt.aptech.client.models.Items;
 import fpt.aptech.client.models.OrderItems;
 import fpt.aptech.client.models.Orders;
 import fpt.aptech.client.models.Tokens;
+import fpt.aptech.client.models.UserDetails;
 import fpt.aptech.client.models.Users;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -25,6 +40,8 @@ import jakarta.websocket.server.PathParam;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -44,6 +61,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpEntity;
@@ -57,7 +75,9 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -89,8 +109,26 @@ public class HomeController {
     public final String urluserorders = "http://localhost:9999/api/userorders/";
     public final String urlexternaltoken = "http://localhost:9999/api/externalTokens/";
     public final String urlorderitems = "http://localhost:9999/api/orderitems/";
+    public final String urlcoupons = "http://localhost:9999/api/coupons/";
+    public final String urlcouponusers = "http://localhost:9999/api/couponusers/";
+    public final String urluserdetail = "http://localhost:9999/api/userdetail/";
 
     private static final RestTemplate rt = new RestTemplate();
+
+    @Value("${paypal.client.id}")
+    private String clientIdPaypal;
+
+    @Value("${paypal.client.secret}")
+    private String clientSecretPaypal;
+
+    @Value("${paypal.mode}")
+    private String mode;
+
+    @Value("${paypal.cancel.url}")
+    private String cancelUrl;
+
+    @Value("${paypal.success.url}")
+    private String successUrl;
 
     @Value("${upload.path}")
     private String FileUpload;
@@ -117,7 +155,8 @@ public class HomeController {
 
     @PostMapping("/login")
     public String dologin(Model model, @RequestParam("username") String username, @RequestParam("password") String password, HttpSession session) {
-        Users users = rt.getForObject(urlauth + "/login/" + username + "/" + password, Users.class);
+        String email = username;
+        Users users = rt.getForObject(urlauth + "/login/" + email + "/" + username + "/" + password, Users.class);
         if (users != null) {
             if (users.isRole()) {
                 session.setAttribute("admin", username);
@@ -128,6 +167,7 @@ public class HomeController {
             }
         } else {
             model.addAttribute("account", new Users());
+            model.addAttribute("error", "Account does not exist");
             return "login/login";
         }
     }
@@ -377,15 +417,218 @@ public class HomeController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model, HttpSession session) {
+    public String dashboard(Model model, HttpSession session) throws JsonProcessingException {
         if (session.getAttribute("admin") != null) {
+            BigDecimal MonthlyRevenue = rt.getForObject("http://localhost:9999/api/orders/getMonthlyRevenue", BigDecimal.class);
+            BigDecimal TotalRevenue = rt.getForObject("http://localhost:9999/api/orders/getTotalRevenue", BigDecimal.class);
+            Long PendingRequests = rt.getForObject("http://localhost:9999/api/orders/getPendingRequests", Long.class);
+            Long TotalQuantitySold = rt.getForObject("http://localhost:9999/api/orderitems/getTotalQuantitySold", Long.class);
+
+            List<Map<String, Object>> monthlyEarnings = rt.getForObject("http://localhost:9999/api/orders/findMonthlyEarnings", List.class);
+
+            List<String> labels = new ArrayList<>();
+            List<BigDecimal> earnings = new ArrayList<>();
+            for (Map<String, Object> entry : monthlyEarnings) {
+                labels.add("Month " + entry.get("month"));
+                Double totalAsDouble = (Double) entry.get("total");
+                BigDecimal totalAsBigDecimal = BigDecimal.valueOf(totalAsDouble);
+                earnings.add(totalAsBigDecimal);
+            }
+
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            String labelsJson = objectMapper.writeValueAsString(labels);
+//            String earningsJson = objectMapper.writeValueAsString(earnings);
+            DecimalFormat formatter = new DecimalFormat("#,###");
+            String formattedRevenue = MonthlyRevenue != null ? formatter.format(MonthlyRevenue) : "0";
+            String formattedTotalRevenue = TotalRevenue != null ? formatter.format(TotalRevenue) : "0";
+            Long formattedTotalQuantitySold = TotalQuantitySold != null ? TotalQuantitySold : 0;
+
+// Add to model
+            model.addAttribute("monthlyRevenue", formattedRevenue);
+            model.addAttribute("totalRevenue", formattedTotalRevenue);
+            model.addAttribute("totalQuantitySold", formattedTotalQuantitySold);
+            model.addAttribute("pendingRequests", PendingRequests);
+            model.addAttribute("earnings", earnings);
+            model.addAttribute("labels", labels);
 
             return "admin/dashboard";
+        } else {
+            return "redirect:/login";
+        }
+    }
+
+    @GetMapping("/indexAdminCoupons")
+    public String indexAdminCoupons(Model model, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+            List<Coupons> p = rt.getForObject(urlcoupons + "/", List.class);
+            model.addAttribute("list", p);
+            return "admin/couponsAdmin";
         } else {
 
             return "redirect:/login";
         }
 
+    }
+
+    @GetMapping("/createAdminCoupons")
+    public String createAdminCoupons(Model model, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+            model.addAttribute("coupons", new Coupons());
+            return "admin/createAdminCoupons";
+        } else {
+
+            return "redirect:/login";
+        }
+
+    }
+
+    @PostMapping("/createAdminCoupons")
+    public String docreateAdminCoupons(Model model, @Valid @ModelAttribute("coupons") CouponsDTO coupons, BindingResult bindingResult) throws IOException {
+        if (coupons.getCode().isEmpty()) {
+            if (bindingResult.hasErrors()) {
+                System.out.println("Binding Result Errors: " + bindingResult.getAllErrors());
+                model.addAttribute("coupons", coupons);
+                return "admin/createAdminCoupons";
+            }
+        } else {
+            Coupons c = rt.getForObject(urlcoupons + "/findcode/" + coupons.getCode(), Coupons.class);
+            if (bindingResult.hasErrors()) {
+                System.out.println("Binding Result Errors: " + bindingResult.getAllErrors());
+                if (c != null) {
+                    bindingResult.rejectValue("code", "error.code", "Code already exists.");
+                }
+                model.addAttribute("coupons", coupons);
+                return "admin/createAdminCoupons";
+            } else if (c != null) {
+                bindingResult.rejectValue("code", "error.code", "Code already exists.");
+                model.addAttribute("coupons", coupons);
+                return "admin/createAdminCoupons";
+            } else {
+                coupons.setCreated_dt(Date.from(Instant.now()));
+
+                Coupons coupon = new Coupons(coupons.getCode(), coupons.getDiscount_amount(), coupons.getExpiration_date(), coupons.getUsage_limit(), coupons.isIs_active(), coupons.getCreated_dt());
+                model.addAttribute("Coupons", rt.postForEntity(urlcoupons, coupon, Coupons.class));
+                return "redirect:/indexAdminCoupons";
+            }
+        }
+        return null;
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+        dateFormat.setLenient(false);
+        binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
+    }
+
+    @GetMapping("/editAdminCoupons/{id}")
+    public String editAdminCoupons(Model model, @PathVariable String id, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+            Coupons cou = rt.getForObject(urlcoupons + "/" + id, Coupons.class);
+            model.addAttribute("coupons", cou);
+            return "admin/editAdminCoupons";
+        } else {
+
+            return "redirect:/login";
+        }
+
+    }
+
+    @PostMapping("/editAdminCoupons")
+    public String doeditAdminCoupons(Model model, @Valid @ModelAttribute("coupons") CouponsDTO coupons, BindingResult bindingResult) throws IOException {
+        if (coupons.getCode().isEmpty()) {
+            if (bindingResult.hasErrors()) {
+                System.out.println("Binding Result Errors: " + bindingResult.getAllErrors());
+                model.addAttribute("coupons", coupons);
+                return "admin/editAdminCoupons";
+            }
+        } else {
+            Coupons c = rt.getForObject(urlcoupons + "/findcode/" + coupons.getCode(), Coupons.class);
+            Coupons cou = rt.getForObject(urlcoupons + "/" + coupons.getCoupon_id(), Coupons.class);
+
+            if (bindingResult.hasErrors()) {
+                System.out.println("Binding Result Errors: " + bindingResult.getAllErrors());
+                model.addAttribute("coupons", coupons);
+                return "admin/editAdminCoupons";
+            } else if (c != null && !coupons.getCode().equals(cou.getCode())) {
+                bindingResult.rejectValue("code", "error.code", "Code already exists.");
+                model.addAttribute("coupons", coupons);
+                return "admin/editAdminCoupons";
+            } else {
+                Coupons coupon = new Coupons(cou.getCoupon_id(), coupons.getCode(), coupons.getDiscount_amount(),
+                        coupons.getExpiration_date(), coupons.getUsage_limit(),
+                        coupons.isIs_active(), cou.getCreated_dt());
+                model.addAttribute("Coupons", rt.postForEntity(urlcoupons, coupon, Coupons.class));
+                return "redirect:/indexAdminCoupons";
+            }
+        }
+        return null;
+    }
+
+    @GetMapping("/deleteAdminCoupons/{id}")
+    public String deleteAdminCoupons(Model model, @PathVariable Integer id, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (session.getAttribute("admin") != null) {
+            List<CouponUsers> p = rt.getForObject(urlcouponusers + "/coupon/" + id, List.class);
+
+            if (p != null) {
+                for (CouponUsers couponUsers : p) {
+                    rt.delete(urlcouponusers + "/" + couponUsers.getCoupon_user_id(), CouponUsers.class);
+                }
+
+            }
+
+            rt.delete(urlcoupons + "/" + id, Coupons.class);
+            return "redirect:/indexAdminCoupons";
+        } else {
+            return "redirect:/login";
+        }
+    }
+
+    @GetMapping("/editAdminUserProfile/{id}")
+    public String editAdminUserProfile(Model model, @PathVariable UUID id, HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+            Users user = rt.getForObject(urlusers + "/" + id, Users.class);
+            model.addAttribute("userprofile", new UserDetails());
+            UserDetails[] cou = rt.getForObject(urluserdetail + "/user/" + id, UserDetails[].class);
+            if (cou != null) {
+                for (UserDetails userDetails : cou) {
+                    model.addAttribute("userprofile", userDetails);
+                }
+
+            }
+
+            model.addAttribute("email", user.getEmail());
+            return "admin/editUserProfile";
+        } else {
+
+            return "redirect:/login";
+        }
+    }
+
+    @PostMapping("/editAdminUserProfile")
+    public String doeditAdminUserProfile(Model model, @Valid @ModelAttribute("userprofile") UserDetailsDTO ud, BindingResult bindingResult) throws IOException {
+
+        if (bindingResult.hasErrors()) {
+            System.out.println("Binding Result Errors: " + bindingResult.getAllErrors());
+            model.addAttribute("email", ud.getEmail());
+            model.addAttribute("userprofile", ud);
+            return "admin/editUserProfile";
+        } else {
+            Users user = rt.getForObject(urlusers + "/findemail/" + ud.getEmail(), Users.class);
+            if (ud.getUserdetail_id() == 0) {
+                ud.setCreated_dt(new Date());
+                UserDetails userd = new UserDetails(user, ud.getFirst_name(), ud.getLast_name(), ud.getEmail(), ud.getPhone_number(), ud.getAddress(), ud.getNote(), ud.getCreated_dt());
+                rt.postForObject(urluserdetail, userd, UserDetails.class);
+            } else {
+                UserDetails[] ude = rt.getForObject(urluserdetail + "/user/" + user.getUser_id(), UserDetails[].class);
+                for (UserDetails userDetails : ude) {
+                    UserDetails userd = new UserDetails(ud.getUserdetail_id(), user, ud.getFirst_name(), ud.getLast_name(), ud.getEmail(), ud.getPhone_number(), ud.getAddress(), ud.getNote(), userDetails.getCreated_dt());
+                    rt.postForObject(urluserdetail, userd, UserDetails.class);
+                }
+
+            }
+        }
+        return "redirect:/indexAdminUsers";
     }
 
     @GetMapping("/createAdminItems")
@@ -431,6 +674,11 @@ public class HomeController {
                 if ("Bike".equals(items.getType())) {
                     return "redirect:/createAdminBikeProperties?itemId=" + item.getItem_id();
                 } else {
+                    BikeProperties bikeProperties = new BikeProperties();
+                    bikeProperties.setCreated_dt(Date.from(Instant.now()));
+
+                    BikeProperties newBikeProperties = new BikeProperties(item, null, null, null, null, null, bikeProperties.getCreated_dt());
+                    model.addAttribute("BikeProperties", rt.postForEntity(urlbikeproperties, newBikeProperties, BikeProperties.class));
                     return "redirect:/indexAdminItems";
                 }
             } else {
@@ -663,10 +911,27 @@ public class HomeController {
     public String viewOrderDetail(@PathVariable("id") int orderId, Model model, HttpSession session) {
         if (session.getAttribute("admin") != null) {
             Orders order = rt.getForObject(urlorders + "/" + orderId, Orders.class);
-            List<OrderItems> orderItems = rt.getForObject(urlorderitems + "/order/" + orderId, List.class);
+            ResponseEntity<List<OrderItems>> response = rt.exchange(
+                    urlorderitems + "/order/" + orderId,
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<OrderItems>>() {
+            }
+            );
+            List<OrderItems> orderItems = response.getBody();
 
+            // Calculate total price of all items using BigDecimal
+            BigDecimal totalPrice = orderItems.stream()
+                    .map(item -> item.getPrice())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            // Calculate the discount
+            BigDecimal discount = totalPrice.subtract(order.getTotal_amount());
+
+            // Add attributes to the model
             model.addAttribute("order", order);
             model.addAttribute("orderItems", orderItems);
+            model.addAttribute("discount", discount);
 
             return "admin/viewOrdersAdmin";
         } else {
@@ -798,19 +1063,21 @@ public class HomeController {
 
     @GetMapping("/")
     public String index(Model model, HttpSession session) {
-        ParameterizedTypeReference<List<Items>> responseType = new ParameterizedTypeReference<List<Items>>() {
-        };
-        ResponseEntity<List<Items>> response = rt.exchange(urlitems + "/", HttpMethod.GET, null, responseType);
-        List<Items> p = response.getBody();
+//        ParameterizedTypeReference<List<Items>> responseType = new ParameterizedTypeReference<List<Items>>() {
+//        };
+//        ResponseEntity<List<Items>> response = rt.exchange(urlitems + "/", HttpMethod.GET, null, responseType);
+//        List<Items> p = response.getBody();
+//
+//        // Initialize a new list to hold the top 10 items
+//        List<Items> a = new ArrayList<>();
+//
+//        // Ensure there are at least 10 items in the list
+//        int limit = Math.min(p.size(), 10);
+//        for (int i = 0; i < limit; i++) {
+//            a.add(p.get(i));
+//        }
 
-        // Initialize a new list to hold the top 10 items
-        List<Items> a = new ArrayList<>();
-
-        // Ensure there are at least 10 items in the list
-        int limit = Math.min(p.size(), 10);
-        for (int i = 0; i < limit; i++) {
-            a.add(p.get(i));
-        }
+        List<Items> a = rt.getForObject(urlitems + "/top10", List.class);
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
             model.addAttribute("countcartItems", count);
@@ -915,44 +1182,123 @@ public class HomeController {
     }
 
     @PostMapping("/rentBicycle")
-    public String rentBicycle(@RequestParam("itemId") int itemId, @RequestParam("rentalHours") int rentalHours, HttpSession session, Model model) {
+    public String rentBicycle(@RequestParam("itemId") int itemId,
+            @RequestParam("rentalEndDate") String rentalEndDateStr,
+            HttpSession session, Model model) {
         String email = (String) session.getAttribute("user");
         if (email == null) {
             return "redirect:/login";
         }
 
-        if (rentalHours < 1 || rentalHours > 12) {
-            model.addAttribute("error", "Rental period must be between 1 and 12 hours.");
-            return "redirect:/rentBicycle";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime rentalEndDate = LocalDateTime.parse(rentalEndDateStr, formatter);
+
+        double hourlyRate = 10 / 24.0;
+        double costPerMinute = hourlyRate / 60.0;
+        long minutesBetween = java.time.Duration.between(now, rentalEndDate).toMinutes();
+        double cost = costPerMinute * minutesBetween;
+
+        // PayPal payment
+        Amount amount = new Amount();
+        amount.setCurrency("USD");
+        amount.setTotal(String.format("%.2f", cost));
+
+        Transaction transaction = new Transaction();
+        transaction.setDescription("Bike rental payment");
+        transaction.setAmount(amount);
+
+        List<Transaction> transactions = List.of(transaction);
+
+        Payer payer = new Payer();
+        payer.setPaymentMethod("paypal");
+
+        RedirectUrls redirectUrls = new RedirectUrls();
+        redirectUrls.setCancelUrl("http://localhost:8888/rentCancel"); // URL to redirect if the user cancels the payment
+        redirectUrls.setReturnUrl("http://localhost:8888/rentSuccess"); // URL to redirect after successful payment
+
+        Payment payment = new Payment();
+        payment.setIntent("sale");
+        payment.setPayer(payer);
+        payment.setTransactions(transactions);
+        payment.setRedirectUrls(redirectUrls);
+
+        if (session.getAttribute("itemid") != null) {
+            session.removeAttribute("itemid");
+        }
+        if (session.getAttribute("rentalEndDateStr") != null) {
+            session.removeAttribute("rentalEndDateStr");
         }
 
+        session.setAttribute("itemid", itemId);
+        session.setAttribute("rentalEndDateStr", rentalEndDateStr);
+
+        try {
+            APIContext apiContext = new APIContext("AWqlKfsHAv3mt15xEpyoO20PckFdXO_6gXAZWvvReKLEShYmakNINoAAZLj94O8T66LtSmToXmAdtR8C", "EPHptZexuSMZcyBBBpm_-y5TSt89l6R_eP2C8cXAon74BkajFfjJIX5uzvJboIRT7rBrhUEUqVvl1YE4", "sandbox");
+            Payment createdPayment = payment.create(apiContext);
+
+            for (Links link : createdPayment.getLinks()) {
+                if (link.getRel().equals("approval_url")) {
+                    return "redirect:" + link.getHref();
+                }
+            }
+
+        } catch (PayPalRESTException e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Error occurred during payment processing.");
+            return "redirect:/shop"; // Return to the form with an error message
+        }
+
+        return "redirect:/forrent";
+    }
+
+    @GetMapping("/rentSuccess")
+    public String rentSuccess(HttpSession session, Model model) {
+        // Handle successful payment and save rental details to the database
+        String email = (String) session.getAttribute("user");
+        if (email == null) {
+            return "redirect:/login";
+        }
+        String rentalEndDateStr = (String) session.getAttribute("rentalEndDateStr");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime rentalEndDate = LocalDateTime.parse(rentalEndDateStr, formatter);
+
+        int itemId = (int) session.getAttribute("itemid");
         Items item = rt.getForObject(urlitems + "/" + itemId, Items.class);
         Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
-        if (item == null || item.getStock() <= 0) {
-            model.addAttribute("error", "Item is not available.");
-            return "redirect:/forrent";
-        }
 
         BikeRentals bikeRental = new BikeRentals();
         bikeRental.setItem(item);
         bikeRental.setUsers(user);
-        Instant now = Instant.now();
-        bikeRental.setRental_start_date(Date.from(now));
-
-        // Compute the end date based on rental hours
-        Instant endInstant = now.plus(rentalHours, ChronoUnit.HOURS);
-        bikeRental.setRental_end_date(Date.from(endInstant));
-
+        bikeRental.setRental_start_date(Date.from(now.atZone(ZoneId.systemDefault()).toInstant()));
+        bikeRental.setRental_end_date(Date.from(rentalEndDate.atZone(ZoneId.systemDefault()).toInstant()));
         bikeRental.setIs_active(true);
-        bikeRental.setCreated_dt(Date.from(now));
+        bikeRental.setCreated_dt(Date.from(Instant.now()));
 
         item.setStock(item.getStock() - 1);
 
         Items it = new Items(itemId, item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), item.getImage(), item.isIs_visible(), item.getCreated_dt());
         BikeRentals rentals = rt.postForObject(urlbikerentals + "/", bikeRental, BikeRentals.class);
         Items i = rt.postForObject(urlitems + "/", it, Items.class);
+        session.removeAttribute("rentalEndDateStr");
+        session.removeAttribute("itemid");
+        // Assume the necessary rental details are saved to the database here
+        model.addAttribute("message", "Payment successful. Your bike rental has been confirmed.");
+        return "redirect:/forrent"; // Redirect to a success page
+    }
 
-        return "redirect:/forrent";
+    @GetMapping("/rentCancel")
+    public String rentCancel(Model model, HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if (email == null) {
+            return "redirect:/login";
+        }
+        session.removeAttribute("rentalEndDateStr");
+        int itemId = (int) session.getAttribute("itemid");
+        model.addAttribute("message", "Payment was cancelled.");
+        return "redirect:/shopdetail/" + itemId; // Redirect to a cancellation page
     }
 
     @PostMapping("/endRental")
@@ -984,6 +1330,7 @@ public class HomeController {
     @GetMapping("/cart")
     public String cart(Model model, HttpSession session) {
         List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
+
         if (cartItems == null) {
             cartItems = new ArrayList<>(); // Initialize empty list if null
         }
@@ -1018,28 +1365,213 @@ public class HomeController {
 
         List<CartItems> mergedCartItems = new ArrayList<>(mergedCart.values());
 
+        // Apply coupons
+        List<Coupons> appliedCoupons = (List<Coupons>) session.getAttribute("appliedCoupons");
+        if (appliedCoupons == null) {
+            appliedCoupons = new ArrayList<>();
+        }
+
+        BigDecimal totalDiscount = BigDecimal.ZERO;
+        for (Coupons coupon : appliedCoupons) {
+            totalDiscount = totalDiscount.add(coupon.getDiscount_amount());
+        }
+
+        BigDecimal finalTotalPrice = totalPrice.subtract(totalDiscount);
+
         model.addAttribute("cartItems", mergedCartItems);
         model.addAttribute("totalPrice", totalPrice);
+        model.addAttribute("totalDiscount", totalDiscount);
+        model.addAttribute("finalTotalPrice", finalTotalPrice);
+        model.addAttribute("appliedCoupons", appliedCoupons);
+
         return "user/cart";
+    }
+
+    @PostMapping("/apply-coupon")
+    public String applyCoupon(@RequestParam("couponCode") String couponCode, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (session.getAttribute("user") != null) {
+
+            if (couponCode == null) {
+                return "redirect:/cart";
+            }
+            List<Coupons> appliedCoupons = (List<Coupons>) session.getAttribute("appliedCoupons");
+            String email = (String) session.getAttribute("user");
+            if (appliedCoupons == null) {
+                appliedCoupons = new ArrayList<>();
+            }
+
+            for (Coupons coupon : appliedCoupons) {
+                if (coupon.getCode().equalsIgnoreCase(couponCode)) {
+                    redirectAttributes.addFlashAttribute("couponError", "This coupon code is already applied.");
+                    return "redirect:/cart";
+                }
+            }
+
+            Coupons coupon = rt.getForObject(urlcoupons + "/findcode/" + couponCode, Coupons.class);
+            if (coupon == null || !coupon.isIs_active() || coupon.getExpiration_date().before(new Date()) || coupon.getUsage_limit() <= 0) {
+                redirectAttributes.addFlashAttribute("couponError", "Invalid coupon code.");
+                return "redirect:/cart";
+            }
+
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            CouponUsers[] couuser = rt.getForObject(urlcouponusers + "/user/" + user.getUser_id(), CouponUsers[].class);
+
+            for (CouponUsers couponUsers : couuser) {
+                if (couponCode.equals(couponUsers.getCoupons().getCode())) {
+                    redirectAttributes.addFlashAttribute("couponError", "You have already used the discount code.");
+                    return "redirect:/cart";
+                }
+            }
+
+            coupon.setUsage_limit(coupon.getUsage_limit() - 1);
+
+            appliedCoupons.add(coupon);
+            session.setAttribute("appliedCoupons", appliedCoupons);
+            redirectAttributes.addFlashAttribute("couponSuccess", "Coupon applied successfully.");
+            session.setAttribute("couponCode", couponCode);
+            return "redirect:/cart";
+
+        } else {
+            return "redirect:/login";
+        }
     }
 
     @GetMapping("/checkout")
     public String checkout(Model model, HttpSession session) {
         if (session.getAttribute("user") != null) {
-
+            String email = (String) session.getAttribute("user");
             List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
             if (cartItems == null) {
                 cartItems = new ArrayList<>(); // Initialize empty list if null
             }
 
             BigDecimal totalPrice = BigDecimal.ZERO;
+
             for (CartItems item : cartItems) {
                 totalPrice = totalPrice.add(item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())));
+                Items items = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class);
+                if (items.getStock() < item.getTotalQuantity()) {
+                    model.addAttribute("error", "The quantity in the shopping cart is greater than the quantity in stock");
+
+                    // Recalculate total price and merge cart items for cart page
+                    Map<Integer, CartItems> mergedCart = new LinkedHashMap<>();
+                    BigDecimal totalPrices = BigDecimal.ZERO;
+
+                    for (CartItems i : cartItems) {
+                        if (mergedCart.containsKey(i.getItem_id())) {
+                            CartItems existingItem = mergedCart.get(i.getItem_id());
+                            existingItem.setTotalQuantity(existingItem.getTotalQuantity() + i.getTotalQuantity());
+                        } else {
+                            CartItems newItem = new CartItems();
+                            newItem.setItem_id(i.getItem_id());
+                            newItem.setName(i.getName());
+                            newItem.setPrice(i.getPrice());
+                            newItem.setImage(i.getImage());
+                            newItem.setTotalQuantity(i.getTotalQuantity());
+                            mergedCart.put(i.getItem_id(), newItem);
+                        }
+                        totalPrices = totalPrices.add(i.getPrice().multiply(BigDecimal.valueOf(i.getTotalQuantity())));
+                    }
+
+                    if (session.getAttribute("countcartItems") != null) {
+                        int count = (int) session.getAttribute("countcartItems");
+                        model.addAttribute("countcartItems", count);
+                    } else {
+                        model.addAttribute("countcartItems", 0);
+                    }
+
+                    List<CartItems> mergedCartItems = new ArrayList<>(mergedCart.values());
+
+                    model.addAttribute("cartItems", mergedCartItems);
+                    model.addAttribute("totalPrice", totalPrices);
+                    return "user/cart";
+                }
             }
+
+            // Apply coupons
+            List<Coupons> appliedCoupons = (List<Coupons>) session.getAttribute("appliedCoupons");
+            if (appliedCoupons == null) {
+                appliedCoupons = new ArrayList<>();
+            }
+
+            BigDecimal totalDiscount = BigDecimal.ZERO;
+            for (Coupons coupon : appliedCoupons) {
+                totalDiscount = totalDiscount.add(coupon.getDiscount_amount());
+            }
+
+            BigDecimal finalTotalPrice = totalPrice.subtract(totalDiscount);
 
             model.addAttribute("cartItems", cartItems);
             model.addAttribute("totalPrice", totalPrice);
+            model.addAttribute("totalDiscount", totalDiscount);
+            model.addAttribute("finalTotalPrice", finalTotalPrice);
 
+            if (session.getAttribute("countcartItems") != null) {
+                int count = (int) session.getAttribute("countcartItems");
+                model.addAttribute("countcartItems", count);
+            } else {
+                model.addAttribute("countcartItems", 0);
+            }
+            model.addAttribute("account", new Users());
+            Users u = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            model.addAttribute("userdetail", new UserDetails());
+            UserDetails[] ud = rt.getForObject(urluserdetail + "/user/" + u.getUser_id(), UserDetails[].class);
+
+            if (ud != null) {
+                for (UserDetails userDetails : ud) {
+                    model.addAttribute("userdetail", userDetails);
+                }
+            }
+            model.addAttribute("email", email);
+            return "user/checkout";
+        } else {
+            return "redirect:/login";
+        }
+    }
+
+    private APIContext getAPIContext() throws PayPalRESTException {
+        APIContext apiContext = new APIContext(clientIdPaypal, clientSecretPaypal, mode);
+        return apiContext;
+    }
+
+    @PostMapping("/checkout")
+    public String processCheckout(@RequestParam("paymentMethod") String paymentMethod, @Valid @ModelAttribute("userdetail") UserDetailsDTO userdetail, BindingResult bindingResult,
+            @ModelAttribute("account") Users account,
+            HttpSession session, Model model) {
+        String email = (String) session.getAttribute("user");
+        if (email == null) {
+            model.addAttribute("message", "User not logged in.");
+            return "user/checkout";
+        }
+
+        List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
+        if (cartItems == null || cartItems.isEmpty()) {
+            model.addAttribute("message", "Your cart is empty.");
+            return "user/checkout";
+        }
+        BigDecimal totalPrice = cartItems.stream()
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Apply coupons
+        List<Coupons> appliedCoupons = (List<Coupons>) session.getAttribute("appliedCoupons");
+        if (appliedCoupons == null) {
+            appliedCoupons = new ArrayList<>();
+        }
+
+        BigDecimal totalDiscount = appliedCoupons.stream()
+                .map(Coupons::getDiscount_amount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal finalTotalPrice = totalPrice.subtract(totalDiscount);
+
+        // Add cart details to the model
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("userdetail", userdetail);
+            model.addAttribute("cartItems", cartItems);
+            model.addAttribute("totalPrice", totalPrice);
+            model.addAttribute("totalDiscount", totalDiscount);
+            model.addAttribute("finalTotalPrice", finalTotalPrice);
             if (session.getAttribute("countcartItems") != null) {
                 int count = (int) session.getAttribute("countcartItems");
                 model.addAttribute("countcartItems", count);
@@ -1049,98 +1581,284 @@ public class HomeController {
             model.addAttribute("account", new Users());
             return "user/checkout";
         } else {
-            return "redirect:/login";
-        }
-
-    }
-
-    @PostMapping("/checkout")
-    public String processCheckout(@ModelAttribute("account") Users account, HttpSession session, Model model) {
-        String email = (String) session.getAttribute("user");
-        if (email == null) {
-            model.addAttribute("message", "User not logged in.");
-            return "user/checkout";
-        }
-
-        Users users;
-
-        try {
-            users = rt.getForObject(urlusers + "/findemail/" + email, Users.class
-            );
-        } catch (Exception e) {
-            model.addAttribute("message", "Failed to retrieve user details.");
-            return "user/checkout";
-        }
-
-        List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
-        if (cartItems == null || cartItems.isEmpty()) {
-            model.addAttribute("message", "Your cart is empty.");
-            return "user/checkout";
-        }
-
-        BigDecimal totalPrice = cartItems.stream()
-                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        session.setAttribute("totalPrice", totalPrice);
-
-        Orders order = new Orders();
-        order.setUsers(users);
-        order.setTotal_amount(totalPrice);
-        order.setOrder_date(new Date());
-        order.setStatus("Pending");
-        order.setCreated_dt(new Date());
-
-        Orders savedOrder;
-        savedOrder
-                = rt.postForObject(urlorders, order, Orders.class
-                );
-
-        List<OrderItems> orderItems = new ArrayList<>();
-
-        for (CartItems cartItem : cartItems) {
+            Users users;
             try {
-                Items items = rt.getForObject(urlitems + "/" + cartItem.getItem_id(), Items.class
-                );
-                OrderItems orderItem = new OrderItems();
-                orderItem.setOrders(savedOrder);
-                orderItem.setItem(items);
-                orderItem.setQuantity(cartItem.getTotalQuantity());
-                orderItem.setPrice(cartItem.getPrice().multiply(BigDecimal.valueOf(cartItem.getTotalQuantity())));
-                orderItem.setCreated_dt(new Date());
-
-                OrderItems savedOrderItem = rt.postForObject(urlorderitems, orderItem, OrderItems.class);
-
-                int sub = items.getStock() - cartItem.getTotalQuantity();
-                if (sub <= 0) {
-                    items.setIs_visible(false);
-                }
-                Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), sub, items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
-                rt.postForObject(urlitems + "/", item, Items.class);
-                orderItems.add(savedOrderItem);
+                users = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
             } catch (Exception e) {
-                model.addAttribute("message", "Failed to save order item for " + cartItem.getItem_id());
+                model.addAttribute("message", "Failed to retrieve user details.");
                 return "user/checkout";
+            }
+
+            if (cartItems == null || cartItems.isEmpty()) {
+                model.addAttribute("message", "Your cart is empty.");
+                return "user/checkout";
+            }
+
+            // Apply coupons
+            if (appliedCoupons == null) {
+                appliedCoupons = new ArrayList<>();
+            }
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (userdetail.getUserdetail_id() == 0) {
+                userdetail.setCreated_dt(new Date());
+                UserDetails userd = new UserDetails(user, userdetail.getFirst_name(), userdetail.getLast_name(), userdetail.getEmail(), userdetail.getPhone_number(), userdetail.getAddress(), userdetail.getNote(), userdetail.getCreated_dt());
+                rt.postForObject(urluserdetail, userd, UserDetails.class);
+            } else {
+                UserDetails[] ud = rt.getForObject(urluserdetail + "/user/" + user.getUser_id(), UserDetails[].class);
+                for (UserDetails userDetails : ud) {
+                    UserDetails userd = new UserDetails(userdetail.getUserdetail_id(), user, userdetail.getFirst_name(), userdetail.getLast_name(), userdetail.getEmail(), userdetail.getPhone_number(), userdetail.getAddress(), userdetail.getNote(), userDetails.getCreated_dt());
+                    rt.postForObject(urluserdetail, userd, UserDetails.class);
+                }
+
+            }
+
+            session.setAttribute("totalPrice", finalTotalPrice);
+
+            Orders order = new Orders();
+            order.setUsers(users);
+            order.setTotal_amount(finalTotalPrice);
+            order.setOrder_date(new Date());
+            order.setStatus("Pending");
+            order.setCreated_dt(new Date());
+
+            session.setAttribute("pendingOrder", order);
+            session.setAttribute("cartItems", cartItems);
+            session.setAttribute("appliedCoupons", appliedCoupons);
+
+            if ("online".equals(paymentMethod)) {
+                // Handle PayPal payment
+                try {
+                    Payment payment = createPayment(finalTotalPrice.doubleValue(), "USD", "paypal",
+                            "sale", "Order payment", cancelUrl, successUrl);
+                    for (Links link : payment.getLinks()) {
+                        if (link.getRel().equals("approval_url")) {
+                            return "redirect:" + link.getHref();
+                        }
+                    }
+                } catch (PayPalRESTException e) {
+                    e.printStackTrace();
+                    model.addAttribute("message", "Failed to process PayPal payment.");
+                    return "user/checkout";
+                }
+            } else if ("offline".equals(paymentMethod)) {
+
+                order.setStatus("Pending");
+                Orders savedOrder = rt.postForObject(urlorders, order, Orders.class);
+                List<OrderItems> orderItems = new ArrayList<>();
+                for (CartItems cartItem : cartItems) {
+                    try {
+                        Items items = rt.getForObject(urlitems + "/" + cartItem.getItem_id(), Items.class);
+                        OrderItems orderItem = new OrderItems();
+                        orderItem.setOrders(savedOrder);
+                        orderItem.setItem(items);
+                        orderItem.setQuantity(cartItem.getTotalQuantity());
+                        orderItem.setPrice(cartItem.getPrice().multiply(BigDecimal.valueOf(cartItem.getTotalQuantity())));
+                        orderItem.setCreated_dt(new Date());
+
+                        OrderItems savedOrderItem = rt.postForObject(urlorderitems, orderItem, OrderItems.class);
+
+                        int sub = items.getStock() - cartItem.getTotalQuantity();
+                        if (sub <= 0) {
+                            items.setIs_visible(false);
+                        }
+                        Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), sub, items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
+                        rt.postForObject(urlitems + "/", item, Items.class);
+                        orderItems.add(savedOrderItem);
+                    } catch (Exception e) {
+                        model.addAttribute("message", "Failed to save order item for " + cartItem.getItem_id());
+                        return "user/checkout";
+                    }
+                }
+                for (Coupons coupon : appliedCoupons) {
+                    CouponUsers couponUser = new CouponUsers();
+                    couponUser.setCoupons(coupon);
+                    couponUser.setUsers(order.getUsers());
+                    couponUser.setCreated_dt(new Date());
+                    rt.postForObject(urlcouponusers, couponUser, CouponUsers.class);
+                }
+                String couponCode = (String) session.getAttribute("couponCode");
+                if (couponCode != null) {
+                    Coupons coupon = rt.getForObject(urlcoupons + "/findcode/" + couponCode, Coupons.class);
+                    if (coupon.getUsage_limit() > 0) {
+                        int usagelimit = coupon.getUsage_limit() - 1;
+                        if (usagelimit <= 0) {
+                            coupon.setIs_active(false);
+                        }
+                        Coupons c = new Coupons(coupon.getCoupon_id(), coupon.getCode(), coupon.getDiscount_amount(), coupon.getExpiration_date(), usagelimit, coupon.isIs_active(), coupon.getCreated_dt());
+                        rt.postForObject(urlcoupons + "/", c, Coupons.class);
+                    }
+                    session.removeAttribute("couponCode");
+                }
+
+                session.removeAttribute("cartItems");
+                session.setAttribute("countcartItems", 0);
+                session.setAttribute("totalPrice", BigDecimal.ZERO);
+                session.removeAttribute("appliedCoupons");
+                session.removeAttribute("pendingOrder");
+
+                MultiValueMap<String, Object> parts = new LinkedMultiValueMap<>();
+                parts.add("users", users);
+                parts.add("orders", savedOrder);
+                parts.add("orderItems", orderItems);
+
+                // Send the request using a POST request with multipart/form-data
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+                HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(parts, headers);
+
+                rt.postForEntity(urlorders + "/sendbillmail", requestEntity, Void.class);
+                model.addAttribute("paymentMethod", "offline");
+
+                if (session.getAttribute("countcartItems") != null) {
+                    int count = (int) session.getAttribute("countcartItems");
+                    model.addAttribute("countcartItems", count);
+                } else {
+                    model.addAttribute("countcartItems", 0);
+                }
+
+                return "user/thankyou";
             }
         }
 
-        session.removeAttribute("cartItems");
-        session.setAttribute("countcartItems", 0);
-        session.setAttribute("totalPrice", BigDecimal.ZERO);
+        return "user/checkout";
+    }
 
-        // Create MultiValueMap to hold the request parts
-        MultiValueMap<String, Object> parts = new LinkedMultiValueMap<>();
-        parts.add("users", users);
-        parts.add("orders", savedOrder);
-        parts.add("orderItems", orderItems);
+    @GetMapping("/checkout/cancel")
+    public String cancelPay() {
+        return "redirect:/checkout";
+    }
 
-        // Send the request using a POST request with multipart/form-data
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(parts, headers);
+    @GetMapping("/checkout/success")
+    public String successPay(@RequestParam("paymentId") String paymentId, @RequestParam("PayerID") String payerId, Model model, HttpSession session) {
+        try {
+            Payment payment = executePayment(paymentId, payerId);
+            if (payment.getState().equals("approved")) {
+                Orders order = (Orders) session.getAttribute("pendingOrder");
+                List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
+                List<Coupons> appliedCoupons = (List<Coupons>) session.getAttribute("appliedCoupons");
 
-        rt.postForEntity(urlorders + "/sendbillmail", requestEntity, Void.class);
+                Orders savedOrder = rt.postForObject(urlorders, order, Orders.class);
 
-        return "user/thankyou";
+                List<OrderItems> orderItems = new ArrayList<>();
+
+                for (CartItems cartItem : cartItems) {
+                    try {
+                        Items items = rt.getForObject(urlitems + "/" + cartItem.getItem_id(), Items.class);
+                        OrderItems orderItem = new OrderItems();
+                        orderItem.setOrders(savedOrder);
+                        orderItem.setItem(items);
+                        orderItem.setQuantity(cartItem.getTotalQuantity());
+                        orderItem.setPrice(cartItem.getPrice().multiply(BigDecimal.valueOf(cartItem.getTotalQuantity())));
+                        orderItem.setCreated_dt(new Date());
+
+                        OrderItems savedOrderItem = rt.postForObject(urlorderitems, orderItem, OrderItems.class);
+
+                        int sub = items.getStock() - cartItem.getTotalQuantity();
+                        if (sub <= 0) {
+                            items.setIs_visible(false);
+                        }
+                        Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), sub, items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
+                        rt.postForObject(urlitems + "/", item, Items.class);
+                        orderItems.add(savedOrderItem);
+                    } catch (Exception e) {
+                        model.addAttribute("message", "Failed to save order item for " + cartItem.getItem_id());
+                        return "user/checkout";
+                    }
+                }
+                String email = (String) session.getAttribute("user");
+                Users users = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+
+                // Save applied coupons to CouponUsers table
+                for (Coupons coupon : appliedCoupons) {
+                    CouponUsers couponUser = new CouponUsers();
+                    couponUser.setCoupons(coupon);
+                    couponUser.setUsers(order.getUsers());
+                    couponUser.setCreated_dt(new Date());
+                    rt.postForObject(urlcouponusers, couponUser, CouponUsers.class);
+                }
+
+                String couponCode = (String) session.getAttribute("couponCode");
+                if (couponCode != null) {
+                    Coupons coupon = rt.getForObject(urlcoupons + "/findcode/" + couponCode, Coupons.class);
+                    if (coupon.getUsage_limit() > 0) {
+                        int usagelimit = coupon.getUsage_limit() - 1;
+                        if (usagelimit <= 0) {
+                            coupon.setIs_active(false);
+                        }
+                        Coupons c = new Coupons(coupon.getCoupon_id(), coupon.getCode(), coupon.getDiscount_amount(), coupon.getExpiration_date(), usagelimit, coupon.isIs_active(), coupon.getCreated_dt());
+                        rt.postForObject(urlcoupons + "/", c, Coupons.class);
+                    }
+                    session.removeAttribute("couponCode");
+                }
+
+                session.removeAttribute("cartItems");
+                session.setAttribute("countcartItems", 0);
+                session.setAttribute("totalPrice", BigDecimal.ZERO);
+                session.removeAttribute("appliedCoupons");
+                session.removeAttribute("pendingOrder");
+
+                MultiValueMap<String, Object> parts = new LinkedMultiValueMap<>();
+                parts.add("users", users);
+                parts.add("orders", savedOrder);
+                parts.add("orderItems", orderItems);
+
+                // Send the request using a POST request with multipart/form-data
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+                HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(parts, headers);
+
+                rt.postForEntity(urlorders + "/sendbillmail", requestEntity, Void.class);
+                model.addAttribute("paymentMethod", "online");
+                if (session.getAttribute("countcartItems") != null) {
+                    int count = (int) session.getAttribute("countcartItems");
+                    model.addAttribute("countcartItems", count);
+                } else {
+                    model.addAttribute("countcartItems", 0);
+                }
+
+                return "user/thankyou";
+            }
+        } catch (PayPalRESTException e) {
+            e.printStackTrace();
+        }
+        model.addAttribute("message", "Payment failed.");
+        return "user/checkout";
+    }
+
+    private Payment createPayment(Double total, String currency, String method,
+            String intent, String description, String cancelUrl, String successUrl) throws PayPalRESTException {
+        Amount amount = new Amount();
+        amount.setCurrency(currency);
+        amount.setTotal(String.format("%.2f", total));
+
+        Transaction transaction = new Transaction();
+        transaction.setDescription(description);
+        transaction.setAmount(amount);
+
+        List<Transaction> transactions = new ArrayList<>();
+        transactions.add(transaction);
+
+        Payer payer = new Payer();
+        payer.setPaymentMethod(method.toString());
+
+        Payment payment = new Payment();
+        payment.setIntent(intent.toString());
+        payment.setPayer(payer);
+        payment.setTransactions(transactions);
+        RedirectUrls redirectUrls = new RedirectUrls();
+        redirectUrls.setCancelUrl(cancelUrl);
+        redirectUrls.setReturnUrl(successUrl);
+        payment.setRedirectUrls(redirectUrls);
+
+        return payment.create(getAPIContext());
+    }
+
+    private Payment executePayment(String paymentId, String payerId) throws PayPalRESTException {
+        Payment payment = new Payment();
+        payment.setId(paymentId);
+        PaymentExecution paymentExecution = new PaymentExecution();
+        paymentExecution.setPayerId(payerId);
+        return payment.execute(getAPIContext(), paymentExecution);
     }
 
     @GetMapping("/informationLine")
@@ -1168,6 +1886,8 @@ public class HomeController {
             int totalPages = (int) Math.ceil((double) totalItems / pageSize);
 
             Map<Integer, List<OrderItems>> orderItemsMap = new HashMap<>();
+            BigDecimal totalPrice = BigDecimal.ZERO;
+
             for (Orders order : orders) {
                 List<OrderItems> items = rt.exchange(
                         urlorderitems + "/order/" + order.getOrder_id(),
@@ -1176,16 +1896,34 @@ public class HomeController {
                         new ParameterizedTypeReference<List<OrderItems>>() {
                 }
                 ).getBody();
-                orderItemsMap.put(order.getOrder_id(), items);
+
+                if (items != null) {
+                    orderItemsMap.put(order.getOrder_id(), items);
+                    totalPrice = totalPrice.add(
+                            items.stream()
+                                    .map(OrderItems::getPrice)
+                                    .reduce(BigDecimal.ZERO, BigDecimal::add)
+                    );
+                }
                 model.addAttribute("oorder", order);
+                
             }
+
+            // Assuming order.getTotal_amount() is the discounted price
+            BigDecimal discount = totalPrice.subtract(
+                    orders.stream()
+                            .map(Orders::getTotal_amount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            );
+            
+            
 
             model.addAttribute("currentPage", pageNumber);
             model.addAttribute("pageSize", pageSize);
             model.addAttribute("totalPages", totalPages);
-
             model.addAttribute("orders", orders);
             model.addAttribute("orderItemsMap", orderItemsMap);
+            model.addAttribute("discount", discount);
             if (session.getAttribute("countcartItems") != null) {
                 int count = (int) session.getAttribute("countcartItems");
                 model.addAttribute("countcartItems", count);
@@ -1229,6 +1967,7 @@ public class HomeController {
             Orders latestOrder = (orders == null || orders.isEmpty()) ? null : orders.get(0);
 
             Map<Integer, List<OrderItems>> orderItemsMap = new HashMap<>();
+            BigDecimal totalPrice = BigDecimal.ZERO;
             if (latestOrder != null) {
                 List<OrderItems> items = rt.exchange(
                         urlorderitems + "/order/" + latestOrder.getOrder_id(),
@@ -1237,11 +1976,24 @@ public class HomeController {
                         new ParameterizedTypeReference<List<OrderItems>>() {
                 }
                 ).getBody();
-                orderItemsMap.put(latestOrder.getOrder_id(), items);
+
+                if (items != null) {
+                    orderItemsMap.put(latestOrder.getOrder_id(), items);
+
+                    // Calculate total price of all items using BigDecimal
+                    totalPrice = items.stream()
+                            .map(OrderItems::getPrice)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                }
             }
+
+            // Calculate the discount assuming latestOrder.getTotal_amount() is the discounted price
+            BigDecimal discount = totalPrice.subtract(latestOrder != null ? latestOrder.getTotal_amount() : BigDecimal.ZERO);
 
             model.addAttribute("order", latestOrder);
             model.addAttribute("orderItemsMap", orderItemsMap);
+            model.addAttribute("totalPrice", totalPrice);
+            model.addAttribute("discount", discount);
             if (session.getAttribute("countcartItems") != null) {
                 int count = (int) session.getAttribute("countcartItems");
                 model.addAttribute("countcartItems", count);
@@ -1411,19 +2163,20 @@ public class HomeController {
 
     @GetMapping("/shopdetail/{id}")
     public String shopdetail(Model model, @PathVariable int id, HttpSession session) {
-        ParameterizedTypeReference<List<Items>> responseType = new ParameterizedTypeReference<List<Items>>() {
-        };
-        ResponseEntity<List<Items>> response = rt.exchange(urlitems + "/", HttpMethod.GET, null, responseType);
-        List<Items> p = response.getBody();
-
-        // Initialize a new list to hold the top 10 items
-        List<Items> a = new ArrayList<>();
-
-        // Ensure there are at least 10 items in the list
-        int limit = Math.min(p.size(), 10);
-        for (int i = 0; i < limit; i++) {
-            a.add(p.get(i));
-        }
+//        ParameterizedTypeReference<List<Items>> responseType = new ParameterizedTypeReference<List<Items>>() {
+//        };
+//        ResponseEntity<List<Items>> response = rt.exchange(urlitems + "/", HttpMethod.GET, null, responseType);
+//        List<Items> p = response.getBody();
+//
+//        // Initialize a new list to hold the top 10 items
+//        List<Items> a = new ArrayList<>();
+//
+//        // Ensure there are at least 10 items in the list
+//        int limit = Math.min(p.size(), 10);
+//        for (int i = 0; i < limit; i++) {
+//            a.add(p.get(i));
+//        }
+        List<Items> a = rt.getForObject(urlitems + "/top10", List.class);
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
             model.addAttribute("countcartItems", count);

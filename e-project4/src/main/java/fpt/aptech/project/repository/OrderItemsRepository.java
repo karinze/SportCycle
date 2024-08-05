@@ -23,4 +23,7 @@ public interface OrderItemsRepository extends JpaRepository<OrderItems, Integer>
     
     @Query("SELECT e FROM OrderItems e WHERE e.item = :item")
     List<OrderItems> searchByItemsid(@Param("item") Items item);
+    
+    @Query("SELECT SUM(oi.quantity) FROM OrderItems oi JOIN oi.orders o WHERE o.status = 'Received'")
+    Long getTotalQuantitySold();
 }

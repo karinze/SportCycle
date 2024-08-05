@@ -89,28 +89,32 @@ public class ItemService implements IItemService {
     }
 
     @Override
-    public List<Items> filterItems(String name, String brand,String type , BigDecimal minPrice, BigDecimal maxPrice,
+    public List<Items> filterItems(String name, String brand, String type, BigDecimal minPrice, BigDecimal maxPrice,
             String bikeSize, String bikeWheelSize, String bikeColor, String bikeMaterial,
             String bikeBrakeType, int pageNumber, int pageSize) {
         try {
             int validatedPageSize = (pageSize < 1) ? 5 : pageSize;
             Pageable pageable = PageRequest.of(pageNumber, validatedPageSize);
             Page<Items> pageItems = this.itemRepository.filterByBikeProperties(
-                    name, brand,type ,minPrice, maxPrice, bikeSize, bikeWheelSize, bikeColor, bikeMaterial, bikeBrakeType, pageable);
+                    name, brand, type, minPrice, maxPrice, bikeSize, bikeWheelSize, bikeColor, bikeMaterial, bikeBrakeType, pageable);
             return pageItems.getContent();
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException("Failed to fetch filtered items: " + ex.getMessage());
         }
     }
-    
+
     @Override
-    public List<Items> searchItems(String name, String brand,String type , BigDecimal minPrice, BigDecimal maxPrice,
+    public List<Items> searchItems(String name, String brand, String type, BigDecimal minPrice, BigDecimal maxPrice,
             String bikeSize, String bikeWheelSize, String bikeColor, String bikeMaterial,
             String bikeBrakeType) {
         return itemRepository.searchByBikeProperties(name, brand, type, minPrice, maxPrice, bikeSize, bikeWheelSize, bikeColor, bikeMaterial, bikeBrakeType);
     }
-    
-    
+
+    @Override
+    public List<Items> findTop10NewestItems() {
+        Pageable pageable = PageRequest.of(0, 10); // Retrieve the first 10 items
+        return itemRepository.findTop10NewestItems(pageable);
+    }
 
 }

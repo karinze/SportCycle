@@ -75,4 +75,10 @@ public class OrderItemsController {
         return service.findbyitemitemsid(itemId);
     }
     
+    @GetMapping("/getTotalQuantitySold")
+    @ResponseStatus(HttpStatus.OK)
+    public Long getTotalQuantitySold() {
+        return service.getTotalQuantitySold();
+    }
+    
 }

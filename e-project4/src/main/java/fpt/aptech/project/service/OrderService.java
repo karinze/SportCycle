@@ -13,7 +13,9 @@ import fpt.aptech.project.repository.OrderRepository;
 import fpt.aptech.project.repository.UserRepository;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -65,9 +67,8 @@ public class OrderService implements IOrderService {
             billContent.append("<html><body style='font-family: Arial, sans-serif; color: #333;'>")
                     .append("<h3 style='color: #4CAF50;'>Dear ").append(users.getUsername()).append(",</h3>")
                     .append("<p>Thank you for your order. Here are the details:</p>")
-                    .append("<p><strong>Order ID:</strong> ").append(order.getOrder_id()).append("</p>")
                     .append("<p><strong>Order Date:</strong> ").append(order.getOrder_date()).append("</p>")
-                    .append("<p><strong>Total Amount:</strong> $").append(order.getTotal_amount()).append("</p>")
+                    .append("<p><strong>Total Amount:</strong> $").append(order.getTotal_amount().intValue()).append("</p>")
                     .append("<h4 style='color: #4CAF50;'>Items:</h4>")
                     .append("<table style='width: 100%; border-collapse: collapse;'>")
                     .append("<thead>")
@@ -83,7 +84,7 @@ public class OrderService implements IOrderService {
                 billContent.append("<tr>")
                         .append("<td style='border: 1px solid #ddd; padding: 8px;'>").append(item.getItem().getName()).append("</td>")
                         .append("<td style='border: 1px solid #ddd; padding: 8px; text-align: center;'>").append(item.getQuantity()).append("</td>")
-                        .append("<td style='border: 1px solid #ddd; padding: 8px; text-align: right;'>$").append(item.getPrice()).append("</td>")
+                        .append("<td style='border: 1px solid #ddd; padding: 8px; text-align: right;'>$").append(item.getPrice().intValue()).append("</td>")
                         .append("</tr>");
             }
 
@@ -130,6 +131,26 @@ public class OrderService implements IOrderService {
     @Override
     public Users findUser(UUID uuid) {
         return userRepository.findById(uuid).get();
+    }
+
+    @Override
+    public BigDecimal getMonthlyRevenue() {
+        return orderRepository.getMonthlyRevenue();
+    }
+
+    @Override
+    public BigDecimal getTotalRevenue() {
+        return orderRepository.getTotalRevenue();
+    }
+
+    @Override
+    public Long getPendingRequests() {
+        return orderRepository.getPendingRequests();
+    }
+
+    @Override
+    public List<Map<String, Object>> findMonthlyEarnings() {
+        return orderRepository.findMonthlyEarnings();
     }
 
 }

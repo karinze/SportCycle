@@ -7,12 +7,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * ItemsDTO class with validation annotations
- * 
+ *
  * @author Manh_Chien
  */
 public class ItemsDTO {
+
     private int item_id;
-    
+
     @Size(max = 100, message = "Name cannot be longer than 100 characters")
     @NotEmpty(message = "Name is required")
     private String name;
@@ -29,6 +30,7 @@ public class ItemsDTO {
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     private BigDecimal price;
 
+    @NotNull(message = "Stock is required")
     @Min(value = 0, message = "Stock must be 0 or greater")
     private int stock;
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
     <head>
-        <title>Shoppers &mdash; Colorlib e-Commerce Template</title>
+        <title>Shop</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -54,7 +54,7 @@
 
                             <div class="col-12 mb-3 mb-md-0 col-md-4 order-1 order-md-2 text-center">
                                 <div class="site-logo">
-                                    <a th:href="@{/}" class="js-logo-clone">Shoppers</a>
+                                    <a th:href="@{/}" class="js-logo-clone">Sport Cycle</a>
                                 </div>
                             </div>
 
@@ -228,7 +228,7 @@
                                         </a>
                                     </li>
                                     <li class="mb-1">
-                                        <a th:href="@{'/shop'(type='Accessory', name=${name}, brand=${brand}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}" class="d-flex">
+                                        <a th:href="@{'/shop'(type='Accessories')}" class="d-flex">
                                             <span>Accessory</span> <span class="text-black ml-auto"></span>
                                         </a>
                                     </li>
@@ -413,53 +413,7 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="site-section site-blocks-2">
-                                <div class="row justify-content-center text-center mb-5">
-                                    <div class="col-md-7 site-section-heading pt-4">
-                                        <h2>Categories</h2>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-6 col-md-6 col-lg-4 mb-4 mb-lg-0" data-aos="fade" data-aos-delay="">
-                                        <a class="block-2-item" href="#">
-                                            <figure class="image">
-                                                <img src="images/women.jpg" alt="" class="img-fluid">
-                                            </figure>
-                                            <div class="text">
-                                                <span class="text-uppercase">Collections</span>
-                                                <h3>Women</h3>
-                                            </div>
-                                        </a>
-                                    </div>
-                                    <div class="col-sm-6 col-md-6 col-lg-4 mb-5 mb-lg-0" data-aos="fade" data-aos-delay="100">
-                                        <a class="block-2-item" href="#">
-                                            <figure class="image">
-                                                <img src="images/children.jpg" alt="" class="img-fluid">
-                                            </figure>
-                                            <div class="text">
-                                                <span class="text-uppercase">Collections</span>
-                                                <h3>Children</h3>
-                                            </div>
-                                        </a>
-                                    </div>
-                                    <div class="col-sm-6 col-md-6 col-lg-4 mb-5 mb-lg-0" data-aos="fade" data-aos-delay="200">
-                                        <a class="block-2-item" href="#">
-                                            <figure class="image">
-                                                <img src="images/men.jpg" alt="" class="img-fluid">
-                                            </figure>
-                                            <div class="text">
-                                                <span class="text-uppercase">Collections</span>
-                                                <h3>Men</h3>
-                                            </div>
-                                        </a>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
+                    
 
                 </div>
             </div>
@@ -510,13 +464,13 @@
                             </div>
 
                             <div class="block-7">
-                                <form action="#" method="post">
+<!--                                <form action="#" method="post">
                                     <label for="email_subscribe" class="footer-heading">Subscribe</label>
                                     <div class="form-group">
                                         <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
                                         <input type="submit" class="btn btn-sm btn-primary" value="Send">
                                     </div>
-                                </form>
+                                </form>-->
                             </div>
                         </div>
                     </div>
@@ -524,7 +478,7 @@
                         <div class="col-md-12">
                             <p>
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank" class="text-primary">Colorlib</a>
+                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                             </p>
                         </div>
@@ -549,15 +503,15 @@
 
         </script>
 
-        <script src="js/jquery-3.3.1.min.js"></script>
-        <script src="js/jquery-ui.js"></script>
-        <script src="js/popper.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-        <script src="js/owl.carousel.min.js"></script>
-        <script src="js/jquery.magnific-popup.min.js"></script>
-        <script src="js/aos.js"></script>
+        <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+        <script th:src="@{/js/jquery-ui.js}"></script>
+        <script th:src="@{/js/popper.min.js}"></script>
+        <script th:src="@{/js/bootstrap.min.js}"></script>
+        <script th:src="@{/js/owl.carousel.min.js}"></script>
+        <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+        <script th:src="@{/js/aos.js}"></script>
 
-        <script src="js/main.js"></script>
+        <script th:src="@{/js/main.js}"></script>
 
     </body>
 </html>

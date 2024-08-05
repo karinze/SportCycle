@@ -19,6 +19,9 @@ import org.springframework.data.repository.query.Param;
  */
 public interface ItemRepository extends JpaRepository<Items, Integer> {
 
+    @Query("SELECT i FROM Items i ORDER BY i.created_dt DESC")
+    List<Items> findTop10NewestItems(Pageable pageable);
+
     @Query("Select e From Items e Where e.name LIKE :name")
     Page<Items> searchByNamePage(@Param("name") String name, Pageable pageable);
 

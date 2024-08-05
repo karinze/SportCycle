@@ -27,4 +27,6 @@ public interface IOrderItemsService {
     public List<OrderItems> findbyorderitemsid(Orders orders);
     
     public List<OrderItems> findbyitemitemsid(int item);
+    
+    public Long getTotalQuantitySold();
 }

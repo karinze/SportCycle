@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
     <head>
-        <title>Shoppers &mdash; Colorlib e-Commerce Template</title>
+        <title>My Rent</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -58,7 +58,7 @@
 
                             <div class="col-12 mb-3 mb-md-0 col-md-4 order-1 order-md-2 text-center">
                                 <div class="site-logo">
-                                    <a th:href="@{/}" class="js-logo-clone">Shoppers</a>
+                                    <a th:href="@{/}" class="js-logo-clone">Sport Cycle</a>
                                 </div>
                             </div>
 
@@ -172,23 +172,37 @@
                         </div>
                     </div>
                 </div>
-
-
+                
                 <div>
-                    <nav aria-label="Page navigation" th:if="${totalPages > 1}">
-                        <ul class="pagination">
-                            <li th:classappend="${currentPage == 0} ? 'disabled'">
-                                <a class="page-link" th:href="@{'/rentals?pageNumber=' + (${currentPage} - 1) + '&pageSize=' + ${pageSize}}" aria-label="Previous">
+                    <nav aria-label="Page navigation" th:with="math=${T(java.lang.Math)}" th:if="${totalPages > 1}">
+                        <ul class="pagination justify-content-center">
+                            <!-- Previous Button -->
+                            <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+                                <a th:href="@{/rentals(pageNumber=0,pageSize=${pageSize})}" class="page-link">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+                                <a th:href="@{/rentals(pageNumber=${currentPage - 1},pageSize=${pageSize})}" class="page-link">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
-                            <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}" class="page-item" th:classappend="${page == currentPage} ? 'active'">
-                                <a class="page-link" th:href="@{'/rentals?pageNumber=' + ${page} + '&pageSize=' + ${pageSize}}" th:text="${page + 1}">1</a>
+                            <li th:class="${currentPage > 2} ? 'page-item' : 'd-none'">
+                                <span class="page-link">...</span>
                             </li>
-                            <li th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                                <a class="page-link" th:href="@{'/rentals?pageNumber=' + (${currentPage} + 1) + '&pageSize=' + ${pageSize}}" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </a>
+                            <th:block th:each="pageNumber : ${#numbers.sequence(math.max(0, currentPage - 2), math.min(totalPages - 1, currentPage + 2))}">
+                                <li class="page-item" th:classappend="${pageNumber == currentPage} ? ' active'">
+                                    <a th:href="@{/rentals(pageNumber=${pageNumber},pageSize=${pageSize})}" class="page-link" th:text="${pageNumber + 1}"></a>
+                                </li>
+                            </th:block>
+                            <li th:class="${currentPage < totalPages - 3} ? 'page-item' : 'd-none'">
+                                <span class="page-link">...</span>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? ' disabled'">
+                                <a th:href="@{/rentals(pageNumber=${currentPage + 1},pageSize=${pageSize})}" class="page-link"><span aria-hidden="true">&raquo;</span></a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? ' disabled'">
+                                <a th:href="@{/rentals(pageNumber=${totalPages - 1},pageSize=${pageSize})}" class="page-link"><span aria-hidden="true">&raquo;&raquo;</span></a>
                             </li>
                         </ul>
                     </nav>
@@ -243,13 +257,13 @@
                             </div>
 
                             <div class="block-7">
-                                <form action="#" method="post">
+<!--                                <form action="#" method="post">
                                     <label for="email_subscribe" class="footer-heading">Subscribe</label>
                                     <div class="form-group">
                                         <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
                                         <input type="submit" class="btn btn-sm btn-primary" value="Send">
                                     </div>
-                                </form>
+                                </form>-->
                             </div>
                         </div>
                     </div>
@@ -257,7 +271,7 @@
                         <div class="col-md-12">
                             <p>
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank" class="text-primary">Colorlib</a>
+                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                             </p>
                         </div>
@@ -302,17 +316,21 @@
                 xhr.open("POST", "/endRental", true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                 xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        console.log("Rental ended and stock updated");
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            console.log("Rental ended and stock updated");
+                        } else {
+                            console.error("Error ending rental: ", xhr.responseText);
+                        }
                     }
+                };
+                xhr.onerror = function () {
+                    console.error("Request failed");
                 };
                 xhr.send("rentalId=" + rentalId);
             }
 
-            function formatDate(dateString) {
-                const options = {year: 'numeric', month: 'long', day: 'numeric'};
-                return new Date(dateString).toLocaleDateString(undefined, options);
-            }
+
 
             window.onload = function () {
                 document.querySelectorAll('.rental').forEach(function (rental) {
@@ -328,16 +346,39 @@
                     document.getElementById(`end-time-${rentalId}`).innerText = endTimeFormatted;
                 });
             }
+            function endRental(rentalId) {
+                fetch("/endRental", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams({rentalId: rentalId})
+                })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.text().then(text => {
+                                    throw new Error(text)
+                                });
+                            }
+                            return response.text();
+                        })
+                        .then(data => {
+                            console.log("Rental ended and stock updated", data);
+                        })
+                        .catch(error => {
+                            console.error("Error ending rental: ", error);
+                        });
+            }
         </script>
-        <script src="js/jquery-3.3.1.min.js"></script>
-        <script src="js/jquery-ui.js"></script>
-        <script src="js/popper.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-        <script src="js/owl.carousel.min.js"></script>
-        <script src="js/jquery.magnific-popup.min.js"></script>
-        <script src="js/aos.js"></script>
+        <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+        <script th:src="@{/js/jquery-ui.js}"></script>
+        <script th:src="@{/js/popper.min.js}"></script>
+        <script th:src="@{/js/bootstrap.min.js}"></script>
+        <script th:src="@{/js/owl.carousel.min.js}"></script>
+        <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+        <script th:src="@{/js/aos.js}"></script>
 
-        <script src="js/main.js"></script>
+        <script th:src="@{/js/main.js}"></script>
 
     </body>
 </html>

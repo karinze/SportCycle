@@ -42,6 +42,14 @@ public class Users {
     @JsonIgnore
     public List<Orders> olist= new ArrayList();
     
+    @OneToMany(mappedBy = "users")
+    @JsonIgnore
+    public List<CouponUsers> clist= new ArrayList();
+    
+    @OneToMany(mappedBy = "users")
+    @JsonIgnore
+    public List<UserDetails> dlist= new ArrayList();
+    
 //    @OneToMany(mappedBy = "users")
 //    @JsonIgnore
 //    private List<Review> rlist= new ArrayList();

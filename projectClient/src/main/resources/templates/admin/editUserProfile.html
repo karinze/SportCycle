@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/">
+    <head>
+        <title>Create / Edit User Profile</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- Bootstrap CSS link -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+              integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <!-- Custom CSS for better styling -->
+        <style>
+            body {
+                background-color: #f4f4f9;
+                font-family: 'Arial', sans-serif;
+            }
+            .container {
+                background-color: #ffffff;
+                padding: 2rem;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                margin-bottom: 1.5rem;
+                font-size: 2.5rem;
+                color: #343a40;
+                text-transform: uppercase;
+            }
+            label {
+                font-weight: bold;
+                color: #495057;
+            }
+            .form-control, .form-control-file, .form-check-input, .form-control-select {
+                border-radius: 4px;
+                border: 1px solid #ced4da;
+            }
+            .btn-primary {
+                background-color: #007bff;
+                border: none;
+                padding: 0.75rem 1.25rem;
+                font-size: 1.25rem;
+                border-radius: 4px;
+                transition: background-color 0.3s ease;
+            }
+            .btn-primary:hover {
+                background-color: #0056b3;
+            }
+            .text-danger {
+                font-size: 0.875rem;
+            }
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h1 class="text-center">Create / Edit User Profile</h1>
+            <form th:action="@{/editAdminUserProfile}" th:object="${userprofile}" method="post">
+                <input type="hidden" class="form-control" th:field="*{userdetail_id}" id="userdetail_id">
+                <div class="form-group">
+                    <label for="first_name">Enter First Name:</label>
+                    <input type="text" id="first_name" name="first_name" class="form-control" th:field="*{first_name}">
+                    <p class="text-danger" th:errors="*{first_name}" th:if="${#fields.hasErrors('first_name')}"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name">Enter Last Name:</label>
+                    <input type="text" id="last_name" name="last_name" class="form-control" th:field="*{last_name}">
+                    <p class="text-danger" th:errors="*{last_name}" th:if="${#fields.hasErrors('last_name')}"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Enter Email:</label>
+                    <input type="text" id="email" name="email" class="form-control" th:value="${email}" readonly="true">
+                    <p class="text-danger" th:errors="*{email}" th:if="${#fields.hasErrors('email')}"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone_number">Enter Phone Number:</label>
+                    <input type="text" id="phone_number" name="phone_number" class="form-control" th:field="*{phone_number}">
+                    <p class="text-danger" th:errors="*{phone_number}" th:if="${#fields.hasErrors('phone_number')}"></p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Enter Address:</label>
+                    <input type="text" id="address" name="address" class="form-control" th:field="*{address}">
+                    <p class="text-danger" th:errors="*{address}" th:if="${#fields.hasErrors('address')}"></p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="note">Enter Note:</label>
+                    <textarea id="note" name="note" class="form-control" th:field="*{note}"></textarea>
+                    <p class="text-danger" th:errors="*{note}" th:if="${#fields.hasErrors('note')}"></p>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Submit</button>
+            </form>
+        </div>
+
+        <!-- Bootstrap JS and dependencies (optional, if needed) -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-pzjw8f+ua7Kw1TIqD2AIWM+8l68PHX3v52PiD7j+QvI5jv2xS4eAozpCOjI4BB8C" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTNZvyLQcREeMBmEzCqc5hHE/2e5vKTtwKPfGftrUN5Fxz2KNm" crossorigin="anonymous"></script>
+    </body>
+</html>

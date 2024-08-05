@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
     <head>
-        <title>Shoppers &mdash; Colorlib e-Commerce Template</title>
+        <title>Thank You</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mukta:300,400,700"> 
-        <link rel="stylesheet" th:href="@{fonts/icomoon/style.css}">
+        <link rel="stylesheet" th:href="@{/fonts/icomoon/style.css}">
 
-        <link rel="stylesheet" th:href="@{css/bootstrap.min.css}">
-        <link rel="stylesheet" th:href="@{css/magnific-popup.css}">
-        <link rel="stylesheet" th:href="@{css/jquery-ui.css}">
-        <link rel="stylesheet" th:href="@{css/owl.carousel.min.css}">
-        <link rel="stylesheet" th:href="@{css/owl.theme.default.min.css}">
+        <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+        <link rel="stylesheet" th:href="@{/css/magnific-popup.css}">
+        <link rel="stylesheet" th:href="@{/css/jquery-ui.css}">
+        <link rel="stylesheet" th:href="@{/css/owl.carousel.min.css}">
+        <link rel="stylesheet" th:href="@{/css/owl.theme.default.min.css}">
 
 
-        <link rel="stylesheet" th:href="@{css/aos.css}">
+        <link rel="stylesheet" th:href="@{/css/aos.css}">
 
-        <link rel="stylesheet" th:href="@{css/style.css}">
+        <link rel="stylesheet" th:href="@{/css/style.css}">
         <style>
             .site-block-top-search {
                 display: flex;
@@ -46,7 +46,7 @@
 
                             <div class="col-12 mb-3 mb-md-0 col-md-4 order-1 order-md-2 text-center">
                                 <div class="site-logo">
-                                    <a th:href="@{/}" class="js-logo-clone">Shoppers</a>
+                                    <a th:href="@{/}" class="js-logo-clone">Sport Cycle</a>
                                 </div>
                             </div>
 
@@ -86,27 +86,27 @@
                         <ul class="site-menu js-clone-nav d-none d-md-block">
                             <li>
                                 <a th:href="@{/}">Home</a>
-<!--                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                    <li class="has-children">
-                                        <a href="#">Sub Menu</a>
-                                        <ul class="dropdown">
-                                            <li><a href="#">Menu One</a></li>
-                                            <li><a href="#">Menu Two</a></li>
-                                            <li><a href="#">Menu Three</a></li>
-                                        </ul>
-                                    </li>
-                                </ul>-->
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                    <li class="has-children">
+                                                                        <a href="#">Sub Menu</a>
+                                                                        <ul class="dropdown">
+                                                                            <li><a href="#">Menu One</a></li>
+                                                                            <li><a href="#">Menu Two</a></li>
+                                                                            <li><a href="#">Menu Three</a></li>
+                                                                        </ul>
+                                                                    </li>
+                                                                </ul>-->
                             </li>
                             <li >
                                 <a  th:href="@{/about}">About</a>
-<!--                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                </ul>-->
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                </ul>-->
                             </li>
                             <li><a th:href="@{/shop}">Shop</a></li>
                             <li class="has-children" th:if="${session.user != null}">
@@ -132,7 +132,7 @@
             <div class="bg-light py-3">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-12 mb-0"><a th:href="@{/}">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Contact</strong></div>
+                        <div class="col-md-12 mb-0"><a th:href="@{/}">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">ThankYou</strong></div>
                     </div>
                 </div>
             </div>  
@@ -143,8 +143,15 @@
                         <div class="col-md-12 text-center">
                             <span class="icon-check_circle display-3 text-success"></span>
                             <h2 class="display-3 text-black">Thank you!</h2>
-                            <p class="lead mb-5">You order was successfuly completed.</p>
-                            <p><a th:href="@{/shop}" class="btn btn-sm btn-primary">Back to shop</a></p>
+                            <div th:if="${paymentMethod == 'offline'}">
+                                <p class="lead mb-5">Your order has been placed successfully. Please make your payment offline to complete the order.</p>
+                            </div>
+
+                            <div th:if="${paymentMethod == 'online'}">
+                                <p class="lead mb-5">Your order has been placed successfully. You will be redirected to PayPal to complete the payment.</p>
+                            </div>
+                            <!--<p class="lead mb-5">You order was successfuly completed.</p>-->
+                            <p><a th:href="@{/}" class="btn btn-sm btn-primary">Back to shop</a></p>
                         </div>
                     </div>
                 </div>
@@ -196,13 +203,13 @@
                             </div>
 
                             <div class="block-7">
-                                <form action="#" method="post">
+<!--                                <form action="#" method="post">
                                     <label for="email_subscribe" class="footer-heading">Subscribe</label>
                                     <div class="form-group">
                                         <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
                                         <input type="submit" class="btn btn-sm btn-primary" value="Send">
                                     </div>
-                                </form>
+                                </form>-->
                             </div>
                         </div>
                     </div>
@@ -210,7 +217,7 @@
                         <div class="col-md-12">
                             <p>
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank" class="text-primary">Colorlib</a>
+                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                             </p>
                         </div>
@@ -220,15 +227,15 @@
             </footer>
         </div>
 
-        <script src="js/jquery-3.3.1.min.js"></script>
-        <script src="js/jquery-ui.js"></script>
-        <script src="js/popper.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-        <script src="js/owl.carousel.min.js"></script>
-        <script src="js/jquery.magnific-popup.min.js"></script>
-        <script src="js/aos.js"></script>
+        <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+        <script th:src="@{/js/jquery-ui.js}"></script>
+        <script th:src="@{/js/popper.min.js}"></script>
+        <script th:src="@{/js/bootstrap.min.js}"></script>
+        <script th:src="@{/js/owl.carousel.min.js}"></script>
+        <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+        <script th:src="@{/js/aos.js}"></script>
 
-        <script src="js/main.js"></script>
+        <script th:src="@{/js/main.js}"></script>
 
     </body>
 </html>

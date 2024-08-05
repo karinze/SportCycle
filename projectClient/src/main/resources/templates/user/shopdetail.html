@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
     <head>
-        <title>Shoppers &mdash; Colorlib e-Commerce Template</title>
+        <title>Shop Detail</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -98,7 +98,7 @@
 
                             <div class="col-12 mb-3 mb-md-0 col-md-4 order-1 order-md-2 text-center">
                                 <div class="site-logo">
-                                    <a th:href="@{/}" class="js-logo-clone">Shoppers</a>
+                                    <a th:href="@{/}" class="js-logo-clone">Sport Cycle</a>
                                 </div>
                             </div>
 
@@ -224,7 +224,7 @@
                                         </div>
                                     </div>
                                     <button type="button" class="buy-now btn btn-sm btn-primary" onclick="addToCart(this)">Add To Cart</button>
-                                    <button type="button" id="rentButton" style="background-color: darkblue; color: white" class="buy-now btn btn-sm btn-primary rent-now">Rent a Bicycle</button>
+                                    <button th:if="${items.type != 'Accessories'}" type="button" id="rentButton" style="background-color: darkblue; color: white" class="buy-now btn btn-sm btn-primary rent-now">Rent a Bicycle</button>
                                 </form>
                             </div>
                         </div>
@@ -309,21 +309,21 @@
                             </div>
 
                             <div class="block-7">
-                                <form action="#" method="post">
+<!--                                <form action="#" method="post">
                                     <label for="email_subscribe" class="footer-heading">Subscribe</label>
                                     <div class="form-group">
                                         <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
                                         <input type="submit" class="btn btn-sm btn-primary" value="Send">
                                     </div>
-                                </form>
-                            </div>  
+                                </form>-->
+                            </div>
                         </div>
                     </div>
                     <div class="row pt-5 mt-5 text-center">
                         <div class="col-md-12">
                             <p>
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank" class="text-primary">Colorlib</a>
+                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                             </p>
                         </div>
@@ -336,12 +336,13 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Rent a Bicycle</h2>
-                <form th:action="@{/rentBicycle}" method="post">
+                <form id="rentForm" th:action="@{/rentBicycle}" method="post">
                     <input type="hidden" th:value="${items.item_id}" name="itemId" id="itemId">
-                    <label for="rentalHours">Select Rental Period (hours):</label>
-                    <select name="rentalHours" id="rentalHours" required>
-                        <option th:each="i : ${#numbers.sequence(1, 12)}" th:value="${i}" th:text="${i}"></option>
-                    </select>
+                    <label for="rentalEndDate">Select Rental End Date and Time:</label>
+                    <input type="datetime-local" name="rentalEndDate" id="rentalEndDate" required>
+                    <span id="error-message" style="color: red; display: none;">Rental end date must be at least one hour from now.</span>
+                    <div id="cost-info" style="margin-top: 10px;">Rental Rate: $10 per day</div>
+                    <div id="calculated-cost" style="margin-top: 10px;"></div>
                     <button type="submit">Rent</button>
                 </form>
             </div>
@@ -437,6 +438,57 @@
                     document.body.classList.remove("no-scroll"); // Remove no-scroll class from body
                 }
             }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var now = new Date();
+                now.setHours(now.getHours() + 1); // Set the minimum date to one hour from now
+                var offset = now.getTimezoneOffset() * 60000;
+                var localISOTime = (new Date(now - offset)).toISOString().slice(0, -1);
+                document.getElementById('rentalEndDate').min = localISOTime.slice(0, 16);
+
+                document.getElementById('rentalEndDate').addEventListener('change', function () {
+                    calculateCost();
+                });
+
+                document.getElementById('rentForm').addEventListener('submit', function (event) {
+                    var rentalEndDate = document.getElementById('rentalEndDate').value;
+                    var selectedDate = new Date(rentalEndDate);
+                    var now = new Date();
+                    now.setHours(now.getHours() + 1); // Current time plus one hour
+
+                    if (selectedDate < now) {
+                        document.getElementById('error-message').style.display = 'block';
+                        event.preventDefault(); // Prevent the form from being submitted
+                    } else {
+                        document.getElementById('error-message').style.display = 'none';
+                    }
+                });
+
+                function calculateCost() {
+                    var rentalEndDate = document.getElementById('rentalEndDate').value;
+                    if (rentalEndDate) {
+                        var selectedDate = new Date(rentalEndDate);
+                        var now = new Date();
+                        var hoursBetween = (selectedDate - now) / 3600000; // Convert milliseconds to hours
+
+                        var cost;
+                        if (hoursBetween <= 24) {
+                            cost = (10 / 24) * hoursBetween; // Charge per hour for less than or equal to 1 day
+                        } else {
+                            var fullDays = Math.floor(hoursBetween / 24);
+                            var remainingHours = hoursBetween % 24;
+                            cost = (fullDays * 10) + ((10 / 24) * remainingHours); // Charge per day + per hour for remaining hours
+                        }
+
+                        document.getElementById('calculated-cost').textContent = "Estimated Cost: $" + cost.toFixed(2);
+                    } else {
+                        document.getElementById('calculated-cost').textContent = "";
+                    }
+                }
+
+                // Initial calculation on page load
+                calculateCost();
+            });
         </script>
     </body>
 </html>

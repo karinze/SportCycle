@@ -115,19 +115,19 @@ public class ItemController {
             @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize) {
         int validPageNumber = (pageNumber != null) ? pageNumber : 0;
         int validPageSize = (pageSize != null) ? pageSize : 5;
-        return service.filterItems(name, brand,type ,minPrice, maxPrice, bikeSize, bikeWheelSize, bikeColor, bikeMaterial, bikeBrakeType, validPageNumber, validPageSize);
+        return service.filterItems(name, brand, type, minPrice, maxPrice, bikeSize, bikeWheelSize, bikeColor, bikeMaterial, bikeBrakeType, validPageNumber, validPageSize);
     }
 
     public List<Items> searchByType(String type, String name, String brand, int pageNumber, int pageSize) {
         if ("Bike".equalsIgnoreCase(type)) {
-            return service.filterItems(name, brand, type,null, null, null, null, null, null, null, pageNumber, pageSize);
+            return service.filterItems(name, brand, type, null, null, null, null, null, null, null, pageNumber, pageSize);
         } else if ("Accessory".equalsIgnoreCase(type)) {
             return service.searchpage(name, pageNumber, pageSize);
         } else {
             throw new IllegalArgumentException("Invalid type: " + type);
         }
     }
-    
+
     @GetMapping("/showfilter")
     @ResponseStatus(HttpStatus.OK)
     public List<Items> showfilter(@RequestParam(value = "name", required = false) String name,
@@ -140,16 +140,22 @@ public class ItemController {
             @RequestParam(value = "bikeColor", required = false) String bikeColor,
             @RequestParam(value = "bikeMaterial", required = false) String bikeMaterial,
             @RequestParam(value = "bikeBrakeType", required = false) String bikeBrakeType) {
-        return service.searchItems(name, brand,type ,minPrice, maxPrice, bikeSize, bikeWheelSize, bikeColor, bikeMaterial, bikeBrakeType);
+        return service.searchItems(name, brand, type, minPrice, maxPrice, bikeSize, bikeWheelSize, bikeColor, bikeMaterial, bikeBrakeType);
     }
 
     public List<Items> searchByType(String type, String name, String brand) {
         if ("Bike".equalsIgnoreCase(type)) {
-            return service.searchItems(name, brand, type,null, null, null, null, null, null, null);
+            return service.searchItems(name, brand, type, null, null, null, null, null, null, null);
         } else if ("Accessory".equalsIgnoreCase(type)) {
             return service.search(name);
         } else {
             throw new IllegalArgumentException("Invalid type: " + type);
         }
+    }
+
+    @GetMapping("/top10")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Items> listTop10() {
+        return service.findTop10NewestItems();
     }
 }

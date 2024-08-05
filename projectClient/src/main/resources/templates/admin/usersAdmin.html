@@ -9,7 +9,7 @@
         <meta name="description" content="">
         <meta name="author" content="">
 
-        <title>SB Admin 2 - Tables</title>
+        <title>Users</title>
 
         <!-- Custom fonts for this template -->
         <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -100,6 +100,11 @@
                     <a class="nav-link" th:href="@{/indexAdminRentals}">
                         <i class="fas fa-fw fa-table"></i>
                         <span>Rentals</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/indexAdminCoupons}">
+                        <i class="fas fa-fw fa-table"></i>
+                        <span>Coupons</span></a>
                 </li>
                 <!-- Divider -->
                 <hr class="sidebar-divider d-none d-md-block">
@@ -293,7 +298,7 @@
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">Hello, Admin</span>
                                 <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                    th:src="@{/images/temp/undraw_profile.svg}">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -341,6 +346,7 @@
                                                 <th>Username</th>
                                                 <th>Email</th>
                                                 <th>Create_dt</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tfoot>
@@ -349,6 +355,7 @@
                                                 <th>Username</th>
                                                 <th>Email</th>
                                                 <th>Create_dt</th>
+                                                <th>Action</th>
                                             </tr>
                                         </tfoot>
                                         <tbody th:with="counter=${#numbers.sequence(1, list.size())}">
@@ -357,6 +364,9 @@
                                                 <td th:text="${f.username}"></td>
                                                 <td th:text="${f.email}"></td>
                                                 <td th:text="${f.created_dt}"></td>
+                                                <td>
+                                                    <a th:href="@{/editAdminUserProfile/{id}(id=${f.user_id})}" class="btn btn-info">Create / Edit User Profile</a>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -405,7 +415,7 @@
                     <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                        <a class="btn btn-primary" href="login.html">Logout</a>
+                        <a class="btn btn-primary" th:href="@{/logout}">Logout</a>
                     </div>
                 </div>
             </div>
