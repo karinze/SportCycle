@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
     <head>
-        <title>Shoppers &mdash; Colorlib e-Commerce Template</title>
+        <title>Contact</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -46,7 +46,7 @@
 
                             <div class="col-12 mb-3 mb-md-0 col-md-4 order-1 order-md-2 text-center">
                                 <div class="site-logo">
-                                    <a href="@{/}" class="js-logo-clone">Shoppers</a>
+                                    <a th:href="@{/}" class="js-logo-clone">Sport Cycle</a>
                                 </div>
                             </div>
 
@@ -84,34 +84,46 @@
                 <nav class="site-navigation text-right text-md-center" role="navigation">
                     <div class="container">
                         <ul class="site-menu js-clone-nav d-none d-md-block">
-                            <li class="has-children">
+                            <li>
                                 <a th:href="@{/}">Home</a>
-                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                    <li class="has-children">
-                                        <a href="#">Sub Menu</a>
-                                        <ul class="dropdown">
-                                            <li><a href="#">Menu One</a></li>
-                                            <li><a href="#">Menu Two</a></li>
-                                            <li><a href="#">Menu Three</a></li>
-                                        </ul>
-                                    </li>
-                                </ul>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                    <li class="has-children">
+                                                                        <a href="#">Sub Menu</a>
+                                                                        <ul class="dropdown">
+                                                                            <li><a href="#">Menu One</a></li>
+                                                                            <li><a href="#">Menu Two</a></li>
+                                                                            <li><a href="#">Menu Three</a></li>
+                                                                        </ul>
+                                                                    </li>
+                                                                </ul>-->
                             </li>
-                            <li class="has-children">
-                                <a th:href="@{/about}">About</a>
-                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                </ul>
+                            <li >
+                                <a  th:href="@{/about}">About</a>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                </ul>-->
                             </li>
                             <li><a th:href="@{/shop}">Shop</a></li>
-                            <li><a href="#">Catalogue</a></li>
-                            <li><a href="#">New Arrivals</a></li>
-                            <li class="has-children active"><a th:href="@{/contact}">Contact</a></li>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Rentals</a>
+                                <ul class="dropdown">
+                                    <li><a th:href="@{/rentals}">My Rentals</a></li>
+                                    <li><a th:href="@{/forrent}">For Rent</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Information Line</a>
+                                <ul class="dropdown">
+                                    <li><a th:href="@{/informationLine}">Order History</a></li>
+                                    <li><a th:href="@{/latestOrder}">Latest Order</a></li>
+                                </ul>
+                            </li>
+                            <li><a class="contactt active" th:href="@{/contact}">Contact</a></li>
                         </ul>
                     </div>
                 </nav>
@@ -133,45 +145,7 @@
                         </div>
                         <div class="col-md-7">
 
-                            <form action="#" method="post">
-
-                                <div class="p-3 p-lg-5 border">
-                                    <div class="form-group row">
-                                        <div class="col-md-6">
-                                            <label for="c_fname" class="text-black">First Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="c_fname" name="c_fname">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="c_lname" class="text-black">Last Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="c_lname" name="c_lname">
-                                        </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <div class="col-md-12">
-                                            <label for="c_email" class="text-black">Email <span class="text-danger">*</span></label>
-                                            <input type="email" class="form-control" id="c_email" name="c_email" placeholder="">
-                                        </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <div class="col-md-12">
-                                            <label for="c_subject" class="text-black">Subject </label>
-                                            <input type="text" class="form-control" id="c_subject" name="c_subject">
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group row">
-                                        <div class="col-md-12">
-                                            <label for="c_message" class="text-black">Message </label>
-                                            <textarea name="c_message" id="c_message" cols="30" rows="7" class="form-control"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <div class="col-lg-12">
-                                            <input type="submit" class="btn btn-primary btn-lg btn-block" value="Send Message">
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1165.2041816026858!2d106.68177799847979!3d10.791075053146526!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752fcdf5e6b00b%3A0xed1c6762515e1113!2sFPT%20Aptech%20-%20Game%20Development%20with%20Unity!5e0!3m2!1svi!2s!4v1722575698982!5m2!1svi!2s" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                         </div>
                         <div class="col-md-5 ml-auto">
                             <div class="p-4 border mb-3">
@@ -225,12 +199,6 @@
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
-                            <h3 class="footer-heading mb-4">Promo</h3>
-                            <a href="#" class="block-6">
-                                <img src="images/hero_1.jpg" alt="Image placeholder" class="img-fluid rounded mb-4">
-                                <h3 class="font-weight-light  mb-0">Finding Your Perfect Shoes</h3>
-                                <p>Promo from  nuary 15 &mdash; 25, 2019</p>
-                            </a>
                         </div>
                         <div class="col-md-6 col-lg-3">
                             <div class="block-5 mb-5">
@@ -243,13 +211,13 @@
                             </div>
 
                             <div class="block-7">
-                                <form action="#" method="post">
+<!--                                <form action="#" method="post">
                                     <label for="email_subscribe" class="footer-heading">Subscribe</label>
                                     <div class="form-group">
                                         <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
                                         <input type="submit" class="btn btn-sm btn-primary" value="Send">
                                     </div>
-                                </form>
+                                </form>-->
                             </div>
                         </div>
                     </div>
@@ -257,7 +225,7 @@
                         <div class="col-md-12">
                             <p>
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank" class="text-primary">Colorlib</a>
+                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                             </p>
                         </div>
@@ -267,15 +235,15 @@
             </footer>
         </div>
 
-        <script src="js/jquery-3.3.1.min.js"></script>
-        <script src="js/jquery-ui.js"></script>
-        <script src="js/popper.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-        <script src="js/owl.carousel.min.js"></script>
-        <script src="js/jquery.magnific-popup.min.js"></script>
-        <script src="js/aos.js"></script>
+        <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+        <script th:src="@{/js/jquery-ui.js}"></script>
+        <script th:src="@{/js/popper.min.js}"></script>
+        <script th:src="@{/js/bootstrap.min.js}"></script>
+        <script th:src="@{/js/owl.carousel.min.js}"></script>
+        <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+        <script th:src="@{/js/aos.js}"></script>
 
-        <script src="js/main.js"></script>
+        <script th:src="@{/js/main.js}"></script>
 
     </body>
 </html>

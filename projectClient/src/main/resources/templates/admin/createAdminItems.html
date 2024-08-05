@@ -1,66 +1,105 @@
 <!DOCTYPE html>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
--->
 <html xmlns:th="https://www.thymeleaf.org/">
-<head>
-    <title>Create New</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <head>
+        <title>Create New Item</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Bootstrap CSS link -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-</head>
-<body>
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h1>Create</h1>
+        <!-- Bootstrap CSS link -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+              integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <!-- Custom CSS for better styling -->
+        <style>
+            body {
+                background-color: #f4f4f9;
+                font-family: 'Arial', sans-serif;
+            }
+            .container {
+                background-color: #ffffff;
+                padding: 2rem;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                margin-bottom: 1.5rem;
+                font-size: 2.5rem;
+                color: #343a40;
+                text-transform: uppercase;
+            }
+            label {
+                font-weight: bold;
+                color: #495057;
+            }
+            .form-control, .form-control-file, .form-check-input, .form-control-select {
+                border-radius: 4px;
+                border: 1px solid #ced4da;
+            }
+            .btn-primary {
+                background-color: #007bff;
+                border: none;
+                padding: 0.75rem 1.25rem;
+                font-size: 1.25rem;
+                border-radius: 4px;
+                transition: background-color 0.3s ease;
+            }
+            .btn-primary:hover {
+                background-color: #0056b3;
+            }
+            .text-danger {
+                font-size: 0.875rem;
+            }
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h1 class="text-center">Create New Item</h1>
             <form th:action="@{/createAdminItems}" th:object="${items}" method="post" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="name">Enter Name:</label>
                     <input type="text" id="name" name="name" class="form-control" th:field="*{name}">
-                    <p style="color: red" th:errors="*{name}" th:if="${#fields.hasErrors('name')}" class="error-message"></p>
+                    <p class="text-danger" th:errors="*{name}" th:if="${#fields.hasErrors('name')}"></p>
                 </div>
 
                 <div class="form-group">
                     <label for="brand">Enter Brand:</label>
                     <input type="text" id="brand" name="brand" class="form-control" th:field="*{brand}">
-                    <p style="color: red" th:errors="*{brand}" th:if="${#fields.hasErrors('brand')}" class="error-message"></p>
+                    <p class="text-danger" th:errors="*{brand}" th:if="${#fields.hasErrors('brand')}"></p>
                 </div>
 
                 <div class="form-group">
                     <label for="description">Enter Description:</label>
                     <input type="text" id="description" name="description" class="form-control" th:field="*{description}">
-                    <p style="color: red" th:errors="*{description}" th:if="${#fields.hasErrors('description')}" class="error-message"></p>
+                    <p class="text-danger" th:errors="*{description}" th:if="${#fields.hasErrors('description')}"></p>
                 </div>
 
                 <div class="form-group">
                     <label for="price">Enter Price:</label>
                     <input type="text" id="price" name="price" class="form-control" th:field="*{price}">
-                    <p style="color: red" th:errors="*{price}" th:if="${#fields.hasErrors('price')}" class="error-message"></p>
+                    <p class="text-danger" th:errors="*{price}" th:if="${#fields.hasErrors('price')}"></p>
                 </div>
 
                 <div class="form-group">
                     <label for="stock">Enter Stock:</label>
                     <input type="text" id="stock" name="stock" class="form-control" th:field="*{stock}">
-                    <p style="color: red" th:errors="*{stock}" th:if="${#fields.hasErrors('stock')}" class="error-message"></p>
+                    <p class="text-danger" th:errors="*{stock}" th:if="${#fields.hasErrors('stock')}"></p>
                 </div>
 
                 <div class="form-group">
                     <label for="type">Enter Type:</label>
-                    <input type="text" id="type" name="type" class="form-control" th:field="*{type}">
-                    <p style="color: red" th:errors="*{type}" th:if="${#fields.hasErrors('type')}" class="error-message"></p>
-
+                    <select id="type" name="type" class="form-control" th:field="*{type}">
+                        <option value="Bike">Bike</option>
+                        <option value="Accessories">Accessories</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label for="image">Enter Image:</label>
                     <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
-                    <p style="color: red" th:errors="*{image}" th:if="${#fields.hasErrors('image')}" class="error-message"></p>
-                    
+                    <p class="text-danger" th:errors="*{image}" th:if="${#fields.hasErrors('image')}"></p>
                 </div>
 
                 <div class="form-group form-check">
@@ -68,16 +107,13 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                     <label for="is_visible" class="form-check-label">Visible</label>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="submit" class="btn btn-primary btn-block">Create</button>
             </form>
         </div>
-    </div>
-</div>
 
-<!-- Bootstrap JS and dependencies (optional, if needed) -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
-        integrity="sha384-Vkoo8x4CGsGXP6D9w8rsQv9Lf1KuO8HvJGNIpz2mtm3U6sFOnq0s1Gt4AVR3uAiz"
-        crossorigin="anonymous"></script>
-        
-</body>
+        <!-- Bootstrap JS and dependencies (optional, if needed) -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-pzjw8f+ua7Kw1TIqD2AIWM+8l68PHX3v52PiD7j+QvI5jv2xS4eAozpCOjI4BB8C" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTNZvyLQcREeMBmEzCqc5hHE/2e5vKTtwKPfGftrUN5Fxz2KNm" crossorigin="anonymous"></script>
+    </body>
 </html>

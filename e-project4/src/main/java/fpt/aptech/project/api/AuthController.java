@@ -26,9 +26,9 @@ public class AuthController {
     @Autowired
     IAuthService service;
 
-    @GetMapping("/login/{username}/{password}")
+    @GetMapping("/login/{email}/{username}/{password}")
     @ResponseStatus(HttpStatus.OK)
-    public Users login(@PathVariable("username") String username,@PathVariable("password") String password) {
-        return service.checklogin(username, password);
+    public Users login(@PathVariable("email") String email,@PathVariable("username") String username,@PathVariable("password") String password) {
+        return service.checklogin(email,username, password);
     }
 }

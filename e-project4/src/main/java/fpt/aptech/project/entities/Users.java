@@ -21,7 +21,6 @@ import lombok.*;
 @Getter
 public class Users {
     @Id
-    
     @Column(name = "user_id", columnDefinition = "UNIQUEIDENTIFIER")
     public UUID user_id;
     @Column(name = "username")
@@ -42,6 +41,14 @@ public class Users {
     @OneToMany(mappedBy = "users")
     @JsonIgnore
     public List<Orders> olist= new ArrayList();
+    
+    @OneToMany(mappedBy = "users")
+    @JsonIgnore
+    public List<CouponUsers> clist= new ArrayList();
+    
+    @OneToMany(mappedBy = "users")
+    @JsonIgnore
+    public List<UserDetails> dlist= new ArrayList();
     
 //    @OneToMany(mappedBy = "users")
 //    @JsonIgnore

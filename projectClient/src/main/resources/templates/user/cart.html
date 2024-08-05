@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="https://www.thymeleaf.org/">
     <head>
-        <title>Shoppers &mdash; Colorlib e-Commerce Template</title>
+        <title>Cart</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -46,7 +46,7 @@
 
                             <div class="col-12 mb-3 mb-md-0 col-md-4 order-1 order-md-2 text-center">
                                 <div class="site-logo">
-                                    <a th:href="@{/}" class="js-logo-clone">Shoppers</a>
+                                    <a th:href="@{/}" class="js-logo-clone">Sport Cycle</a>
                                 </div>
                             </div>
 
@@ -84,33 +84,45 @@
                 <nav class="site-navigation text-right text-md-center" role="navigation">
                     <div class="container">
                         <ul class="site-menu js-clone-nav d-none d-md-block">
-                            <li class="has-children">
+                            <li>
                                 <a th:href="@{/}">Home</a>
-                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                    <li class="has-children">
-                                        <a href="#">Sub Menu</a>
-                                        <ul class="dropdown">
-                                            <li><a href="#">Menu One</a></li>
-                                            <li><a href="#">Menu Two</a></li>
-                                            <li><a href="#">Menu Three</a></li>
-                                        </ul>
-                                    </li>
-                                </ul>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                    <li class="has-children">
+                                                                        <a href="#">Sub Menu</a>
+                                                                        <ul class="dropdown">
+                                                                            <li><a href="#">Menu One</a></li>
+                                                                            <li><a href="#">Menu Two</a></li>
+                                                                            <li><a href="#">Menu Three</a></li>
+                                                                        </ul>
+                                                                    </li>
+                                                                </ul>-->
                             </li>
-                            <li class="has-children">
+                            <li >
                                 <a th:href="@{/about}">About</a>
-                                <ul class="dropdown">
-                                    <li><a href="#">Menu One</a></li>
-                                    <li><a href="#">Menu Two</a></li>
-                                    <li><a href="#">Menu Three</a></li>
-                                </ul>
+                                <!--                                <ul class="dropdown">
+                                                                    <li><a href="#">Menu One</a></li>
+                                                                    <li><a href="#">Menu Two</a></li>
+                                                                    <li><a href="#">Menu Three</a></li>
+                                                                </ul>-->
                             </li>
                             <li><a th:href="@{/shop}">Shop</a></li>
-                            <li><a href="#">Catalogue</a></li>
-                            <li><a href="#">New Arrivals</a></li>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Rentals</a>
+                                <ul class="dropdown">
+                                    <li><a th:href="@{/rentals}">My Rentals</a></li>
+                                    <li><a th:href="@{/forrent}">For Rent</a></li>
+                                </ul>
+                            </li>
+                            <li class="has-children" th:if="${session.user != null}">
+                                <a href="#">Information Line</a>
+                                <ul class="dropdown">
+                                    <li><a th:href="@{/informationLine}">Order History</a></li>
+                                    <li><a th:href="@{/latestOrder}">Latest Order</a></li>
+                                </ul>
+                            </li>
                             <li><a th:href="@{/contact}">Contact</a></li>
                         </ul>
                     </div>
@@ -130,6 +142,7 @@
                     <div class="row mb-5">
                         <form class="col-md-12" th:action="@{/updatecart}" method="post">
                             <div class="site-blocks-table">
+                                <p th:if="${error}" th:text="${error}" class="alert alert-danger"></p>
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
@@ -149,7 +162,7 @@
                                             <td class="product-name">
                                                 <h2 class="h5 text-black" th:text="${item.name}"></h2>
                                             </td>
-                                            <td th:text="${item.price}"></td>
+                                            <td th:text="${item.price.intValue()} + ' $'"></td>
                                             <td>
                                                 <div class="input-group mb-3" style="max-width: 120px;">
                                                     <div class="input-group-prepend">
@@ -162,7 +175,7 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td th:text="${item.price.multiply(item.totalQuantity)}"></td>
+                                            <td th:text="${item.price.multiply(item.totalQuantity).intValue() + ' $'}"></td>
                                             <td><a th:href="@{/deletecart/{itemId}(itemId=${item.item_id})}" class="btn btn-primary btn-sm">X</a></td>
                                         </tr>
                                     </tbody>
@@ -180,20 +193,33 @@
                     </div>
 
                     <div class="row">
+
                         <div class="col-md-6">
                             <div class="row">
+                                <div th:if="${couponSuccess != null}" class="alert alert-success col-md-12">
+                                    <span th:text="${couponSuccess}"></span>
+                                </div>
+                                <div th:if="${couponError != null}" class="alert alert-danger col-md-12">
+                                    <span th:text="${couponError}"></span>
+                                </div>
                                 <div class="col-md-12">
                                     <label class="text-black h4" for="coupon">Coupon</label>
                                     <p>Enter your coupon code if you have one.</p>
                                 </div>
-                                <div class="col-md-8 mb-3 mb-md-0">
-                                    <input type="text" class="form-control py-3" id="coupon" placeholder="Coupon Code">
-                                </div>
-                                <div class="col-md-4">
-                                    <button class="btn btn-primary btn-sm">Apply Coupon</button>
-                                </div>
+                                <form th:action="@{/apply-coupon}" method="post" class="col-md-12">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-8 mb-3 mb-md-0">
+                                            <input type="text" class="form-control py-3" id="coupon" name="couponCode" placeholder="Coupon Code" required="true">
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <button type="submit" th:classappend="${totalPrice <= 0} ? ' disabled'" th:style="${totalPrice <= 0} ? 'pointer-events: none;opacity: 0.5;'" class="btn btn-primary btn-sm btn-block">Apply Coupon</button>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
+
+
                         <div class="col-md-6 pl-5">
                             <div class="row justify-content-end">
                                 <div class="col-md-7">
@@ -207,7 +233,15 @@
                                             <span class="text-black">Subtotal</span>
                                         </div>
                                         <div class="col-md-6 text-right">
-                                            <strong class="text-black" th:text="${totalPrice}"></strong>
+                                            <strong class="text-black" th:text="${totalPrice.intValue()} + ' $'"></strong>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <span class="text-black">Discount</span>
+                                        </div>
+                                        <div class="col-md-6 text-right">
+                                            <strong class="text-black" th:text="${totalDiscount.intValue()}"></strong>
                                         </div>
                                     </div>
                                     <div class="row mb-5">
@@ -215,12 +249,13 @@
                                             <span class="text-black">Total</span>
                                         </div>
                                         <div class="col-md-6 text-right">
-                                            <strong class="text-black" th:text="${totalPrice}"></strong>
+                                            <strong class="text-black" th:text="${finalTotalPrice.intValue()} + ' $'"></strong>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <button class="btn btn-primary btn-lg py-3 btn-block" onclick="window.location = '@{/checkout}'">Proceed To Checkout</button>
+                                            <a class="btn btn-primary btn-lg py-3 btn-block" th:classappend="${totalPrice <= 0} ? ' disabled'" th:style="${totalPrice <= 0} ? 'pointer-events: none;opacity: 0.5;'" th:href="@{/checkout}">Proceed To Checkout</a>
+
                                         </div>
                                     </div>
                                 </div>
@@ -276,13 +311,13 @@
                             </div>
 
                             <div class="block-7">
-                                <form action="#" method="post">
+<!--                                <form action="#" method="post">
                                     <label for="email_subscribe" class="footer-heading">Subscribe</label>
                                     <div class="form-group">
                                         <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
                                         <input type="submit" class="btn btn-sm btn-primary" value="Send">
                                     </div>
-                                </form>
+                                </form>-->
                             </div>
                         </div>
                     </div>
@@ -290,7 +325,7 @@
                         <div class="col-md-12">
                             <p>
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank" class="text-primary">Colorlib</a>
+                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                             </p>
                         </div>
@@ -299,16 +334,30 @@
                 </div>
             </footer>
         </div>
+        <script>
+            function formatScientificNotation() {
+                let priceElements = document.querySelectorAll('[id^="price-"]');
+                priceElements.forEach(element => {
+                    let scientificNotation = element.innerText;
+                    if (scientificNotation !== null && scientificNotation !== '') {
+                        let decimalNumber = Number(scientificNotation);
+                        if (!isNaN(decimalNumber)) {
+                            element.innerText = decimalNumber;
+                        }
+                    }
+                });
+            }
+            window.onload = formatScientificNotation;
+        </script>
+        <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+        <script th:src="@{/js/jquery-ui.js}"></script>
+        <script th:src="@{/js/popper.min.js}"></script>
+        <script th:src="@{/js/bootstrap.min.js}"></script>
+        <script th:src="@{/js/owl.carousel.min.js}"></script>
+        <script th:src="@{/js/jquery.magnific-popup.min.js}"></script>
+        <script th:src="@{/js/aos.js}"></script>
 
-        <script src="js/jquery-3.3.1.min.js"></script>
-        <script src="js/jquery-ui.js"></script>
-        <script src="js/popper.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-        <script src="js/owl.carousel.min.js"></script>
-        <script src="js/jquery.magnific-popup.min.js"></script>
-        <script src="js/aos.js"></script>
-
-        <script src="js/main.js"></script>
+        <script th:src="@{/js/main.js}"></script>
 
     </body>
 </html>

@@ -4,7 +4,11 @@
  */
 package fpt.aptech.client.models;
 
+import java.time.Instant;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 
 
@@ -22,6 +26,15 @@ public class BikeRentals {
     public Date rental_end_date;
     public boolean is_active;
     public Date created_dt;
+    
+    
+    
+    public void checkAndDeactivate() {
+        if (Instant.now().isAfter(rental_end_date.toInstant())) {
+            is_active = false;
+        }
+    }
+    
 
     public BikeRentals() {
     }
@@ -39,6 +52,17 @@ public class BikeRentals {
         this.is_active = is_active;
         this.created_dt = created_dt;
     }
+    
+    public BikeRentals( Items item, Users users, Date rental_start_date, Date rental_end_date, boolean is_active, Date created_dt) {
+        this.item = item;
+        this.users = users;
+        this.rental_start_date = rental_start_date;
+        this.rental_end_date = rental_end_date;
+        this.is_active = is_active;
+        this.created_dt = created_dt;
+    }
+    
+    
     
     
 

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/">
+    <head>
+        <title>Create New Coupons</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- Bootstrap CSS link -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+              integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <!-- Custom CSS for better styling -->
+        <style>
+            body {
+                background-color: #f4f4f9;
+                font-family: 'Arial', sans-serif;
+            }
+            .container {
+                background-color: #ffffff;
+                padding: 2rem;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            h1 {
+                margin-bottom: 1.5rem;
+                font-size: 2.5rem;
+                color: #343a40;
+                text-transform: uppercase;
+            }
+            label {
+                font-weight: bold;
+                color: #495057;
+            }
+            .form-control, .form-control-file, .form-check-input, .form-control-select {
+                border-radius: 4px;
+                border: 1px solid #ced4da;
+            }
+            .btn-primary {
+                background-color: #007bff;
+                border: none;
+                padding: 0.75rem 1.25rem;
+                font-size: 1.25rem;
+                border-radius: 4px;
+                transition: background-color 0.3s ease;
+            }
+            .btn-primary:hover {
+                background-color: #0056b3;
+            }
+            .text-danger {
+                font-size: 0.875rem;
+            }
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h1 class="text-center">Create New Coupons</h1>
+            <form th:action="@{/createAdminCoupons}" th:object="${coupons}" method="post">
+                <div class="form-group">
+                    <label for="code">Enter Code:</label>
+                    <input type="text" id="code" name="code" class="form-control" th:field="*{code}">
+                    <p class="text-danger" th:errors="*{code}" th:if="${#fields.hasErrors('code')}"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="discount_amount">Enter Discount Amount:</label>
+                    <input type="text" id="discount_amount" name="discount_amount" class="form-control" th:field="*{discount_amount}">
+                    <p class="text-danger" th:errors="*{discount_amount}" th:if="${#fields.hasErrors('discount_amount')}"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="expiration_date">Enter Expiration Date:</label>
+                    <input type="datetime-local" id="expiration_date" name="expiration_date" class="form-control" th:field="*{expiration_date}">
+                    <p class="text-danger" th:errors="*{expiration_date}" th:if="${#fields.hasErrors('expiration_date')}"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="usage_limit">Enter Usage Limit:</label>
+                    <input type="text" id="usage_limit" name="usage_limit" class="form-control" th:field="*{usage_limit}">
+                    <p class="text-danger" th:errors="*{usage_limit}" th:if="${#fields.hasErrors('usage_limit')}"></p>
+                </div>
+
+                <div class="form-group form-check">
+                    <input type="checkbox" id="is_active" name="is_active" class="form-check-input" th:field="*{is_active}">
+                    <label for="is_active" class="form-check-label">Active</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Create</button>
+            </form>
+        </div>
+
+        <!-- Bootstrap JS and dependencies (optional, if needed) -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-pzjw8f+ua7Kw1TIqD2AIWM+8l68PHX3v52PiD7j+QvI5jv2xS4eAozpCOjI4BB8C" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTNZvyLQcREeMBmEzCqc5hHE/2e5vKTtwKPfGftrUN5Fxz2KNm" crossorigin="anonymous"></script>
+    </body>
+</html>
