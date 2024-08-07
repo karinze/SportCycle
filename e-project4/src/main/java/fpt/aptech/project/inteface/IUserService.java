@@ -39,5 +39,7 @@ public interface IUserService {
     public List<Tokens> getResetTokens(Users users);
     
     public void saveTokenPass(List<Tokens> list);
+    
+    public Users findUsername(String username);
 
 }

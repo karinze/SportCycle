@@ -264,6 +264,12 @@ public class HomeController {
                     bindingResult.rejectValue("email", "error.account", "Email already exists");
                 }
             }
+            if (!user.getUsername().isEmpty()) {
+                Users users = rt.getForObject(urlusers + "/findusername/" + user.getUsername(), Users.class);
+                if (users != null) {
+                    bindingResult.rejectValue("username", "error.account", "Username already exists");
+                }
+            }
             return "login/register";
         } else {
             if (!user.getEmail().isEmpty()) {
@@ -1183,6 +1189,7 @@ public class HomeController {
 
     @PostMapping("/rentBicycle")
     public String rentBicycle(@RequestParam("itemId") int itemId,
+            @RequestParam("rentalStartDate") String rentalStartDateStr,
             @RequestParam("rentalEndDate") String rentalEndDateStr,
             HttpSession session, Model model) {
         String email = (String) session.getAttribute("user");
@@ -1191,12 +1198,12 @@ public class HomeController {
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime rentalStartDate = LocalDateTime.parse(rentalStartDateStr, formatter);
         LocalDateTime rentalEndDate = LocalDateTime.parse(rentalEndDateStr, formatter);
 
         double hourlyRate = 10 / 24.0;
         double costPerMinute = hourlyRate / 60.0;
-        long minutesBetween = java.time.Duration.between(now, rentalEndDate).toMinutes();
+        long minutesBetween = java.time.Duration.between(rentalStartDate, rentalEndDate).toMinutes();
         double cost = costPerMinute * minutesBetween;
 
         // PayPal payment
@@ -1231,6 +1238,7 @@ public class HomeController {
         }
 
         session.setAttribute("itemid", itemId);
+        session.setAttribute("rentalStartDateStr", rentalStartDateStr);
         session.setAttribute("rentalEndDateStr", rentalEndDateStr);
 
         try {
@@ -1254,15 +1262,15 @@ public class HomeController {
 
     @GetMapping("/rentSuccess")
     public String rentSuccess(HttpSession session, Model model) {
-        // Handle successful payment and save rental details to the database
         String email = (String) session.getAttribute("user");
         if (email == null) {
             return "redirect:/login";
         }
+        String rentalStartDateStr = (String) session.getAttribute("rentalStartDateStr");
         String rentalEndDateStr = (String) session.getAttribute("rentalEndDateStr");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime rentalStartDate = LocalDateTime.parse(rentalStartDateStr, formatter);
         LocalDateTime rentalEndDate = LocalDateTime.parse(rentalEndDateStr, formatter);
 
         int itemId = (int) session.getAttribute("itemid");
@@ -1272,7 +1280,7 @@ public class HomeController {
         BikeRentals bikeRental = new BikeRentals();
         bikeRental.setItem(item);
         bikeRental.setUsers(user);
-        bikeRental.setRental_start_date(Date.from(now.atZone(ZoneId.systemDefault()).toInstant()));
+        bikeRental.setRental_start_date(Date.from(rentalStartDate.atZone(ZoneId.systemDefault()).toInstant()));
         bikeRental.setRental_end_date(Date.from(rentalEndDate.atZone(ZoneId.systemDefault()).toInstant()));
         bikeRental.setIs_active(true);
         bikeRental.setCreated_dt(Date.from(Instant.now()));
@@ -1282,9 +1290,11 @@ public class HomeController {
         Items it = new Items(itemId, item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), item.getImage(), item.isIs_visible(), item.getCreated_dt());
         BikeRentals rentals = rt.postForObject(urlbikerentals + "/", bikeRental, BikeRentals.class);
         Items i = rt.postForObject(urlitems + "/", it, Items.class);
+
+        session.removeAttribute("rentalStartDateStr");
         session.removeAttribute("rentalEndDateStr");
         session.removeAttribute("itemid");
-        // Assume the necessary rental details are saved to the database here
+
         model.addAttribute("message", "Payment successful. Your bike rental has been confirmed.");
         return "redirect:/forrent"; // Redirect to a success page
     }
@@ -1618,7 +1628,7 @@ public class HomeController {
             order.setUsers(users);
             order.setTotal_amount(finalTotalPrice);
             order.setOrder_date(new Date());
-            order.setStatus("Pending");
+            order.setStatus("OnlinePayment");
             order.setCreated_dt(new Date());
 
             session.setAttribute("pendingOrder", order);
@@ -1906,7 +1916,7 @@ public class HomeController {
                     );
                 }
                 model.addAttribute("oorder", order);
-                
+
             }
 
             // Assuming order.getTotal_amount() is the discounted price
@@ -1915,8 +1925,6 @@ public class HomeController {
                             .map(Orders::getTotal_amount)
                             .reduce(BigDecimal.ZERO, BigDecimal::add)
             );
-            
-            
 
             model.addAttribute("currentPage", pageNumber);
             model.addAttribute("pageSize", pageSize);

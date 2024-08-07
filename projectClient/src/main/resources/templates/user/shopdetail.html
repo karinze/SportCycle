@@ -309,13 +309,13 @@
                             </div>
 
                             <div class="block-7">
-<!--                                <form action="#" method="post">
-                                    <label for="email_subscribe" class="footer-heading">Subscribe</label>
-                                    <div class="form-group">
-                                        <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
-                                        <input type="submit" class="btn btn-sm btn-primary" value="Send">
-                                    </div>
-                                </form>-->
+                                <!--                                <form action="#" method="post">
+                                                                    <label for="email_subscribe" class="footer-heading">Subscribe</label>
+                                                                    <div class="form-group">
+                                                                        <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
+                                                                        <input type="submit" class="btn btn-sm btn-primary" value="Send">
+                                                                    </div>
+                                                                </form>-->
                             </div>
                         </div>
                     </div>
@@ -338,9 +338,11 @@
                 <h2>Rent a Bicycle</h2>
                 <form id="rentForm" th:action="@{/rentBicycle}" method="post">
                     <input type="hidden" th:value="${items.item_id}" name="itemId" id="itemId">
+                    <label for="rentalStartDate">Select Rental Start Date and Time:</label>
+                    <input type="datetime-local" name="rentalStartDate" id="rentalStartDate" required>
                     <label for="rentalEndDate">Select Rental End Date and Time:</label>
                     <input type="datetime-local" name="rentalEndDate" id="rentalEndDate" required>
-                    <span id="error-message" style="color: red; display: none;">Rental end date must be at least one hour from now.</span>
+                    <span id="error-message" style="color: red; display: none;"></span>
                     <div id="cost-info" style="margin-top: 10px;">Rental Rate: $10 per day</div>
                     <div id="calculated-cost" style="margin-top: 10px;"></div>
                     <button type="submit">Rent</button>
@@ -422,68 +424,93 @@
             // When the user clicks the button, open the modal and prevent scrolling
             btn.onclick = function () {
                 modal.style.display = "block";
-                document.body.classList.add("no-scroll"); // Add no-scroll class to body
+                document.body.classList.add("no-scroll");
             }
 
             // When the user clicks on <span> (x), close the modal and allow scrolling
             span.onclick = function () {
                 modal.style.display = "none";
-                document.body.classList.remove("no-scroll"); // Remove no-scroll class from body
+                document.body.classList.remove("no-scroll");
             }
 
             // When the user clicks anywhere outside of the modal, close it and allow scrolling
             window.onclick = function (event) {
                 if (event.target == modal) {
                     modal.style.display = "none";
-                    document.body.classList.remove("no-scroll"); // Remove no-scroll class from body
+                    document.body.classList.remove("no-scroll");
                 }
             }
 
             document.addEventListener('DOMContentLoaded', function () {
                 var now = new Date();
-                now.setHours(now.getHours() + 1); // Set the minimum date to one hour from now
-                var offset = now.getTimezoneOffset() * 60000;
-                var localISOTime = (new Date(now - offset)).toISOString().slice(0, -1);
-                document.getElementById('rentalEndDate').min = localISOTime.slice(0, 16);
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Adjust to local timezone
+                var minDate = now.toISOString().slice(0, -1);
+                document.getElementById('rentalStartDate').min = minDate.slice(0, 16);
+                document.getElementById('rentalEndDate').min = minDate.slice(0, 16);
+
+                document.getElementById('rentalStartDate').addEventListener('change', function () {
+                    updateMinEndDate();
+                    calculateCost();
+                });
 
                 document.getElementById('rentalEndDate').addEventListener('change', function () {
                     calculateCost();
                 });
 
                 document.getElementById('rentForm').addEventListener('submit', function (event) {
-                    var rentalEndDate = document.getElementById('rentalEndDate').value;
-                    var selectedDate = new Date(rentalEndDate);
+                    var rentalStartDate = new Date(document.getElementById('rentalStartDate').value);
+                    var rentalEndDate = new Date(document.getElementById('rentalEndDate').value);
                     var now = new Date();
-                    now.setHours(now.getHours() + 1); // Current time plus one hour
 
-                    if (selectedDate < now) {
-                        document.getElementById('error-message').style.display = 'block';
-                        event.preventDefault(); // Prevent the form from being submitted
+                    // Adjust to local timezone
+                    rentalStartDate.setMinutes(rentalStartDate.getMinutes() - rentalStartDate.getTimezoneOffset());
+                    rentalEndDate.setMinutes(rentalEndDate.getMinutes() - rentalEndDate.getTimezoneOffset());
+                    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+                    if (rentalStartDate < now) {
+                        showError("Rental start date must be at least the current date and time.");
+                        event.preventDefault();
+                    } else if (rentalEndDate <= rentalStartDate) {
+                        showError("Rental end date must be greater than the start date.");
+                        event.preventDefault();
                     } else {
                         document.getElementById('error-message').style.display = 'none';
                     }
                 });
 
-                function calculateCost() {
-                    var rentalEndDate = document.getElementById('rentalEndDate').value;
-                    if (rentalEndDate) {
-                        var selectedDate = new Date(rentalEndDate);
-                        var now = new Date();
-                        var hoursBetween = (selectedDate - now) / 3600000; // Convert milliseconds to hours
+                function updateMinEndDate() {
+                    var rentalStartDate = new Date(document.getElementById('rentalStartDate').value);
+                    rentalStartDate.setMinutes(rentalStartDate.getMinutes() - rentalStartDate.getTimezoneOffset());
+                    var minEndDate = rentalStartDate.toISOString().slice(0, -1);
+                    document.getElementById('rentalEndDate').min = minEndDate.slice(0, 16);
+                }
 
+                function calculateCost() {
+                    var rentalStartDate = new Date(document.getElementById('rentalStartDate').value);
+                    var rentalEndDate = new Date(document.getElementById('rentalEndDate').value);
+                    rentalStartDate.setMinutes(rentalStartDate.getMinutes() - rentalStartDate.getTimezoneOffset());
+                    rentalEndDate.setMinutes(rentalEndDate.getMinutes() - rentalEndDate.getTimezoneOffset());
+
+                    if (rentalEndDate instanceof Date && !isNaN(rentalEndDate) && rentalStartDate instanceof Date && !isNaN(rentalStartDate)) {
+                        var hoursBetween = (rentalEndDate - rentalStartDate) / 3600000;
                         var cost;
                         if (hoursBetween <= 24) {
-                            cost = (10 / 24) * hoursBetween; // Charge per hour for less than or equal to 1 day
+                            cost = (10 / 24) * hoursBetween;
                         } else {
                             var fullDays = Math.floor(hoursBetween / 24);
                             var remainingHours = hoursBetween % 24;
-                            cost = (fullDays * 10) + ((10 / 24) * remainingHours); // Charge per day + per hour for remaining hours
+                            cost = (fullDays * 10) + ((10 / 24) * remainingHours);
                         }
-
                         document.getElementById('calculated-cost').textContent = "Estimated Cost: $" + cost.toFixed(2);
                     } else {
                         document.getElementById('calculated-cost').textContent = "";
                     }
+                }
+
+                function showError(message) {
+                    var errorMessage = document.getElementById('error-message');
+                    errorMessage.textContent = message;
+                    errorMessage.style.display = 'block';
                 }
 
                 // Initial calculation on page load

@@ -300,8 +300,15 @@
                     if (distance < 0) {
                         clearInterval(x);
                         document.getElementById(`countdown-${rentalId}`).innerHTML = "Rental period is over.";
-                        document.getElementById(`status-${rentalId}`).innerHTML = "Inactive";
-                        endRental(rentalId);
+                        const xhr = new XMLHttpRequest();
+                        xhr.open("POST", "/endRental", true);
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                        xhr.onreadystatechange = function () {
+                            if (xhr.readyState === 4 && xhr.status === 200) {
+                                console.log("Rental ended and stock updated");
+                            }
+                        };
+                        xhr.send("rentalId=" + rentalId);
                     } else {
                         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -311,63 +318,25 @@
                 }, 1000);
             }
 
-            function endRental(rentalId) {
-                const xhr = new XMLHttpRequest();
-                xhr.open("POST", "/endRental", true);
-                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4) {
-                        if (xhr.status === 200) {
-                            console.log("Rental ended and stock updated");
-                        } else {
-                            console.error("Error ending rental: ", xhr.responseText);
-                        }
-                    }
-                };
-                xhr.onerror = function () {
-                    console.error("Request failed");
-                };
-                xhr.send("rentalId=" + rentalId);
-            }
-
-
-
             window.onload = function () {
                 document.querySelectorAll('.rental').forEach(function (rental) {
+                    const startTime = new Date(rental.dataset.startTime).getTime();
                     const endTime = rental.dataset.endTime;
                     const rentalId = rental.dataset.rentalId;
-                    if (endTime && rentalId) {
-                        startCountdown(endTime, rentalId);
-                    }
-                    const startTime = rental.dataset.startTime;
+                    const now = new Date().getTime();
+
                     const endTimeFormatted = formatDate(endTime);
-                    const startTimeFormatted = formatDate(startTime);
+                    const startTimeFormatted = formatDate(rental.dataset.startTime);
                     document.getElementById(`start-time-${rentalId}`).innerText = startTimeFormatted;
                     document.getElementById(`end-time-${rentalId}`).innerText = endTimeFormatted;
+
+                    // Only start the countdown if the rental period has started
+                    if (now >= startTime) {
+                        startCountdown(endTime, rentalId);
+                    } else {
+                        document.getElementById(`countdown-${rentalId}`).innerHTML = "Rental period has not started yet.";
+                    }
                 });
-            }
-            function endRental(rentalId) {
-                fetch("/endRental", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: new URLSearchParams({rentalId: rentalId})
-                })
-                        .then(response => {
-                            if (!response.ok) {
-                                return response.text().then(text => {
-                                    throw new Error(text)
-                                });
-                            }
-                            return response.text();
-                        })
-                        .then(data => {
-                            console.log("Rental ended and stock updated", data);
-                        })
-                        .catch(error => {
-                            console.error("Error ending rental: ", error);
-                        });
             }
         </script>
         <script th:src="@{/js/jquery-3.3.1.min.js}"></script>

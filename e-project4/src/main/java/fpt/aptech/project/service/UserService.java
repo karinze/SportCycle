@@ -146,4 +146,9 @@ public class UserService implements IUserService{
         return tokensRepository.FindByUsername(users);
     }
 
+    @Override
+    public Users findUsername(String username) {
+        return userRepository.findUsername(username);
+    }
+
 }

@@ -258,13 +258,13 @@
                             </div>
 
                             <div class="block-7">
-<!--                                <form action="#" method="post">
-                                    <label for="email_subscribe" class="footer-heading">Subscribe</label>
-                                    <div class="form-group">
-                                        <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
-                                        <input type="submit" class="btn btn-sm btn-primary" value="Send">
-                                    </div>
-                                </form>-->
+                                <!--                                <form action="#" method="post">
+                                                                    <label for="email_subscribe" class="footer-heading">Subscribe</label>
+                                                                    <div class="form-group">
+                                                                        <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
+                                                                        <input type="submit" class="btn btn-sm btn-primary" value="Send">
+                                                                    </div>
+                                                                </form>-->
                             </div>
                         </div>
                     </div>
@@ -321,18 +321,26 @@
 
             window.onload = function () {
                 document.querySelectorAll('.rental').forEach(function (rental) {
+                    const startTime = new Date(rental.dataset.startTime).getTime();
                     const endTime = rental.dataset.endTime;
                     const rentalId = rental.dataset.rentalId;
-                    if (endTime && rentalId) {
-                        startCountdown(endTime, rentalId);
-                    }
-                    const startTime = rental.dataset.startTime;
+                    const now = new Date().getTime();
+
                     const endTimeFormatted = formatDate(endTime);
-                    const startTimeFormatted = formatDate(startTime);
+                    const startTimeFormatted = formatDate(rental.dataset.startTime);
                     document.getElementById(`start-time-${rentalId}`).innerText = startTimeFormatted;
                     document.getElementById(`end-time-${rentalId}`).innerText = endTimeFormatted;
+
+                    // Only start the countdown if the rental period has started
+                    if (now >= startTime) {
+                        startCountdown(endTime, rentalId);
+                    } else {
+                        document.getElementById(`countdown-${rentalId}`).innerHTML = "Rental period has not started yet.";
+                    }
                 });
             }
+
+
         </script>
         <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
         <script th:src="@{/js/jquery-ui.js}"></script>

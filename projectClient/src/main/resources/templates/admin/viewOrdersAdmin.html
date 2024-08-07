@@ -18,11 +18,15 @@
                 <p><strong>Order Date:</strong> <span th:text="${order.order_date}"></span></p>
                 
                 
-                <label th:if="${order.status == 'Pending' || order.status == 'Deliver'}" for="status"><strong>Status:</strong></label>
+                <label th:if="${order.status == 'OnlinePayment' || order.status == 'Pending' || order.status == 'Deliver'}" for="status"><strong>Status:</strong></label>
                 <select th:if="${order.status == 'Pending'}" th:field="*{status}" id="status" class="form-control">
                             <option value="Pending">Pending</option>
                             <option value="Deliver">Deliver</option>
                             <option value="Cancel">Cancel</option>
+                </select>
+                <select th:if="${order.status == 'OnlinePayment'}" th:field="*{status}" id="status" class="form-control">
+                            <option value="OnlinePayment">Online Payment</option>
+                            <option value="Deliver">Deliver</option>
                 </select>
                 <select th:if="${order.status == 'Deliver'}" th:field="*{status}" id="status" class="form-control">
                             <option value="Deliver">Deliver</option>

@@ -22,4 +22,7 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
     
     @Query("Select e From Users e Where e.email = :email")
     Users resetPassword(@Param("email") String email);
+    
+    @Query("Select e From Users e Where e.username = :username")
+    Users findUsername(@Param("username") String username);
 }

@@ -160,7 +160,7 @@
                         </div>
                         <div class="card-body">
                             <p><strong>Order Date:</strong> <span th:text="${order.order_date}"></span></p>
-                            <p><strong>Order Status:</strong> <span th:text="${order.status}"></span></p>
+                            <p><strong>Order Status:</strong> <span th:text="${order.status == 'OnlinePayment' ? 'Online Payment' : order.status}"></span></p>
                             <p><strong>Discount:</strong> <span th:if="${discount != 0}" th:text="'-'+${discount.intValue()}"></span> <span th:if="${discount == 0}" th:text="0"></span></p>
                             <p><strong>Total Amount:</strong> <span th:text="${order.total_amount.intValue()} + ' $'"></span></p>
                             <h4 class="mt-4">Order Items</h4>

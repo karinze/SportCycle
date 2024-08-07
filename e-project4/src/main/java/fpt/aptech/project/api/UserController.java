@@ -90,4 +90,10 @@ public class UserController {
     public void savetokenactive(@RequestBody List<Tokens> resettoken) {
         service.saveTokenPass(resettoken);
     }
+    
+    @GetMapping("/findusername/{username}")
+    @ResponseStatus(HttpStatus.OK)
+    public Users findUsername(@PathVariable("username") String username) {
+        return service.findUsername(username);
+    }
 }
