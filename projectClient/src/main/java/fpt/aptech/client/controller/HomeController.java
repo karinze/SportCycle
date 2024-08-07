@@ -163,6 +163,8 @@ public class HomeController {
                 return "redirect:/dashboard";
             } else {
                 session.setAttribute("user", users.getEmail());
+                Users user = rt.getForObject(urlusers + "/findemail/" + users.getEmail(), Users.class);
+                session.setAttribute("username", user.getUsername());
                 return "redirect:/";
             }
         } else {
