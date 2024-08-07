@@ -189,12 +189,14 @@
                         </div>
                     </div>
                 </div>
-                <div th:if="${orders == null}">
-                    <p>No orders found.</p>
+                <div th:if="${oorder == null}">
+                    <div class="alert alert-warning" role="alert">
+                    No orders found.
+                    <div>
                 </div>
             </div>
 
-            <div class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-labelledby="confirmCancelModalLabel" aria-hidden="true">
+            <div th:if="${oorder != null}" class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-labelledby="confirmCancelModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -208,7 +210,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-                            <form th:action="@{/CancelOrder}" th:object="${oorder}" method="post" class="form-inline">
+                            <form th:if="${oorder != null}" th:action="@{/CancelOrder}" th:object="${oorder}" method="post" class="form-inline">
                                 <input type="hidden" th:field="*{order_id}" />
                                 <input type="hidden" id="status" name="status" value="Cancel" />
                                 <button type="submit" class="btn btn-danger">Yes, Cancel</button>

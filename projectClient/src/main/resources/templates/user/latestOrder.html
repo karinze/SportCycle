@@ -188,11 +188,13 @@
                     </div>
                 </div>
                 <div th:if="${order == null}">
-                    <p>No latest order found.</p>
+                    <div class="alert alert-warning" role="alert">
+                    No latest order found.
+                    <div>
                 </div>
             </div>
 
-            <div class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-labelledby="confirmCancelModalLabel" aria-hidden="true">
+            <div th:if="${order != null}" class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-labelledby="confirmCancelModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
