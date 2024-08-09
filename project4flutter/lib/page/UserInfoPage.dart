@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project4flutter/page/HomePage.dart';
+import 'package:project4flutter/service/CartService.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'LoginPage.dart';
 
@@ -30,7 +31,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('username');
     await prefs.remove('sessionToken');
-
+    await prefs.remove('userId');
+    CartService().clearCart();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => HomePage()),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:project4flutter/page/HomePage.dart';
+import 'package:flutter_paypal_checkout/flutter_paypal_checkout.dart';
 import 'package:provider/provider.dart';
 import '../model/OrderItems.dart';
 import '../model/Orders.dart';
@@ -11,6 +11,7 @@ import '../service/OrdersService.dart';
 import '../service/UserDetailsService.dart';
 import '../service/UsersService.dart';
 import '../utils/color.dart';
+import 'HomePage.dart';
 
 class CheckOutPage extends StatefulWidget {
   final double totalPrice;
@@ -33,6 +34,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
   TextEditingController _addressController = TextEditingController();
   TextEditingController _noteController = TextEditingController();
 
+  String _selectedPaymentMethod = 'Offline';
+
   @override
   void initState() {
     super.initState();
@@ -48,13 +51,12 @@ class _CheckOutPageState extends State<CheckOutPage> {
         List<UserDetails> details =
         await userDetailsService.findUserDetails(userId);
 
-        Users us= await UsersService().findOne(userId);
         if (details.isNotEmpty) {
           setState(() {
             _userDetails = details.first;
             _firstNameController.text = _userDetails?.firstName ?? '';
             _lastNameController.text = _userDetails?.lastName ?? '';
-            _emailController.text = us.email ?? '';
+            _emailController.text = _userDetails?.email ?? '';
             _phoneController.text = _userDetails?.phoneNumber ?? '';
             _addressController.text = _userDetails?.address ?? '';
             _noteController.text = _userDetails?.note ?? '';
@@ -70,97 +72,147 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   Future<void> _placeOrder() async {
     if (_formKey.currentState!.validate()) {
-      try {
-        final UsersService usersService = UsersService();
-        final OrdersService ordersService = OrdersService();
-        final OrderItemsService orderItemsService = OrderItemsService();
-        final UserDetailsService userDetailsService = UserDetailsService();
-        final CartService cartService =
-        Provider.of<CartService>(context, listen: false);
+      // Show loading dialog
 
-        String? userId = await usersService.getUserId();
-        Users user = await usersService.findOne(userId!);
-
-        if (user != null) {
-          List<UserDetails> userDetailsList =
-          await userDetailsService.findUserDetails(userId);
-          UserDetails userDetails;
-
-          if (userDetailsList.isNotEmpty) {
-            userDetails = userDetailsList.first;
-            userDetails = UserDetails(
-              userdetailId: userDetails.userdetailId,
-              users: user,
-              firstName: _firstNameController.text,
-              lastName: _lastNameController.text,
-              email: _emailController.text,
-              phoneNumber: _phoneController.text,
-              address: _addressController.text,
-              note: _noteController.text,
-              createdDt: DateTime.parse(userDetails.createdDt),
-            );
-          } else {
-            userDetails = UserDetails(
-              users: user,
-              firstName: _firstNameController.text,
-              lastName: _lastNameController.text,
-              email: _emailController.text,
-              phoneNumber: _phoneController.text,
-              address: _addressController.text,
-              note: _noteController.text,
-            );
-          }
-
-          await userDetailsService.saveUserDetails(userDetails);
-
-          Orders order = Orders(
-            users: user,
-            totalAmount: widget.totalPrice,
-            orderDate: DateTime.now(),
-            status: "Pending",
-          );
-
-          Orders savedOrder = await OrdersService().saveOrder(order);
-
-          List<OrderItems> o = [];
-          for (var cartItem in cartService.cartItems) {
-            OrderItems orderItem = OrderItems(
-              orders: savedOrder,
-              item: cartItem.item,
-              quantity: cartItem.quantity,
-              price: cartItem.item.price * cartItem.quantity,
-            );
-
-            o.add(orderItem);
-            await orderItemsService.saveOrderItems(orderItem);
-          }
-
-          await ordersService.sendMail(user, savedOrder, o);
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Order placed successfully!')),
-          );
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-                (Route<dynamic> route) => false,
-          );
-
-          cartService.clearCart();
-
-
+        if (_selectedPaymentMethod == 'Online') {
+          await _processPayPalPayment();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User not found. Please log in again.')),
-          );
+          await _saveOrderToDatabase('Pending');
         }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to place order: $e')),
-        );
-      }
     }
   }
+
+  Future<void> _processPayPalPayment() async {
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PaypalCheckout(
+            sandboxMode: true, // Set this to false in production
+            clientId: 'AZDuKIu5bbjUgctSXXXrBGPKFZ_d2nFV4XFAjzDlQMcu_6GVs_RSeESb8gcPVtuJ_8L4H5SvuE0jcx36',
+            secretKey: 'EEolPMf39IbyKHpW0gejHmF5-55nbkX7mdLrlAC0g-SuXp0P0QHqooPRJtI1gv8owCbMzLy4lXgV9Ai7',
+            returnURL: 'success.snippetcoder.com',
+            cancelURL: 'cancel.snippetcoder.com',
+            transactions: [
+              {
+                "amount": {
+                  "total": widget.totalPrice.toString(),
+                  "currency": "USD",
+                  "details": {
+                    "subtotal": widget.totalPrice.toString(),
+                  }
+                },
+                "description": "Order from your store",
+                "payment_options": {
+                  "allowed_payment_method": "INSTANT_FUNDING_SOURCE"
+                },
+              }
+            ],
+            note: "Thank you for your purchase!",
+            onSuccess: (Map params) async {
+              print("Payment successful: $params");
+              _saveOrderToDatabase('Online Payment');
+            },
+            onCancel: (Map params) {
+              print("Payment cancelled: $params");
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Payment cancelled')),
+              );
+            },
+            onError: (error) {
+              print("Payment error: $error");
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Payment error: $error')),
+              );
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      print("Payment process failed: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payment process failed: $e')),
+      );
+    }
+  }
+
+  Future<void> _saveOrderToDatabase(String status) async {
+    try {
+      final UsersService usersService = UsersService();
+      final OrdersService ordersService = OrdersService();
+      final OrderItemsService orderItemsService = OrderItemsService();
+      final UserDetailsService userDetailsService = UserDetailsService();
+      final CartService cartService = Provider.of<CartService>(context, listen: false);
+
+      String? userId = await usersService.getUserId();
+      Users? user = await usersService.findOne(userId!);
+
+      if (user != null) {
+        Orders order = Orders(
+          users: user,
+          totalAmount: widget.totalPrice,
+          orderDate: DateTime.now(),
+          status: status,
+        );
+
+        Orders savedOrder = await OrdersService().saveOrder(order);
+
+        List<OrderItems> o = [];
+        for (var cartItem in cartService.cartItems) {
+          OrderItems orderItem = OrderItems(
+            orders: savedOrder,
+            item: cartItem.item,
+            quantity: cartItem.quantity,
+            price: cartItem.item.price * cartItem.quantity,
+          );
+
+          o.add(orderItem);
+          await orderItemsService.saveOrderItems(orderItem);
+        }
+
+        // Show the loading dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        );
+
+        // Send order confirmation email
+        await ordersService.sendMail(user, savedOrder, o);
+
+        // Dismiss the loading dialog
+        Navigator.of(context, rootNavigator: true).pop();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Order placed successfully!')),
+        );
+
+        await Future.delayed(Duration(milliseconds: 100)); // Give a brief delay
+        cartService.clearCart();
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+              (Route<dynamic> route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User not found. Please log in again.')),
+        );
+      }
+    } catch (e) {
+      // Dismiss the loading dialog if an error occurs
+      Navigator.of(context, rootNavigator: true).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to place order: $e')),
+      );
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -262,12 +314,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty || !value.contains('@')) {
-                        return 'Please enter a valid email address';
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
                       }
                       return null;
                     },
-                    enabled: false,
                   ),
                   SizedBox(height: 16),
                   TextFormField(
@@ -304,27 +355,53 @@ class _CheckOutPageState extends State<CheckOutPage> {
                       labelText: 'Note',
                       border: OutlineInputBorder(),
                     ),
-                    maxLines: 3,
-                  ),
-                  SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: _placeOrder,
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: AppColor.mainColor,
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Place Order',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
                   ),
                 ],
+              ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Payment Method',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColor.mainColor,
+              ),
+            ),
+            Divider(thickness: 2),
+            RadioListTile(
+              title: const Text('Offline Payment'),
+              value: 'Offline',
+              groupValue: _selectedPaymentMethod,
+              onChanged: (value) {
+                setState(() {
+                  _selectedPaymentMethod = value.toString();
+                });
+              },
+            ),
+            RadioListTile(
+              title: const Text('Online Payment'),
+              value: 'Online',
+              groupValue: _selectedPaymentMethod,
+              onChanged: (value) {
+                setState(() {
+                  _selectedPaymentMethod = value.toString();
+                });
+              },
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _placeOrder,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColor.mainColor,
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+              ),
+              child: Text(
+                'Place Order',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
