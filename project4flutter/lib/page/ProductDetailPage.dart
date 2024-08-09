@@ -161,7 +161,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       if (user != null) {
         BikeRentals rental = BikeRentals(
           item: widget.item,
-          users: user, // Adjust this to match your model's property
+          users: user,
           rentalStartDate: startDate,
           rentalEndDate: endDate,
           isActive: true,

@@ -142,7 +142,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     OrdersService ordersService = OrdersService();
     Orders o = await ordersService.findOne(orderId);
     Orders orders = Orders(
-      orderId: o.orderId,
+      orderId: o.orderId, 
       orderDate: DateTime.parse(o.orderDate),
       status: "Cancel",
       totalAmount: o.totalAmount,

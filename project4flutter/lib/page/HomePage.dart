@@ -8,6 +8,7 @@ import '../model/Items.dart';
 import '../service/CartService.dart';
 import 'CartProductPage.dart';
 import 'HistoryOrderPage.dart';
+import 'MyRentPage.dart';
 import 'ProductDetailPage.dart';
 import 'ProductPage.dart';
 import 'CartPage.dart';
@@ -61,7 +62,7 @@ class _HomePageState extends State<HomePage> {
       _buildHomePage(),
       ProductPage(),
       OrderHistoryPage(),
-      RentPage(),
+      MyRentPage(),
       UserInfoPage(),
     ];
 
