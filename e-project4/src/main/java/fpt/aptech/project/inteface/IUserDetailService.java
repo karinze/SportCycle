@@ -15,7 +15,7 @@ import java.util.List;
 public interface IUserDetailService {
     public List<UserDetails> findAll();
 
-    public void createUserDetails(UserDetails userDetails);
+    public UserDetails createUserDetails(UserDetails userDetails);
 
     public UserDetails findOne(int userDetailsId);
 

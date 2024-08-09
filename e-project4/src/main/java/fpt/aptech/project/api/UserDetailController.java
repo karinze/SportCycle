@@ -51,8 +51,8 @@ public class UserDetailController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void post(@RequestBody UserDetails newUserDetails) {
-        service.createUserDetails(newUserDetails);
+    public UserDetails post(@RequestBody UserDetails newUserDetails) {
+        return service.createUserDetails(newUserDetails);
     }
 
     @PutMapping

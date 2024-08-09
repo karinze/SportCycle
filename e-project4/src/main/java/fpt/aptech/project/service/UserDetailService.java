@@ -30,8 +30,8 @@ public class UserDetailService implements IUserDetailService{
     }
 
     @Override
-    public void createUserDetails(UserDetails userDetails) {
-        userDetailRepository.save(userDetails);
+    public UserDetails createUserDetails(UserDetails userDetails) {
+        return userDetailRepository.save(userDetails);
     }
 
     @Override
