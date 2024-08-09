@@ -25,6 +25,22 @@ class ItemsService {
     return employee;
   }
 
+  Future<Items> saveItems(Items itemss) async {
+    final response = await http.post(
+      Uri.parse(urlItems),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(itemss.toJson()),
+    );
+
+    if (response.statusCode == 201) {
+      return Items.fromJson(json.decode(response.body));
+    } else {
+      throw Exception('Failed...');
+    }
+  }
+
   Future<List<Items>> search(String name) async {
     final response = await http.get(Uri.parse("$urlItems search/ $name"));
     var data = json.decode(response.body);

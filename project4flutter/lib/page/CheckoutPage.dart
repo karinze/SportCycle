@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_paypal_checkout/flutter_paypal_checkout.dart';
+import 'package:project4flutter/model/Items.dart';
+import 'package:project4flutter/service/ItemsService.dart';
 import 'package:provider/provider.dart';
 import '../model/OrderItems.dart';
 import '../model/Orders.dart';
@@ -167,6 +169,21 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
           o.add(orderItem);
           await orderItemsService.saveOrderItems(orderItem);
+          int stock = cartItem.item.stock - 1;
+
+          Items item = Items(
+            itemId: cartItem.item.itemId,
+            name: cartItem.item.name,
+            image: cartItem.item.image,
+            brand: cartItem.item.brand,
+            description: cartItem.item.description,
+            price: cartItem.item.price,
+            type: cartItem.item.type,
+            createdDt: DateTime.parse(cartItem.item.createdDt),
+            isVisible: stock <= 0 ? false : true,
+            stock: stock,
+          );
+          await ItemsService().saveItems(item);
         }
 
         // Show the loading dialog

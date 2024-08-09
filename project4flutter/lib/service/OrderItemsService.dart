@@ -69,13 +69,33 @@ class OrderItemsService{
   }
 
   Future<List<OrderItems>> findItems(int itemid) async {
-    final response = await http.get(Uri.parse("$urlOrderitems items/ $itemid"));
-    var data = json.decode(response.body);
-    List<OrderItems> list = [];
-    for (var item in data) {
-      OrderItems orderItems = OrderItems.fromJson(item);
-      list.add(orderItems);
+    final response = await http.get(Uri.parse("${urlOrderitems}items/$itemid"));
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      var data = json.decode(response.body);
+      // Check if the response contains a list
+      if (data is List) {
+        List<OrderItems> list = [];
+        for (var item in data) {
+          OrderItems orderItems = OrderItems.fromJson(item);
+          list.add(orderItems);
+        }
+        return list;
+      } else {
+        // If the response is an object containing a list, adjust accordingly
+        if (data['orderItems'] is List) {
+          List<OrderItems> list = [];
+          for (var item in data['orderItems']) {
+            OrderItems orderItems = OrderItems.fromJson(item);
+            list.add(orderItems);
+          }
+          return list;
+        } else {
+          throw Exception('Unexpected JSON structure');
+        }
+      }
+    } else {
+      throw Exception('Failed to load order items');
     }
-    return list;
+
   }
 }

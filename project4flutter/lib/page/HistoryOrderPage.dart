@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:project4flutter/model/Items.dart';
 import 'package:project4flutter/model/Orders.dart';
 import 'package:project4flutter/model/OrderItems.dart';
+import 'package:project4flutter/service/ItemsService.dart';
 import 'package:project4flutter/service/OrdersService.dart';
 import 'package:project4flutter/service/OrderItemsService.dart';
 import 'package:project4flutter/service/UsersService.dart';
@@ -150,6 +152,25 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       users: user
     );
     await ordersService.saveOrder(orders);
+    List<OrderItems> orderitem = await OrderItemsService().findOrder(o);
+    for(var list in orderitem){
+      Items i = await ItemsService().findOne(list.item.itemId);
+      int stock = i.stock + list.quantity;
+
+      Items item = Items(
+        itemId: i.itemId,
+        name: i.name,
+        image: i.image,
+        brand: i.brand,
+        description: i.description,
+        price: i.price,
+        type: i.type,
+        createdDt: DateTime.parse(i.createdDt),
+        isVisible: stock <= 0 ? false : true,
+        stock: stock,
+      );
+      await ItemsService().saveItems(item);
+    }
     _fetchOrders(); // Refresh the list after updating the status
   }
 

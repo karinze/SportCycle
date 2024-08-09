@@ -39,6 +39,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
             SizedBox(height: 10),
             Text(widget.item.brand),
+            SizedBox(height: 15),
+            Text("Stock: ${widget.item.stock.toString()}",style: TextStyle(fontWeight: FontWeight.bold),),
             SizedBox(height: 20),
             Text(
               '\$${widget.item.price}',
@@ -196,7 +198,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           icon: Icon(Icons.add),
           onPressed: () {
             setState(() {
-              _quantity++;
+              if (_quantity < widget.item.stock) {
+                _quantity++;
+              } else {
+                // Notify the user that they cannot add more items than are in stock
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Cannot add more items than are in stock')),
+                );
+              }
             });
           },
         ),

@@ -13,12 +13,20 @@ class CartService extends ChangeNotifier {
       orElse: () => CartItem(item: item, quantity: 0),
     );
 
-    if (_cartItems.contains(existingCartItem)) {
-      existingCartItem.quantity += quantity;
+    final int totalQuantityInCart = existingCartItem.quantity + quantity;
+
+    if (totalQuantityInCart <= item.stock) {
+      if (_cartItems.contains(existingCartItem)) {
+        existingCartItem.quantity += quantity;
+      } else {
+        _cartItems.add(CartItem(item: item, quantity: quantity));
+      }
+      notifyListeners();
     } else {
-      _cartItems.add(CartItem(item: item, quantity: quantity));
+      // Notify the user that they cannot add more items than are in stock
+      print('Cannot add more items than are in stock');
+      // You can show a SnackBar or a dialog here if you want to notify the user in the UI.
     }
-    notifyListeners();
   }
 
   void removeFromCart(Items item) {
