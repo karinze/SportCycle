@@ -41,7 +41,7 @@ class BikeRentalsService{
   }
 
   Future<List<BikeRentals>> findUser(String userId) async {
-    final response = await http.get(Uri.parse(urlBikerentals+"users/"+userId));
+    final response = await http.get(Uri.parse(urlBikerentals+"user/"+userId));
     var data = json.decode(response.body);
     List<BikeRentals> list = [];
     for (var item in data) {

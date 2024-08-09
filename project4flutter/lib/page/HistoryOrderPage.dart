@@ -82,7 +82,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
           margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
           child: ListTile(
             title: Text(
-              'Order ID: ${_orders[index].orderId}',
+              'Order',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             subtitle: Column(

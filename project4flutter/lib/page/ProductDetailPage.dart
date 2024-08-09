@@ -19,6 +19,10 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
   int _quantity = 1;
+  DateTime? _startDate;
+  DateTime? _endDate;
+  final TextEditingController _startDateController = TextEditingController();
+  final TextEditingController _endDateController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -31,20 +35,30 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Image(image: AssetImage('images/' + widget.item.image)),
+            Image.asset('images/' + widget.item.image, fit: BoxFit.cover),
             SizedBox(height: 20),
             Text(
               widget.item.name,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
             ),
             SizedBox(height: 10),
-            Text(widget.item.brand),
+            Text(
+              widget.item.brand,
+              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
             SizedBox(height: 15),
-            Text("Stock: ${widget.item.stock.toString()}",style: TextStyle(fontWeight: FontWeight.bold),),
+            Text(
+              "Stock: ${widget.item.stock}",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
             SizedBox(height: 20),
             Text(
               '\$${widget.item.price}',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green[700]),
+              textAlign: TextAlign.center,
             ),
             SizedBox(height: 20),
             Row(
@@ -54,130 +68,35 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 _buildQuantitySelector(),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 30),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: () {
-                    Provider.of<CartService>(context, listen: false)
-                        .addToCart(widget.item, quantity: _quantity);
-                    Navigator.pop(context);
-                  },
+                  onPressed: _addToCart,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
                   child: Text('Add to Cart'),
-
                 ),
                 ElevatedButton(
-                  onPressed: () async {
-                    // Check if the user is logged in
-                    bool isLoggedIn = await UsersService().isLoggedIn();
-                    if (!isLoggedIn) {
-                      // Show a message and navigate to the login page
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You must be logged in to rent a bicycle')));
-                      // Navigate to login page here, if necessary
-                      return;
-                    }
-
-                    // Show the date selection dialog
-                    _selectDateTime(context, (DateTime start, DateTime end) {
-                      // Rent the bicycle if dates are selected
-                      _rentBicycle(context, start, end);
-                    });
+                  onPressed: () {
+                    _showRentDialog(context);
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
                   child: Text('Rent a Bicycle'),
                 ),
-
               ],
             ),
-
           ],
         ),
       ),
     );
   }
-
-  Future<void> _selectDateTime(BuildContext context, Function(DateTime, DateTime) onDateTimeSelected) async {
-    DateTime? startDate;
-    DateTime? endDate;
-
-    // Select start date
-    startDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    );
-
-    if (startDate != null) {
-      final TimeOfDay? startTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
-
-      if (startTime != null) {
-        // Combine the selected date and time
-        startDate = DateTime(startDate.year, startDate.month, startDate.day, startTime.hour, startTime.minute);
-      } else {
-        return; // Time selection canceled
-      }
-    } else {
-      return; // Date selection canceled
-    }
-
-    // Select end date
-    endDate = await showDatePicker(
-      context: context,
-      initialDate: startDate.add(Duration(hours: 1)),
-      firstDate: startDate,
-      lastDate: DateTime(2100),
-    );
-
-    if (endDate != null) {
-      final TimeOfDay? endTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(startDate.add(Duration(hours: 1))),
-      );
-
-      if (endTime != null) {
-        // Combine the selected date and time
-        endDate = DateTime(endDate.year, endDate.month, endDate.day, endTime.hour, endTime.minute);
-      } else {
-        return; // Time selection canceled
-      }
-    } else {
-      return; // Date selection canceled
-    }
-
-    // Validation check: End date must be after start date
-    if (endDate.isAfter(startDate)) {
-      onDateTimeSelected(startDate, endDate);
-    } else {
-      // Show an error message
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('End date must be after start date')));
-    }
-  }
-
-  void _rentBicycle(BuildContext context, DateTime startDate, DateTime endDate) async {
-    String? userId = await UsersService().getUserId();
-    if (userId != null) {
-      Users? user = await UsersService().findOne(userId);
-      if (user != null) {
-        BikeRentals rental = BikeRentals(
-          item: widget.item,
-          users: user,
-          rentalStartDate: startDate,
-          rentalEndDate: endDate,
-          isActive: true,
-        );
-        await BikeRentalsService().saveBikeRentals(rental);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => MyRentPage()));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to retrieve user information.')));
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User is not logged in.')));
-    }
-  }
-
 
   Widget _buildQuantitySelector() {
     return Row(
@@ -201,7 +120,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               if (_quantity < widget.item.stock) {
                 _quantity++;
               } else {
-                // Notify the user that they cannot add more items than are in stock
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Cannot add more items than are in stock')),
                 );
@@ -211,5 +129,182 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
       ],
     );
+  }
+
+  void _addToCart() {
+    Provider.of<CartService>(context, listen: false)
+        .addToCart(widget.item, quantity: _quantity);
+    Navigator.pop(context);
+  }
+
+  void _showRentDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Select Rental Date & Time'),
+          content: _buildDateTimePicker(),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _rentBicycleProcess();
+              },
+              child: Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDateTimePicker() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: _startDateController,
+          decoration: InputDecoration(
+            labelText: 'Start Date & Time',
+            suffixIcon: IconButton(
+              icon: Icon(Icons.calendar_today),
+              onPressed: () async {
+                DateTime? selectedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(2100),
+                );
+                if (selectedDate != null) {
+                  TimeOfDay? selectedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+                  if (selectedTime != null) {
+                    DateTime startDate = DateTime(
+                      selectedDate.year,
+                      selectedDate.month,
+                      selectedDate.day,
+                      selectedTime.hour,
+                      selectedTime.minute,
+                    );
+
+                    if (startDate.isBefore(DateTime.now())) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Start date and time cannot be earlier than the current date and time.')),
+                      );
+                    } else {
+                      setState(() {
+                        _startDate = startDate;
+                        _startDateController.text = _startDate.toString();
+                      });
+                    }
+                  }
+                }
+              },
+            ),
+          ),
+        ),
+        SizedBox(height: 10),
+        TextField(
+          controller: _endDateController,
+          decoration: InputDecoration(
+            labelText: 'End Date & Time',
+            suffixIcon: IconButton(
+              icon: Icon(Icons.calendar_today),
+              onPressed: () async {
+                DateTime? selectedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now().add(Duration(days: 1)),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(2100),
+                );
+                if (selectedDate != null) {
+                  TimeOfDay? selectedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+                  if (selectedTime != null) {
+                    DateTime endDate = DateTime(
+                      selectedDate.year,
+                      selectedDate.month,
+                      selectedDate.day,
+                      selectedTime.hour,
+                      selectedTime.minute,
+                    );
+
+                    if (_startDate != null && endDate.isBefore(_startDate!)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('End date cannot be earlier than start date.')),
+                      );
+                    } else {
+                      setState(() {
+                        _endDate = endDate;
+                        _endDateController.text = _endDate.toString();
+                      });
+                    }
+                  }
+                }
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  Future<void> _rentBicycleProcess() async {
+    bool isLoggedIn = await UsersService().isLoggedIn();
+    if (!isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You must be logged in to rent a bicycle')));
+      return;
+    }
+
+    if (_startDate == null || _endDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please select both start and end dates')));
+      return;
+    }
+
+    if (_startDate!.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Start date cannot be in the past.')));
+      return;
+    }
+
+    if (_endDate!.isBefore(_startDate!)) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('End date cannot be earlier than start date.')));
+      return;
+    }
+
+    _rentBicycle(context, _startDate!, _endDate!);
+  }
+
+
+  void _rentBicycle(BuildContext context, DateTime startDate, DateTime endDate) async {
+    String? userId = await UsersService().getUserId();
+    if (userId != null) {
+      Users? user = await UsersService().findOne(userId);
+      if (user != null) {
+        BikeRentals rental = BikeRentals(
+          item: widget.item,
+          users: user,
+          rentalStartDate: startDate,
+          rentalEndDate: endDate,
+          isActive: true,
+        );
+        await BikeRentalsService().saveBikeRentals(rental);
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyRentPage()));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to retrieve user information.')));
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User is not logged in.')));
+    }
   }
 }
