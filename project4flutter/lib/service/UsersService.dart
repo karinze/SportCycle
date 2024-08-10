@@ -22,6 +22,11 @@ class UsersService {
 
       // Save session
       final prefs = await SharedPreferences.getInstance();
+      if(prefs.getString('username')!=null || prefs.getString('userId')!=null || prefs.getString('sessionToken')!=null){
+        await prefs.remove('username');
+        await prefs.remove('sessionToken');
+        await prefs.remove('userId');
+      }
       await prefs.setString('username', username);
       await prefs.setString('userId', user.user_id!);
       await prefs.setString(

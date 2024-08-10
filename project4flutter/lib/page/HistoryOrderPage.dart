@@ -6,7 +6,6 @@ import 'package:project4flutter/service/ItemsService.dart';
 import 'package:project4flutter/service/OrdersService.dart';
 import 'package:project4flutter/service/OrderItemsService.dart';
 import 'package:project4flutter/service/UsersService.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../model/Users.dart';
 import 'LoginPage.dart';
 
@@ -61,8 +60,19 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order History', style: TextStyle(fontWeight: FontWeight.normal)),
-
+        automaticallyImplyLeading: false,
+        title: Center(
+          child: Text(
+            'Order History',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: Colors.deepPurple,
+            ),
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
       body: _isLoggedIn ? _buildOrderList() : _buildLoginButton(),
     );
@@ -70,47 +80,101 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
   Widget _buildOrderList() {
     if (_orders.isEmpty) {
-      return Center(child: Text('No orders found.', style: TextStyle(fontSize: 18, color: Colors.grey)));
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.remove_shopping_cart_outlined,
+              size: 100,
+              color: Colors.grey[350],
+            ),
+            SizedBox(height: 20),
+            Text(
+              'No Orders Found',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     return ListView.builder(
       itemCount: _orders.length,
       itemBuilder: (context, index) {
+        final order = _orders[index];
         return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          elevation: 5,
-          margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 6,
+          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: ListTile(
+            contentPadding: EdgeInsets.all(20),
             title: Text(
-              'Order',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              'Order #${index + 1}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Colors.deepPurple,
+              ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 5),
-                Text('Total Amount: \$${_orders[index].totalAmount}', style: TextStyle(fontSize: 14)),
-                Text('Order Date: ${_orders[index].orderDate}', style: TextStyle(fontSize: 14)),
-                Text('Status: ${_orders[index].status}', style: TextStyle(fontSize: 14, color: Colors.blueAccent)),
-                if (_orders[index].status == 'Pending') // Add Cancel Button if Status is Pending
+                SizedBox(height: 8),
+                Text(
+                  'Total Amount: \$${order.totalAmount}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                Text(
+                  'Order Date: ${order.orderDate}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                Text(
+                  'Status: ${order.status}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+                if (order.status == 'Pending')
                   Align(
                     alignment: Alignment.centerRight,
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
+                      icon: Icon(Icons.cancel, color: Colors.white),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        backgroundColor: Colors.redAccent,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       onPressed: () {
-                        _cancelOrder(_orders[index].orderId);
+                        _cancelOrder(order.orderId);
                       },
-                      child: Text('Cancel Order', style: TextStyle(color: Colors.white)),
+                      label: Text(
+                        'Cancel Order',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
               ],
             ),
             trailing: Icon(Icons.arrow_forward_ios, color: Colors.deepPurple),
-            onTap: () {
-              _fetchOrderItems(_orders[index].orderId);
+            onTap: () async {
+              await _fetchOrderItems(order.orderId);
               _showOrderItemsDialog(context);
             },
           ),
@@ -121,19 +185,36 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
   Widget _buildLoginButton() {
     return Center(
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.deepPurple,
-          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-          textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => LoginPage()),
-          );
-        },
-        child: Text('Login'),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.person_outline,
+            size: 100,
+            color: Colors.grey[400],
+          ),
+          SizedBox(height: 20),
+          Text(
+            'No user found. Please login.',
+            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LoginPage()),
+            ),
+            child: Text("Login",
+                style: TextStyle(fontSize: 18, color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -142,22 +223,22 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     String? userId = await UsersService().getUserId();
     Users user = await UsersService().findOne(userId!);
     OrdersService ordersService = OrdersService();
-    Orders o = await ordersService.findOne(orderId);
-    Orders orders = Orders(
-      orderId: o.orderId, 
-      orderDate: DateTime.parse(o.orderDate),
-      status: "Cancel",
-      totalAmount: o.totalAmount,
-      createdDt: DateTime.parse(o.createdDt),
-      users: user
+    Orders order = await ordersService.findOne(orderId);
+    Orders updatedOrder = Orders(
+      orderId: order.orderId,
+      orderDate: DateTime.parse(order.orderDate),
+      status: "Cancelled",
+      totalAmount: order.totalAmount,
+      createdDt: DateTime.parse(order.createdDt),
+      users: user,
     );
-    await ordersService.saveOrder(orders);
-    List<OrderItems> orderitem = await OrderItemsService().findOrder(o);
-    for(var list in orderitem){
-      Items i = await ItemsService().findOne(list.item.itemId);
-      int stock = i.stock + list.quantity;
+    await ordersService.saveOrder(updatedOrder);
+    List<OrderItems> orderItems = await OrderItemsService().findOrder(order);
+    for (var item in orderItems) {
+      Items i = await ItemsService().findOne(item.item.itemId);
+      int stock = i.stock + item.quantity;
 
-      Items item = Items(
+      Items updatedItem = Items(
         itemId: i.itemId,
         name: i.name,
         image: i.image,
@@ -166,10 +247,10 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         price: i.price,
         type: i.type,
         createdDt: DateTime.parse(i.createdDt),
-        isVisible: stock <= 0 ? false : true,
+        isVisible: stock > 0,
         stock: stock,
       );
-      await ItemsService().saveItems(item);
+      await ItemsService().saveItems(updatedItem);
     }
     _fetchOrders(); // Refresh the list after updating the status
   }
@@ -180,13 +261,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
+            borderRadius: BorderRadius.circular(16.0),
           ),
-          elevation: 5,
+          elevation: 8,
           backgroundColor: Colors.white,
-          child: Container(
+          child: Padding(
             padding: EdgeInsets.all(20.0),
-            width: MediaQuery.of(context).size.width * 0.8,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,7 +275,8 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                   'Order Items',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 20.0,
+                    fontSize: 22.0,
+                    color: Colors.deepPurple,
                   ),
                 ),
                 SizedBox(height: 10.0),
@@ -213,17 +294,37 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                   shrinkWrap: true,
                   itemCount: _orderItems.length,
                   itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(
-                        'Item: ${_orderItems[index].item.name}',
-                        style: TextStyle(
-                          fontSize: 16.0,
-                        ),
+                    final orderItem = _orderItems[index];
+                    return Container(
+                      margin: EdgeInsets.only(bottom: 8.0),
+                      decoration: BoxDecoration(
+                        color: Colors.deepPurple[50],
+                        borderRadius: BorderRadius.circular(8.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            spreadRadius: 2,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      subtitle: Text(
-                        'Quantity: ${_orderItems[index].quantity}, Price: \$${_orderItems[index].price}',
-                        style: TextStyle(
-                          fontSize: 14.0,
+                      child: ListTile(
+                        contentPadding: EdgeInsets.all(16.0),
+                        title: Text(
+                          orderItem.item.name,
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Quantity: ${orderItem.quantity}\nPrice: \$${orderItem.price}',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.black.withOpacity(0.7),
+                          ),
                         ),
                       ),
                     );
@@ -253,5 +354,4 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       },
     );
   }
-
 }

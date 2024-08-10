@@ -25,6 +25,11 @@ class _ProductPageState extends State<ProductPage> {
   void initState() {
     super.initState();
     _fetchData();
+
+    // Unfocus the search field when the page is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).unfocus();
+    });
   }
 
   void _fetchData() async {
@@ -34,8 +39,9 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   void _updateFilteredList() {
-    filteredList = list
-        .where((item) => item.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+    List<Items> currentList = _searchQuery.isEmpty ? list : list.where((item) => item.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+
+    filteredList = currentList
         .skip(_currentPage * _itemsPerPage)
         .take(_itemsPerPage)
         .toList();
@@ -64,13 +70,9 @@ class _ProductPageState extends State<ProductPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Unfocus the search field when the widget is built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _searchFocusNode.unfocus();
-    });
-
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: TextField(
           focusNode: _searchFocusNode,
           decoration: InputDecoration(
@@ -141,7 +143,6 @@ class _ProductPageState extends State<ProductPage> {
                                     color: Colors.grey,
                                   ),
                                 ),
-
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
@@ -216,7 +217,8 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   Widget _buildPagination() {
-    int totalPages = (list.length / _itemsPerPage).ceil();
+    int totalPages = ((_searchQuery.isEmpty ? list.length : list.where((item) => item.name.toLowerCase().contains(_searchQuery.toLowerCase())).length) / _itemsPerPage).ceil();
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(totalPages, (index) {

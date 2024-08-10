@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../model/BikeProperties.dart';
 
 class BikePropertiesService {
-  static const String url = "http://192.168.1.4:9999/api";
+  static const String url = "http://192.168.1.7:9999/api";
   static const String urlBikeproperties = "$url/bikeproperties/";
 
   Future<List<BikeProperties>> findAll() async {

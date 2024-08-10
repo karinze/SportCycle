@@ -27,43 +27,54 @@ class CheckOutPage extends StatefulWidget {
 class _CheckOutPageState extends State<CheckOutPage> {
   final _formKey = GlobalKey<FormState>();
   UserDetails? _userDetails;
+  Users? _users;
 
   // Controllers for form fields
-  TextEditingController _firstNameController = TextEditingController();
-  TextEditingController _lastNameController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _phoneController = TextEditingController();
-  TextEditingController _addressController = TextEditingController();
-  TextEditingController _noteController = TextEditingController();
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController ;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
+  late TextEditingController _addressController;
+  late TextEditingController _noteController;
 
   String _selectedPaymentMethod = 'Offline';
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize the controllers with empty values
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _addressController = TextEditingController();
+    _noteController = TextEditingController();
+
     _loadUserDetails();
   }
 
   Future<void> _loadUserDetails() async {
     try {
       final UserDetailsService userDetailsService = UserDetailsService();
-      String? userId = await userDetailsService.getUserId();
+      String? userId = await UsersService().getUserId();
 
       if (userId != null) {
-        List<UserDetails> details =
-        await userDetailsService.findUserDetails(userId);
+        List<UserDetails> details = await userDetailsService.findUserDetails(userId);
+        Users us = await UsersService().findOne(userId);
 
-        if (details.isNotEmpty) {
-          setState(() {
-            _userDetails = details.first;
-            _firstNameController.text = _userDetails?.firstName ?? '';
-            _lastNameController.text = _userDetails?.lastName ?? '';
-            _emailController.text = _userDetails?.email ?? '';
-            _phoneController.text = _userDetails?.phoneNumber ?? '';
-            _addressController.text = _userDetails?.address ?? '';
-            _noteController.text = _userDetails?.note ?? '';
-          });
-        }
+        setState(() {
+          _userDetails = details.isNotEmpty ? details.first : null;
+          _users = us;
+
+          // Update the controllers with the loaded data
+          _firstNameController.text = _userDetails?.firstName ?? '';
+          _lastNameController.text = _userDetails?.lastName ?? '';
+          _emailController.text = _users?.email ?? '';
+          _phoneController.text = _userDetails?.phoneNumber ?? '';
+          _addressController.text = _userDetails?.address ?? '';
+          _noteController.text = _userDetails?.note ?? '';
+        });
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -326,6 +337,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                   SizedBox(height: 16),
                   TextFormField(
                     controller: _emailController,
+                    enabled: false,
                     decoration: InputDecoration(
                       labelText: 'Email',
                       border: OutlineInputBorder(),
@@ -397,7 +409,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
               },
             ),
             RadioListTile(
-              title: const Text('Online Payment'),
+              title: const Text('Online Payment (PayPal)'),
               value: 'Online',
               groupValue: _selectedPaymentMethod,
               onChanged: (value) {

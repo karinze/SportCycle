@@ -121,11 +121,10 @@ class _LoginState extends State<LoginPage> {
                         );
 
                         if (user != null) {
-                          Navigator.pushReplacement(
+                          Navigator.pushAndRemoveUntil(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const HomePage(),
-                            ),
+                            MaterialPageRoute(builder: (context) => HomePage()),
+                                (route) => false,
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

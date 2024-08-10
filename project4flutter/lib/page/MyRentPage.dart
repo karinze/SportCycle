@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +13,88 @@ class MyRentPage extends StatefulWidget {
 }
 
 class _MyRentPageState extends State<MyRentPage> {
+  bool _isLoggedIn = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    bool isLoggedIn = await UsersService().isLoggedIn();
+    setState(() {
+      _isLoggedIn = isLoggedIn;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+
+        title: Center(
+          child: Text('My Rentals',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: Colors.deepPurple,
+              )),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _isLoggedIn
+          ? MyRentalsContent() // Show rentals if logged in
+          : _buildLoginPrompt(), // Show login prompt if not logged in
+    );
+  }
+
+  Widget _buildLoginPrompt() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.person_outline,
+            size: 100,
+            color: Colors.grey[400],
+          ),
+          SizedBox(height: 20),
+          Text(
+            'No user found. Please login.',
+            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LoginPage()),
+            ),
+            child: Text("Login",
+                style: TextStyle(fontSize: 18, color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF7971EA), // Updated color
+              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              textStyle: TextStyle(fontSize: 20, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MyRentalsContent extends StatefulWidget {
+  @override
+  _MyRentalsContentState createState() => _MyRentalsContentState();
+}
+
+class _MyRentalsContentState extends State<MyRentalsContent> {
   List<BikeRentals> _bikeRentals = [];
   bool _isLoading = true;
 
@@ -24,39 +105,47 @@ class _MyRentPageState extends State<MyRentPage> {
   }
 
   Future<void> _fetchRentals() async {
-    bool isLoggedIn = await UsersService().isLoggedIn();
-    if (isLoggedIn) {
-      String? userId = await UsersService().getUserId();
-      if (userId != null) {
-        List<BikeRentals> rentals = await BikeRentalsService().findUser(userId);
-        setState(() {
-          _bikeRentals = rentals;
-          _isLoading = false;
-        });
-      }
-    } else {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => LoginPage()));
+    String? userId = await UsersService().getUserId();
+    if (userId != null) {
+      List<BikeRentals> rentals = await BikeRentalsService().findUser(userId);
+      setState(() {
+        _bikeRentals = rentals;
+        _isLoading = false;
+      });
     }
+  }
+
+  void _handleRentalEnd() {
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('My Rentals'),
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _buildRentalList(),
-    );
+    return _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : _buildRentalList();
   }
 
   Widget _buildRentalList() {
     if (_bikeRentals.isEmpty) {
       return Center(
-          child: Text('No rentals found.',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)));
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.directions_bike,
+              size: 100,
+              color: Colors.grey[350],
+            ),
+            SizedBox(height: 20),
+            Text('No Rentals Found.',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[500]))
+          ],
+        ),
+      );
     }
 
     return ListView.builder(
@@ -92,7 +181,12 @@ class _MyRentPageState extends State<MyRentPage> {
                   Text('End: ${endDate}', style: TextStyle(fontSize: 16)),
                   SizedBox(height: 5),
                   isActive
-                      ? CountdownTimer(startDate: startDate, endDate: endDate, rental: rental)
+                      ? CountdownTimer(
+                    startDate: startDate,
+                    endDate: endDate,
+                    rental: rental,
+                    onRentalEnd: _handleRentalEnd,
+                  )
                       : Text('Status: Completed',
                       style: TextStyle(
                           fontSize: 16, color: Colors.redAccent)),
@@ -106,16 +200,17 @@ class _MyRentPageState extends State<MyRentPage> {
   }
 }
 
-
 class CountdownTimer extends StatefulWidget {
   final DateTime startDate;
   final DateTime endDate;
   final BikeRentals rental;
+  final VoidCallback onRentalEnd;
 
   const CountdownTimer({
     required this.startDate,
     required this.endDate,
     required this.rental,
+    required this.onRentalEnd,
   });
 
   @override
@@ -152,6 +247,7 @@ class _CountdownTimerState extends State<CountdownTimer>
         if (_currentTime.isAfter(widget.endDate)) {
           timer.cancel();
           _updateRentalStatus();
+          widget.onRentalEnd(); // Notify parent widget
         }
       });
     });
@@ -203,8 +299,3 @@ class _CountdownTimerState extends State<CountdownTimer>
     }
   }
 }
-
-
-
-
-

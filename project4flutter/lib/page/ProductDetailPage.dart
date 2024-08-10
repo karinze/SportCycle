@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_paypal_checkout/flutter_paypal_checkout.dart';
 import '../model/BikeRentals.dart';
 import '../model/Items.dart';
 import '../model/Users.dart';
@@ -23,6 +24,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   DateTime? _endDate;
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
+  double _rentalPrice = 0.0;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +81,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     backgroundColor: Colors.blue,
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
-                  child: Text('Add to Cart'),
+                  child: Text('Add to Cart',style: TextStyle(color: Colors.white),),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -92,6 +95,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ),
               ],
             ),
+
           ],
         ),
       ),
@@ -141,30 +145,47 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Select Rental Date & Time'),
-          content: _buildDateTimePicker(),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _rentBicycleProcess();
-              },
-              child: Text('Confirm'),
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Select Rental Date & Time'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildDateTimePicker(setState),
+                  if (_rentalPrice > 0)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
+                      child: Text(
+                        'Rental Price: \$$_rentalPrice',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _rentBicycleProcess();
+                  },
+                  child: Text('Confirm'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildDateTimePicker() {
+  Widget _buildDateTimePicker(Function setState) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -203,6 +224,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       setState(() {
                         _startDate = startDate;
                         _startDateController.text = _startDate.toString();
+                        _calculateRentalPrice();
                       });
                     }
                   }
@@ -247,6 +269,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       setState(() {
                         _endDate = endDate;
                         _endDateController.text = _endDate.toString();
+                        _calculateRentalPrice();
                       });
                     }
                   }
@@ -259,6 +282,26 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  void _calculateRentalPrice() {
+    if (_startDate != null && _endDate != null) {
+      // Calculate the duration between the start and end date in minutes
+      Duration rentalDuration = _endDate!.difference(_startDate!);
+      double minutesBetween = rentalDuration.inMinutes.toDouble();
+
+      // Calculate the rental cost
+      double hourlyRate = 10 / 24.0; // Equivalent of $10 per day
+      double costPerMinute = hourlyRate / 60.0; // Cost per minute
+      double cost = costPerMinute * minutesBetween; // Total rental cost
+
+      // Set the rental price and update the UI
+      _rentalPrice = double.parse(cost.toStringAsFixed(2));
+      setState(() {});
+    }
+  }
+  DateTime _getVietnamCurrentTime() {
+    final DateTime now = DateTime.now().toUtc().add(Duration(hours: 7));
+    return now;
+  }
 
   Future<void> _rentBicycleProcess() async {
     bool isLoggedIn = await UsersService().isLoggedIn();
@@ -272,21 +315,62 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return;
     }
 
-    if (_startDate!.isBefore(DateTime.now())) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Start date cannot be in the past.')));
-      return;
-    }
+
 
     if (_endDate!.isBefore(_startDate!)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('End date cannot be earlier than start date.')));
       return;
     }
 
-    _rentBicycle(context, _startDate!, _endDate!);
+    await _initiatePayPalCheckout();
   }
 
+  Future<void> _initiatePayPalCheckout() async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaypalCheckout(
+          clientId: 'AZDuKIu5bbjUgctSXXXrBGPKFZ_d2nFV4XFAjzDlQMcu_6GVs_RSeESb8gcPVtuJ_8L4H5SvuE0jcx36',
+          secretKey: 'EEolPMf39IbyKHpW0gejHmF5-55nbkX7mdLrlAC0g-SuXp0P0QHqooPRJtI1gv8owCbMzLy4lXgV9Ai7',
+          returnURL: 'success.snippetcoder.com',
+          cancelURL: 'cancel.snippetcoder.com',
+          sandboxMode: true,
+          transactions: [
+            {
+              "amount": {
+                "total": _rentalPrice.toStringAsFixed(2),
+                "currency": "USD",
+                "details": {
+                  "subtotal": _rentalPrice.toStringAsFixed(2),
+                },
+              },
+              "description": "Bike Rental",
+              "payment_options": {
+                "allowed_payment_method": "INSTANT_FUNDING_SOURCE"
+              },
+            }
+          ],
+          note: "Thank you for your purchase!",
+          onSuccess: (Map params) async {
+            await _saveRentalDetails();
+          },
+          onCancel: () {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Payment cancelled.')));
+          },
+          onError: (error) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Payment error: $error')));
+            print('Payment error: $error');
+          },
+        ),
+      ),
+    );
+  }
 
-  void _rentBicycle(BuildContext context, DateTime startDate, DateTime endDate) async {
+  Future<void> _saveRentalDetails() async {
+    setState(() {
+      _isLoading = true;  // Start loading
+    });
+
     String? userId = await UsersService().getUserId();
     if (userId != null) {
       Users? user = await UsersService().findOne(userId);
@@ -294,17 +378,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         BikeRentals rental = BikeRentals(
           item: widget.item,
           users: user,
-          rentalStartDate: startDate,
-          rentalEndDate: endDate,
+          rentalStartDate: _startDate!,
+          rentalEndDate: _endDate!,
           isActive: true,
         );
         await BikeRentalsService().saveBikeRentals(rental);
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyRentPage()));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Payment successful!')));
+
+        // Navigate to the next page after a short delay
+        Future.delayed(Duration(seconds: 1), () {
+          setState(() {
+            _isLoading = false;  // Stop loading
+          });
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyRentPage()));
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to retrieve user information.')));
+        setState(() {
+          _isLoading = false;  // Stop loading
+        });
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User is not logged in.')));
+      setState(() {
+        _isLoading = false;  // Stop loading
+      });
     }
   }
 }

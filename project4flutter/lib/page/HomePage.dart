@@ -68,6 +68,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Center(
           child: Text(
             "SportCycle Shop",
@@ -89,7 +90,7 @@ class _HomePageState extends State<HomePage> {
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Products'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'History'),
           BottomNavigationBarItem(icon: Icon(Icons.directions_bike), label: 'Rent'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Me'),
         ],
