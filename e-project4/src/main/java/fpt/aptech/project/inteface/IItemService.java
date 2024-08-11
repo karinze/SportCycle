@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 
 /**
  *
- * @author Manh_Chien
+ * @author Admin
  */
 public interface IItemService {
 

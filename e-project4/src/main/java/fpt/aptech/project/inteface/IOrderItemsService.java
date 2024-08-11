@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  *
- * @author Manh_Chien
+ * @author Admin
  */
 public interface IOrderItemsService {
     public List<OrderItems> findAll();

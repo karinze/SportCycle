@@ -23,7 +23,7 @@ import lombok.Setter;
 
 /**
  *
- * @author Manh_Chien
+ * @author Admin
  */
 @Table(name = "Items")
 @Entity
