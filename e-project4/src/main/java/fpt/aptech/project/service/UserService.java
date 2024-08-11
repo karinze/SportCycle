@@ -79,12 +79,11 @@ public class UserService implements IUserService{
         try {
             String resetLink = generateResetToken(users);
             SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setFrom("XYZ Team <chientestphp@gmail.com>");
+            msg.setFrom("SportCycle SHop <chientestphp@gmail.com>");
             msg.setTo(users.getEmail());
-            msg.setSubject("Welcome to XYZ");
+            msg.setSubject("Welcome to Sport Cycle");
             msg.setText("Dear User,\n\nPlease click the following link to reset your password:\n" + resetLink + "\n\nBest regards,\nXYZ Team");
             javaMailSender.send(msg);
-            
         } catch (Exception e) {
             e.printStackTrace();
             
