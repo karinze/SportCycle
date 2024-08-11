@@ -97,6 +97,12 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="rentalquantity">Enter Rental Quantity:</label>
+                    <input type="text" id="rentalquantity" name="rentalquantity" class="form-control" th:field="*{rentalquantity}">
+                    <p class="text-danger" th:errors="*{rentalquantity}" th:if="${#fields.hasErrors('rentalquantity')}"></p>
+                </div>
+                
+                <div class="form-group">
                     <label for="image">Enter Image:</label>
                     <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
                     <p class="text-danger" th:errors="*{image}" th:if="${#fields.hasErrors('image')}"></p>

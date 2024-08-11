@@ -4,23 +4,11 @@
  */
 package fpt.aptech.client.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
-import java.util.ArrayList;
+
 import java.util.Date;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
+
 
 /**
  *
@@ -34,6 +22,7 @@ public class Items {
     public String description;
     public BigDecimal price;
     public int stock;
+    public int rentalquantity;
     public String type;
     public String image;
     public boolean is_visible;
@@ -51,32 +40,33 @@ public class Items {
         
     }
 
-    public Items(int item_id, String name, String brand, String description, BigDecimal price, int stock, String type, String image, boolean is_visible, Date created_dt) {
-        this.item_id = item_id;
-        this.name = name;
-        this.brand = brand;
-        this.description = description;
-        this.price = price;
-        this.stock = stock;
-        this.type = type;
-        this.image = image;
-        this.is_visible = is_visible;
-        this.created_dt = created_dt;
-    }
-    
-    public Items( String name, String brand, String description, BigDecimal price, int stock, String type, String image, boolean is_visible, Date created_dt) {
+    public Items( String name, String brand, String description, BigDecimal price, int stock, int rentalquantity, String type, String image, boolean is_visible, Date created_dt) {
         
         this.name = name;
         this.brand = brand;
         this.description = description;
         this.price = price;
         this.stock = stock;
+        this.rentalquantity = rentalquantity;
         this.type = type;
         this.image = image;
         this.is_visible = is_visible;
         this.created_dt = created_dt;
     }
-    
+
+    public Items(int item_id, String name, String brand, String description, BigDecimal price, int stock, int rentalquantity, String type, String image, boolean is_visible, Date created_dt) {
+        this.item_id = item_id;
+        this.name = name;
+        this.brand = brand;
+        this.description = description;
+        this.price = price;
+        this.stock = stock;
+        this.rentalquantity = rentalquantity;
+        this.type = type;
+        this.image = image;
+        this.is_visible = is_visible;
+        this.created_dt = created_dt;
+    }
 
     public int getItem_id() {
         return item_id;
@@ -126,6 +116,14 @@ public class Items {
         this.stock = stock;
     }
 
+    public int getRentalquantity() {
+        return rentalquantity;
+    }
+
+    public void setRentalquantity(int rentalquantity) {
+        this.rentalquantity = rentalquantity;
+    }
+
     public String getType() {
         return type;
     }
@@ -157,6 +155,9 @@ public class Items {
     public void setCreated_dt(Date created_dt) {
         this.created_dt = created_dt;
     }
+    
+
+    
 
     
 

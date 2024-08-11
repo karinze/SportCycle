@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project4flutter/page/SendMailPage.dart';
 import '../service/UsersService.dart';
+import '../utils/color.dart';
 import 'SignInPage.dart';
 import 'HomePage.dart';
 
@@ -23,7 +24,7 @@ class _LoginState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      backgroundColor: AppColor.textColor,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -53,7 +54,7 @@ class _LoginState extends State<LoginPage> {
                 controller: _controllerUsername,
                 keyboardType: TextInputType.name,
                 decoration: InputDecoration(
-                  labelText: "Username",
+                  labelText: "Username or Email",
                   prefixIcon: const Icon(Icons.person_outline),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -65,7 +66,7 @@ class _LoginState extends State<LoginPage> {
                 onEditingComplete: () => _focusNodePassword.requestFocus(),
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
-                    return "Please enter username.";
+                    return "Please enter username or email.";
                   }
                   return null;
                 },
@@ -126,10 +127,12 @@ class _LoginState extends State<LoginPage> {
                             MaterialPageRoute(builder: (context) => HomePage()),
                                 (route) => false,
                           );
+
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text("Invalid username or password."),
+                              content: Text("Account does not exist or incorrect credentials."),
+                              backgroundColor: Colors.black87,
                             ),
                           );
                         }
@@ -143,7 +146,7 @@ class _LoginState extends State<LoginPage> {
                       const Text("Don't have an account?"),
                       TextButton(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const Signup(),

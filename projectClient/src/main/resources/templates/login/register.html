@@ -1,124 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
 
-    <title>Register</title>
+        <title>Register</title>
 
-    <!-- Custom fonts for this template-->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700&display=swap" rel="stylesheet">
+        <!-- Custom fonts for this template-->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700&display=swap" rel="stylesheet">
 
-    <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(135deg, #ffffff, #d3f9d8);
-            font-family: 'Nunito', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .card {
-            border: none;
-            border-radius: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            background: #ffffff;
-            max-width: 400px;
-            width: 100%;
-        }
-        .card-body {
-            padding: 2rem;
-        }
-        .card-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #2e8b57;
-            margin-bottom: 1.5rem;
-        }
-        .form-control {
-            border: 1px solid #d1d3e2;
-            border-radius: 0.75rem;
-            padding: 1rem;
-            transition: border-color 0.3s ease;
-        }
-        .form-control:focus {
-            border-color: #2e8b57;
-            box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
-        }
-        .btn-primary {
-            background-color: #2e8b57;
-            border: none;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            transition: background-color 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #1e6f3f;
-        }
-        .text-center a {
-            color: #2e8b57;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-        .text-center a:hover {
-            color: #1e6f3f;
-        }
-        .alert {
-            border-radius: 0.5rem;
-        }
-    </style>
-</head>
+        <!-- Custom styles for this template-->
+        <link href="css/sb-admin-2.min.css" rel="stylesheet">
+        <style>
+            body {
+                background: linear-gradient(135deg, #ffffff, #d3f9d8);
+                font-family: 'Nunito', sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .card {
+                border: none;
+                border-radius: 1rem;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                background: #ffffff;
+                max-width: 400px;
+                width: 100%;
+            }
+            .card-body {
+                padding: 2rem;
+            }
+            .card-title {
+                font-size: 1.75rem;
+                font-weight: 700;
+                color: #2e8b57;
+                margin-bottom: 1.5rem;
+            }
+            .form-control {
+                border: 1px solid #d1d3e2;
+                border-radius: 0.75rem;
+                padding: 1rem;
+                transition: border-color 0.3s ease;
+            }
+            .form-control:focus {
+                border-color: #2e8b57;
+                box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
+            }
+            .btn-primary {
+                background-color: #2e8b57;
+                border: none;
+                border-radius: 0.75rem;
+                padding: 0.75rem 1.5rem;
+                transition: background-color 0.3s ease;
+            }
+            .btn-primary:hover {
+                background-color: #1e6f3f;
+            }
+            .text-center a {
+                color: #2e8b57;
+                text-decoration: none;
+                font-weight: 600;
+                transition: color 0.3s ease;
+            }
+            .text-center a:hover {
+                color: #1e6f3f;
+            }
+            .alert {
+                border-radius: 0.5rem;
+            }
+        </style>
+    </head>
 
-<body>
+    <body>
 
-    <div class="card shadow">
-        <div class="card-body">
-            <div class="text-center mb-4">
-                <h1 class="card-title">Create an Account!</h1>
-            </div>
-            <form class="user" th:action="@{/doregister}" th:object="${account}" method="post">
-                <div class="form-group">
-                    <div class="text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
-                    <input type="text" class="form-control" id="username"
-                           placeholder="Username" name="username" th:value="*{username}" th:errorClass="username">
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h1 class="card-title">Create an Account!</h1>
                 </div>
-                <div class="form-group">
-                    <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
-                    <input type="email" class="form-control" id="email" name="email" th:value="*{email}" th:errorClass="email"
-                           placeholder="Email Address">
+                <form class="user" th:action="@{/doregister}" th:object="${account}" method="post">
+                    <div class="form-group">
+                        <div class="text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+                        <input type="text" class="form-control" id="username"
+                               placeholder="Username" name="username" th:value="*{username}" th:errorClass="username">
+                    </div>
+                    <div class="form-group">
+                        <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                        <input type="email" class="form-control" id="email" name="email" th:value="*{email}" th:errorClass="email"
+                               placeholder="Email Address">
+                    </div>
+                    <div class="form-group">
+                        <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                        <input type="password" class="form-control" id="password" name="password" th:value="*{password}" th:errorClass="password"
+                               placeholder="Password">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-control" id="confirm_password" name="confirmPassword" placeholder="Confirm Password">
+                    </div>
+                    <div class="text-danger" id="password-error"></div>
+                    <input type="submit" value="Register Account" class="btn btn-primary btn-user btn-block">
+                </form>
+                <hr>
+                <div class="text-center">
+                    <a class="small" th:href="@{/forgotpassword}">Forgot Password?</a>
                 </div>
-                <div class="form-group">
-                    <div class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
-                    <input type="password" class="form-control" id="password" name="password" th:value="*{password}" th:errorClass="password"
-                           placeholder="Password">
+                <div class="text-center">
+                    <a class="small" th:href="@{login}">Already have an account? Login!</a>
                 </div>
-                <input type="submit" value="Register Account" class="btn btn-primary btn-user btn-block">
-            </form>
-            <hr>
-            <div class="text-center">
-                <a class="small" th:href="@{/forgotpassword}">Forgot Password?</a>
-            </div>
-            <div class="text-center">
-                <a class="small" th:href="@{login}">Already have an account? Login!</a>
             </div>
         </div>
-    </div>
 
-    <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-    <script src="js/sb-admin-2.min.js"></script>
+        <!-- Bootstrap core JavaScript-->
+        <script src="vendor/jquery/jquery.min.js"></script>
+        <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+        <script src="js/sb-admin-2.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const form = document.querySelector("form.user");
+                const password = document.getElementById("password");
+                const confirmPassword = document.getElementById("confirm_password");
+                const errorDiv = document.getElementById("password-error");
 
-</body>
+                form.addEventListener("submit", function (event) {
+                    // Clear previous error message
+                    errorDiv.textContent = "";
+
+                    if (password.value !== confirmPassword.value) {
+                        // Prevent form submission
+                        event.preventDefault();
+                        // Display error message
+                        errorDiv.textContent = "Passwords do not match";
+                        errorDiv.style.color = "red";
+                    }
+                });
+            });
+        </script>
+
+    </body>
 
 </html>

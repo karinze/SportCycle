@@ -44,6 +44,8 @@ public class Items {
     public BigDecimal price;
     @Column(name = "stock")
     public int stock;
+    @Column(name = "rentalquantity")
+    public int rentalquantity;
     @Column(name = "type")
     public String type;
     @Column(name = "image")
@@ -62,21 +64,25 @@ public class Items {
     public List<BikeProperties> Blist= new ArrayList();
     
     
+    
     public Items() {
     }
 
-    public Items(int item_id, String name, String brand, String description, BigDecimal price, int stock, String type, String image, boolean is_visible, Date created_dt) {
+    public Items(int item_id, String name, String brand, String description, BigDecimal price, int stock, int rentalquantity, String type, String image, boolean is_visible, Date created_dt) {
         this.item_id = item_id;
         this.name = name;
         this.brand = brand;
         this.description = description;
         this.price = price;
         this.stock = stock;
+        this.rentalquantity = rentalquantity;
         this.type = type;
         this.image = image;
         this.is_visible = is_visible;
         this.created_dt = created_dt;
     }
+
+    
 
     
     

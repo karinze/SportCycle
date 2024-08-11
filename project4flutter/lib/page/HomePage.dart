@@ -80,8 +80,12 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
+          if (index == 0 && _currentIndex == 0) {
+            _fetchData();
+          }
           setState(() {
             _currentIndex = index;
+            _fetchData();
           });
         },
         selectedItemColor: AppColor.mainColor,
@@ -151,7 +155,7 @@ class _HomePageState extends State<HomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProductDetailPage(item: item),
+                      builder: (context) => ProductDetailPage(item: item,item_id: item.itemId),
                     ),
                   );
                 },
@@ -301,7 +305,7 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProductDetailPage(item: item),
+              builder: (context) => ProductDetailPage(item: item,item_id: item.itemId),
             ),
           );
         },

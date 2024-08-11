@@ -150,7 +150,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
             ListTile(
               leading: Icon(Icons.settings, color: Color(0xFF89dad0)),
               title: Text(
-                'Account Settings',
+                'Profile Settings',
                 style: TextStyle(fontSize: 18),
               ),
               trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey[400]),

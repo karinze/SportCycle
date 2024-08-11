@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project4flutter/page/HomePage.dart';
 import 'package:provider/provider.dart';
+import 'page/SplashPage.dart';
 import 'service/CartService.dart';
 
 void main() {
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: HomePage(),
+        home: SplashPage(),
       ),
     );
   }

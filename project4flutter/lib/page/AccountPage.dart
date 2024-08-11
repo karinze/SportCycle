@@ -8,7 +8,7 @@ class AccountPage extends StatefulWidget {
   final UserDetails? userDetails;
   final Users? users;
 
-  AccountPage({this.userDetails,this.users});
+  AccountPage({this.userDetails, this.users});
 
   @override
   _AccountPageState createState() => _AccountPageState();
@@ -24,7 +24,6 @@ class _AccountPageState extends State<AccountPage> {
   late TextEditingController _addressController;
   late TextEditingController _noteController;
 
-
   @override
   void initState() {
     super.initState();
@@ -34,8 +33,7 @@ class _AccountPageState extends State<AccountPage> {
         TextEditingController(text: widget.userDetails?.firstName ?? '');
     _lastNameController =
         TextEditingController(text: widget.userDetails?.lastName ?? '');
-    _emailController =
-        TextEditingController(text: widget.users?.email ?? '');
+    _emailController = TextEditingController(text: widget.users?.email ?? '');
     _phoneController =
         TextEditingController(text: widget.userDetails?.phoneNumber ?? '');
     _addressController =
@@ -89,6 +87,8 @@ class _AccountPageState extends State<AccountPage> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your first name';
+                    } else if (value.length > 255) {
+                      return 'First name cannot exceed 255 characters';
                     }
                     return null;
                   },
@@ -100,45 +100,64 @@ class _AccountPageState extends State<AccountPage> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your last name';
+                    } else if (value.length > 255) {
+                      return 'Last name cannot exceed 255 characters';
                     }
                     return null;
                   },
                 ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-                child: TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email, color: Color(0xFF7971EA)),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                      borderSide: BorderSide(color: Color(0xFF7971EA)),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email, color: Color(0xFF7971EA)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                        borderSide: BorderSide(color: Color(0xFF7971EA)),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 15.0, horizontal: 20.0),
                     ),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                    contentPadding:
-                    EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      } else if (value.length > 255) {
+                        return 'Email cannot exceed 255 characters';
+                      }
+                      return null;
+                    },
+                    enabled: false, // Ensure this is true or omit if not necessary
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    return null;
-                  },
-                  enabled: false, // Ensure this is true or omit if not necessary
                 ),
-
-            ),
                 _buildTextFormField(
                   controller: _phoneController,
                   labelText: 'Phone Number',
                   icon: Icons.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your phone number';
+                    } else if (!RegExp(
+                        r'^(?!0{10,11})(?!1{10,11})(?!2{10,11})(?!3{10,11})(?!4{10,11})(?!5{10,11})(?!6{10,11})(?!7{10,11})(?!8{10,11})(?!9{10,11})\d{10,11}$')
+                        .hasMatch(value)) {
+                      return 'Phone number must be 10-11 digits and cannot be all the same digit';
+                    }
+                    return null;
+                  },
                 ),
                 _buildTextFormField(
                   controller: _addressController,
                   labelText: 'Address',
                   icon: Icons.location_on,
+                  validator: (value) {
+                    if (value != null && value.length > 255) {
+                      return 'Address cannot exceed 255 characters';
+                    }
+                    return null;
+                  },
                 ),
                 _buildTextFormField(
                   controller: _noteController,
@@ -191,7 +210,7 @@ class _AccountPageState extends State<AccountPage> {
           filled: true,
           fillColor: Colors.grey[100],
           contentPadding:
-              EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+          EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
         ),
         validator: validator,
       ),

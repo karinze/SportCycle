@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../model/Users.dart';
 import '../service/UsersService.dart';
+import '../utils/color.dart';
+import 'LoginPage.dart';
 import 'SendMailPage.dart';
 
 class Signup extends StatefulWidget {
@@ -25,79 +26,83 @@ class _SignupState extends State<Signup> {
       TextEditingController();
 
   bool _obscurePassword = true;
-  bool _isEmailExist = false;
-  bool _isUsernameExist = false;
+  bool _isLoading = false;
 
   final UsersService _usersService = UsersService();
   final Uuid _uuid = Uuid();
 
-  Future<void> _checkEmailExistence(String email) async {
-    final emailExists = await _usersService.isEmailExist(email);
-    setState(() {
-      _isEmailExist = emailExists;
-    });
-  }
-
-  Future<void> _checkUsernameExistence(String username) async {
-    final usernameExists = await _usersService.isEmailExist(username);
-    setState(() {
-      _isUsernameExist = usernameExists;
-    });
-  }
+  String? _usernameError;
+  String? _emailError;
 
   Future<void> _register() async {
     if (_formKey.currentState?.validate() ?? false) {
-      await _checkEmailExistence(_controllerEmail.text);
+      setState(() {
+        _isLoading = true;
+        _usernameError = null;
+        _emailError = null;
+      });
 
-      if (_isEmailExist) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Email already exists."),
-            backgroundColor: Colors.red,
+      final usernameError =
+          await _checkUsernameExistence(_controllerUsername.text);
+      final emailError = await _checkEmailExistence(_controllerEmail.text);
+
+      if (usernameError != null || emailError != null) {
+        setState(() {
+          _usernameError = usernameError;
+          _emailError = emailError;
+          _isLoading = false;
+        });
+        return;
+      }
+
+      try {
+        final newUser = Users(
+          user_id: _uuid.v4(),
+          username: _controllerUsername.text,
+          email: _controllerEmail.text,
+          password: _controllerPassword.text,
+          role: false,
+          created_dt: DateTime.now(),
+        );
+        await _usersService.saveUsers(newUser);
+
+        _formKey.currentState?.reset();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginPage(),
           ),
         );
-      } else {
-        try {
-          final newUser = Users(
-            user_id: _uuid.v4(),
-            username: _controllerUsername.text,
-            email: _controllerEmail.text,
-            password: _controllerPassword.text,
-            role: false,
-            created_dt: DateTime.now(),
-          );
-          await _usersService.saveUsers(newUser);
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              width: 200,
-              backgroundColor: Theme.of(context).colorScheme.secondary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              behavior: SnackBarBehavior.floating,
-              content: const Text("Registered Successfully"),
-            ),
-          );
-
-          _formKey.currentState?.reset();
-          Navigator.pop(context);
-        } catch (e) {
-          print('Error: $e');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Failed to register."),
-            ),
-          );
-        }
+      } catch (e) {
+        print('Error: $e');
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
+  }
+
+  Future<String?> _checkEmailExistence(String email) async {
+    final emailExists = await _usersService.isEmailExist(email);
+    if (emailExists) {
+      return "Email already exists.";
+    }
+    return null;
+  }
+
+  Future<String?> _checkUsernameExistence(String username) async {
+    final usernameExists = await _usersService.isUsernameExist(username);
+    if (usernameExists) {
+      return "Username already exists.";
+    }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      backgroundColor: AppColor.textColor,
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -127,10 +132,13 @@ class _SignupState extends State<Signup> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
+                  errorText: _usernameError,
                 ),
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Please enter username.";
+                  } else if (value.length > 255) {
+                    return "The username must not exceed 255 characters.";
                   }
                   return null;
                 },
@@ -150,12 +158,15 @@ class _SignupState extends State<Signup> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
+                  errorText: _emailError,
                 ),
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
                     return "Please enter email.";
                   } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
                     return "Invalid email.";
+                  } else if (value.length > 255) {
+                    return "The email must not exceed 255 characters.";
                   }
                   return null;
                 },
@@ -191,6 +202,8 @@ class _SignupState extends State<Signup> {
                     return "Please enter password.";
                   } else if (value.length < 6) {
                     return "Password must be at least 6 characters.";
+                  } else if (value.length > 255) {
+                    return "The password must not exceed 255 characters.";
                   }
                   return null;
                 },
@@ -241,37 +254,22 @@ class _SignupState extends State<Signup> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    onPressed: () async {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        await _checkEmailExistence(_controllerEmail.text);
-                        await _checkUsernameExistence(_controllerUsername.text);
-                        if (_isEmailExist) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Email already exists."),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        } else if (_isUsernameExist) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Username already exists."),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        } else {
-                          _register();
-                        }
-                      }
-                    },
-                    child: const Text("Register"),
+                    onPressed: _isLoading ? null : _register,
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text("Register"),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text("Already have an account?"),
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginPage(),
+                          ),
+                        ),
                         child: const Text("Login"),
                       ),
                     ],

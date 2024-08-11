@@ -14,29 +14,54 @@ class UsersService {
   Future<Users?> checkLogin(String username, String password) async {
     final response = await http.get(
         Uri.parse("${urlAuth}login/$username/$username/$password"));
+
     print("API Response Code: ${response.statusCode}");
     print("API Response Body: ${response.body}");
+
     if (response.statusCode == 200) {
-      var data = json.decode(response.body);
-      Users user = Users.fromJson(data);
-
-      // Save session
-      final prefs = await SharedPreferences.getInstance();
-      if(prefs.getString('username')!=null || prefs.getString('userId')!=null || prefs.getString('sessionToken')!=null){
-        await prefs.remove('username');
-        await prefs.remove('sessionToken');
-        await prefs.remove('userId');
+      // Kiểm tra nếu phản hồi không phải là một chuỗi JSON hợp lệ
+      if (response.body.isEmpty || response.body == 'null') {
+        print("Login failed: empty or null response.");
+        return null;
       }
-      await prefs.setString('username', username);
-      await prefs.setString('userId', user.user_id!);
-      await prefs.setString(
-          'sessionToken', user.password!); // Use an actual session token
 
-      return user;
+      try {
+        var data = json.decode(response.body);
+
+        // Kiểm tra nếu dữ liệu JSON rỗng hoặc không hợp lệ
+        if (data == null || data.isEmpty) {
+          print("Login failed: no user data returned.");
+          return null;
+        }
+
+        Users user = Users.fromJson(data);
+
+        // Save session
+        final prefs = await SharedPreferences.getInstance();
+        if (prefs.getString('username') != null ||
+            prefs.getString('userId') != null ||
+            prefs.getString('sessionToken') != null) {
+          await prefs.remove('username');
+          await prefs.remove('sessionToken');
+          await prefs.remove('userId');
+        }
+        await prefs.setString('username', username);
+        await prefs.setString('userId', user.user_id!);
+        await prefs.setString(
+            'sessionToken', user.password!); // Use an actual session token
+
+        return user;
+      } catch (e) {
+        print("Error parsing JSON: $e");
+        return null;
+      }
     } else {
+      // Nếu mã trạng thái không phải là 200, trả về null
+      print("Login failed with status: ${response.statusCode}");
       return null;
     }
   }
+
 
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();

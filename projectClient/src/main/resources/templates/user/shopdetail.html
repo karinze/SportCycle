@@ -106,7 +106,7 @@
                                 <div class="site-top-icons">
                                     <ul class="list-inline">
                                         <li class="list-inline-item" th:if="${session.user != null}">
-                                            <p class="d-inline" th:text="${session.username}"></p>
+                                            <p class="d-inline" style="font-family: cursive" th:text="${session.username}"></p>
                                         </li>
                                         <li class="list-inline-item" th:if="${session.user != null}">
                                             <p class="d-inline"></p>
@@ -224,7 +224,7 @@
                                         </div>
                                     </div>
                                     <button type="button" class="buy-now btn btn-sm btn-primary" onclick="addToCart(this)">Add To Cart</button>
-                                    <button th:if="${items.type != 'Accessories'}" type="button" id="rentButton" style="background-color: darkblue; color: white" class="buy-now btn btn-sm btn-primary rent-now">Rent a Bicycle</button>
+                                    <button th:if="${items.type != 'Accessories' && items.rentalquantity > 0}" type="button" id="rentButton" style="background-color: darkblue; color: white" class="buy-now btn btn-sm btn-primary rent-now">Rent a Bicycle</button>
                                 </form>
                             </div>
                         </div>
@@ -343,6 +343,7 @@
                     <label for="rentalEndDate">Select Rental End Date and Time:</label>
                     <input type="datetime-local" name="rentalEndDate" id="rentalEndDate" required>
                     <span id="error-message" style="color: red; display: none;"></span>
+                    <div id="cost-info" style="margin-top: 10px;" th:text="'Rental Quantity: '+${items.rentalquantity}"></div>
                     <div id="cost-info" style="margin-top: 10px;">Rental Rate: $10 per day</div>
                     <div id="calculated-cost" style="margin-top: 10px;"></div>
                     <button type="submit">Rent</button>

@@ -15,7 +15,23 @@ class CartPage extends StatelessWidget {
         title: Text('Cart'),
       ),
       body: cart.cartItems.isEmpty
-          ? Center(child: Text('No items in the cart'))
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.card_travel_outlined,
+              size: 80,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'No items in the cart',
+              style: TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+          ],
+        ),
+      )
           : ListView.builder(
         itemCount: cart.cartItems.length,
         itemBuilder: (context, index) {
@@ -33,7 +49,9 @@ class CartPage extends StatelessWidget {
           );
         },
       ),
-      bottomNavigationBar: Padding(
+      bottomNavigationBar: cart.cartItems.isEmpty
+          ? SizedBox.shrink() // Hide when cart is empty
+          : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -50,7 +68,8 @@ class CartPage extends StatelessWidget {
                     _handleCheckout(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.black, backgroundColor: AppColor.mainColor, // White text color
+                    foregroundColor: Colors.black,
+                    backgroundColor: AppColor.mainColor, // White text color
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10), // Rounded corners
                     ),

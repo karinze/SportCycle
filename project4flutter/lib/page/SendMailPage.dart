@@ -3,6 +3,7 @@ import 'package:project4flutter/page/LoginPage.dart';
 import 'package:project4flutter/page/SignInPage.dart';
 import '../model/Users.dart';
 import '../service/UsersService.dart';
+import '../utils/color.dart';
 
 class SendMailPage extends StatefulWidget {
   const SendMailPage({super.key});
@@ -44,6 +45,7 @@ class _SendMailPageState extends State<SendMailPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               width: 200,
+
               backgroundColor: Theme.of(context).colorScheme.secondary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -99,7 +101,7 @@ class _SendMailPageState extends State<SendMailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      backgroundColor: AppColor.textColor,
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -177,7 +179,7 @@ class _SendMailPageState extends State<SendMailPage> {
                   const Text("Don't have an account?"),
                   TextButton(
                     onPressed: () {
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const Signup(),

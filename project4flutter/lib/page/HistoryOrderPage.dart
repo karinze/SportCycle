@@ -18,6 +18,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   List<Orders> _orders = [];
   List<OrderItems> _orderItems = [];
   bool _isLoggedIn = false;
+  bool _isLoading = true;
   String? _userId;
 
   @override
@@ -31,10 +32,11 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     bool isLoggedIn = await usersService.isLoggedIn();
     if (isLoggedIn) {
       _userId = await usersService.getUserId();
-      _fetchOrders();
+      await _fetchOrders();
     }
     setState(() {
       _isLoggedIn = isLoggedIn;
+      _isLoading = false; // Stop loading once data is fetched
     });
   }
 
@@ -74,7 +76,11 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: _isLoggedIn ? _buildOrderList() : _buildLoginButton(),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator()) // Show loading spinner
+          : _isLoggedIn
+          ? _buildOrderList()
+          : _buildLoginButton(),
     );
   }
 
@@ -207,11 +213,9 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
             child: Text("Login",
                 style: TextStyle(fontSize: 18, color: Colors.white)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
-              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
+              backgroundColor: Color(0xFF7971EA), // Updated color
+              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              textStyle: TextStyle(fontSize: 20, color: Colors.white),
             ),
           ),
         ],
@@ -249,6 +253,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         createdDt: DateTime.parse(i.createdDt),
         isVisible: stock > 0,
         stock: stock,
+        rentalquantity: i.rentalquantity
       );
       await ItemsService().saveItems(updatedItem);
     }

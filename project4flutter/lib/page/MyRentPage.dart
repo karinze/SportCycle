@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:project4flutter/model/Items.dart';
 import 'package:provider/provider.dart';
 import '../model/BikeRentals.dart';
 import '../service/BikeRentalsService.dart';
+import '../service/ItemsService.dart';
 import '../service/UsersService.dart';
 import 'LoginPage.dart';
 
@@ -15,6 +17,7 @@ class MyRentPage extends StatefulWidget {
 class _MyRentPageState extends State<MyRentPage> {
   bool _isLoggedIn = false;
   bool _isLoading = true;
+
 
   @override
   void initState() {
@@ -32,6 +35,7 @@ class _MyRentPageState extends State<MyRentPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
 
@@ -109,7 +113,11 @@ class _MyRentalsContentState extends State<MyRentalsContent> {
     if (userId != null) {
       List<BikeRentals> rentals = await BikeRentalsService().findUser(userId);
       setState(() {
-        _bikeRentals = rentals;
+        _bikeRentals = rentals.map((rental) {
+          rental.rentalStartDate = rental.rentalStartDate.toUtc().add(Duration(hours: 7));
+          rental.rentalEndDate = rental.rentalEndDate.toUtc().add(Duration(hours: 7));
+          return rental;
+        }).toList();
         _isLoading = false;
       });
     }
@@ -153,6 +161,8 @@ class _MyRentalsContentState extends State<MyRentalsContent> {
       itemBuilder: (context, index) {
         BikeRentals rental = _bikeRentals[index];
         bool isActive = rental.isActive;
+
+        // Sử dụng múi giờ Việt Nam
         DateTime endDate = rental.rentalEndDate;
         DateTime startDate = rental.rentalStartDate;
 
@@ -176,7 +186,7 @@ class _MyRentalsContentState extends State<MyRentalsContent> {
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Start: ${rental.rentalStartDate}',
+                  Text('Start: ${startDate}',
                       style: TextStyle(fontSize: 16)),
                   Text('End: ${endDate}', style: TextStyle(fontSize: 16)),
                   SizedBox(height: 5),
@@ -226,7 +236,7 @@ class _CountdownTimerState extends State<CountdownTimer>
   @override
   void initState() {
     super.initState();
-    _currentTime = _getVietnamCurrentTime(); // Get the current time in Vietnam's time zone
+    _currentTime = _getVietnamCurrentTime(); // Lấy giờ hiện tại theo múi giờ Việt Nam
     _animationController =
     AnimationController(vsync: this, duration: Duration(seconds: 1))
       ..repeat();
@@ -241,13 +251,13 @@ class _CountdownTimerState extends State<CountdownTimer>
   void _startTimer() {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
-        _currentTime = _getVietnamCurrentTime(); // Update with Vietnam time
+        _currentTime = _getVietnamCurrentTime(); // Cập nhật với giờ Việt Nam
         print("Current time: $_currentTime");
 
         if (_currentTime.isAfter(widget.endDate)) {
           timer.cancel();
           _updateRentalStatus();
-          widget.onRentalEnd(); // Notify parent widget
+          widget.onRentalEnd(); // Thông báo tới widget cha
         }
       });
     });
@@ -256,6 +266,21 @@ class _CountdownTimerState extends State<CountdownTimer>
   void _updateRentalStatus() async {
     widget.rental.isActive = false;
     await BikeRentalsService().saveBikeRentals(widget.rental);
+    int rentalquantity = widget.rental.item.rentalquantity + 1;
+    Items item = Items(
+        itemId: widget.rental.item.itemId,
+        name: widget.rental.item.name,
+        brand: widget.rental.item.brand,
+        description: widget.rental.item.description,
+        price: widget.rental.item.price,
+        stock: widget.rental.item.stock,
+        rentalquantity: rentalquantity,
+        type: widget.rental.item.type,
+        image: widget.rental.item.image,
+        isVisible: widget.rental.item.isVisible,
+        createdDt: DateTime.parse(widget.rental.item.createdDt)
+    );
+    await ItemsService().saveItems(item);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Rental for ${widget.rental.item.name} has ended.')));
   }

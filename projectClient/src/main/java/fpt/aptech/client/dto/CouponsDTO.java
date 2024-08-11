@@ -20,7 +20,7 @@ public class CouponsDTO {
     private int coupon_id;
     
     @NotNull(message = "Code cannot be null")
-    @Size(min = 3, max = 10, message = "Code must be between 3 and 10 characters")
+    @Size(min = 3, max = 20, message = "Code must be between 3 and 20 characters")
     private String code;
     
     @NotNull(message = "Discount amount cannot be null")

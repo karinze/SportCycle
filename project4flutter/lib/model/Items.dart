@@ -17,6 +17,7 @@ class Items {
     required String? description,
     required double? price,
     required int? stock,
+    required int? rentalquantity,
     required String? type,
     required String? image,
     required bool? isVisible,
@@ -28,6 +29,7 @@ class Items {
     _description = description;
     _price = price;
     _stock = stock;
+    _rentalquantity = rentalquantity;
     _type = type;
     _image = image;
     _isVisible = isVisible;
@@ -42,6 +44,7 @@ class Items {
     _description = json['description'];
     _price = json['price'];
     _stock = json['stock'];
+    _rentalquantity = json['rentalquantity'];
     _type = json['type'];
     _image = json['image'];
     _isVisible = json['is_visible'];
@@ -53,6 +56,7 @@ class Items {
   String? _description;
   double? _price;
   int? _stock;
+  int? _rentalquantity;
   String? _type;
   String? _image;
   bool? _isVisible;
@@ -64,6 +68,7 @@ class Items {
   String get description => _description!;
   double get price => _price!;
   int get stock => _stock!;
+  int get rentalquantity => _rentalquantity!;
   String get type => _type!;
   String get image => _image!;
   bool get isVisible => _isVisible!;
@@ -77,6 +82,7 @@ class Items {
     map['description'] = _description;
     map['price'] = _price;
     map['stock'] = _stock;
+    map['rentalquantity'] = _rentalquantity;
     map['type'] = _type;
     map['image'] = _image;
     map['is_visible'] = _isVisible;

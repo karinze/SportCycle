@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:project4flutter/service/ItemsService.dart';
+import 'package:project4flutter/utils/color.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_paypal_checkout/flutter_paypal_checkout.dart';
 import '../model/BikeRentals.dart';
@@ -11,8 +13,9 @@ import 'MyRentPage.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Items item;
+  final int item_id;
 
-  const ProductDetailPage({super.key, required this.item});
+  const ProductDetailPage({super.key, required this.item, required this.item_id});
 
   @override
   _ProductDetailPageState createState() => _ProductDetailPageState();
@@ -74,33 +77,57 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: _addToCart,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  ),
-                  child: Text('Add to Cart',style: TextStyle(color: Colors.white),),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    _showRentDialog(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  ),
-                  child: Text('Rent a Bicycle'),
-                ),
-              ],
+              children: _buildActionButtons(),  // Updated this line
             ),
-
           ],
         ),
       ),
     );
   }
+
+  List<Widget> _buildActionButtons() {
+    if (widget.item.rentalquantity > 0) {
+      return [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _addToCart,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: Text('Add to Cart', style: TextStyle(color: Colors.white)),
+          ),
+        ),
+        SizedBox(width: 10),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () {
+              _showRentDialog(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColor.mainColor,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: Text('Rent a Bicycle', style: TextStyle(color: Colors.white)),
+          ),
+        ),
+      ];
+    } else {
+      return [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _addToCart,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: Text('Add to Cart', style: TextStyle(color: Colors.white)),
+          ),
+        ),
+      ];
+    }
+  }
+
 
   Widget _buildQuantitySelector() {
     return Row(
@@ -189,6 +216,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+
+        Text("Rental Quantity: ${widget.item.rentalquantity}"),
+        SizedBox(height: 10),
         TextField(
           controller: _startDateController,
           decoration: InputDecoration(
@@ -278,14 +308,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
           ),
         ),
+
       ],
     );
   }
 
   void _calculateRentalPrice() {
     if (_startDate != null && _endDate != null) {
+      // Ensure the dates are stored in UTC
+      DateTime utcStartDate = _startDate!.toUtc();
+      DateTime utcEndDate = _endDate!.toUtc();
+
       // Calculate the duration between the start and end date in minutes
-      Duration rentalDuration = _endDate!.difference(_startDate!);
+      Duration rentalDuration = utcEndDate.difference(utcStartDate);
       double minutesBetween = rentalDuration.inMinutes.toDouble();
 
       // Calculate the rental cost
@@ -298,6 +333,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       setState(() {});
     }
   }
+
   DateTime _getVietnamCurrentTime() {
     final DateTime now = DateTime.now().toUtc().add(Duration(hours: 7));
     return now;
@@ -370,7 +406,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     setState(() {
       _isLoading = true;  // Start loading
     });
-
+    DateTime utcStartDate = _startDate!.toUtc();
+    DateTime utcEndDate = _endDate!.toUtc();
     String? userId = await UsersService().getUserId();
     if (userId != null) {
       Users? user = await UsersService().findOne(userId);
@@ -378,11 +415,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         BikeRentals rental = BikeRentals(
           item: widget.item,
           users: user,
-          rentalStartDate: _startDate!,
-          rentalEndDate: _endDate!,
+          rentalStartDate: utcStartDate,
+          rentalEndDate: utcEndDate,
           isActive: true,
         );
         await BikeRentalsService().saveBikeRentals(rental);
+        Items i = await ItemsService().findOne(widget.item_id);
+        int rentalquantity = i.rentalquantity - 1;
+        Items item = Items(
+            itemId: i.itemId,
+            name: i.name,
+            brand: i.brand,
+            description: i.description,
+            price: i.price,
+            stock: i.stock,
+            rentalquantity: rentalquantity,
+            type: i.type,
+            image: i.image,
+            isVisible: i.isVisible,
+            createdDt: DateTime.parse(i.createdDt)
+        );
+        await ItemsService().saveItems(item);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Payment successful!')));
 
         // Navigate to the next page after a short delay

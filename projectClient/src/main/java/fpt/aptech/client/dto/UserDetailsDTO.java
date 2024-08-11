@@ -22,12 +22,15 @@ public class UserDetailsDTO {
    
     public int userdetail_id;
     public Users users;
+    @Size(max = 100, message = "First name cannot be longer than 100 characters")
     @NotEmpty(message = "First name is required")
     public String first_name;
 
+    @Size(max = 100, message = "Last name cannot be longer than 100 characters")
     @NotEmpty(message = "Last name is required")
     public String last_name;
 
+    @Size(max = 100, message = "Email name cannot be longer than 100 characters")
     @NotEmpty(message = "Email is required")
     @Email(message = "Email should be valid")
     public String email;
@@ -36,6 +39,7 @@ public class UserDetailsDTO {
     @NotEmpty(message = "Phone number is required")
     @Pattern(regexp = "^(?!0{10,11})(?!1{10,11})(?!2{10,11})(?!3{10,11})(?!4{10,11})(?!5{10,11})(?!6{10,11})(?!7{10,11})(?!8{10,11})(?!9{10,11})\\d{10,11}$", message = "Invalid phone number")
     public String phone_number;
+    @Size(max = 100, message = "Address cannot be longer than 100 characters")
     @NotEmpty(message = "Address is required")
     public String address;
     public String note;

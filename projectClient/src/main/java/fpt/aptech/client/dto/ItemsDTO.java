@@ -33,6 +33,10 @@ public class ItemsDTO {
     @NotNull(message = "Stock is required")
     @Min(value = 0, message = "Stock must be 0 or greater")
     private int stock;
+    
+    @NotNull(message = "Rental quantity is required")
+    @Min(value = 0, message = "Rental quantity must be 0 or greater")
+    private int rentalquantity;
 
     @NotEmpty(message = "Type is required")
     private String type;
@@ -49,25 +53,28 @@ public class ItemsDTO {
         this.item_id = item_id;
     }
 
-    public ItemsDTO(int item_id, String name, String brand, String description, BigDecimal price, int stock, String type, MultipartFile image, boolean is_visible, Date created_dt) {
-        this.item_id = item_id;
+    public ItemsDTO( String name, String brand, String description, BigDecimal price, int stock, int rentalquantity, String type, MultipartFile image, boolean is_visible, Date created_dt) {
+        
         this.name = name;
         this.brand = brand;
         this.description = description;
         this.price = price;
         this.stock = stock;
+        this.rentalquantity = rentalquantity;
         this.type = type;
         this.image = image;
         this.is_visible = is_visible;
         this.created_dt = created_dt;
     }
 
-    public ItemsDTO(String name, String brand, String description, BigDecimal price, int stock, String type, MultipartFile image, boolean is_visible, Date created_dt) {
+    public ItemsDTO(int item_id, String name, String brand, String description, BigDecimal price, int stock, int rentalquantity, String type, MultipartFile image, boolean is_visible, Date created_dt) {
+        this.item_id = item_id;
         this.name = name;
         this.brand = brand;
         this.description = description;
         this.price = price;
         this.stock = stock;
+        this.rentalquantity = rentalquantity;
         this.type = type;
         this.image = image;
         this.is_visible = is_visible;
@@ -122,6 +129,14 @@ public class ItemsDTO {
         this.stock = stock;
     }
 
+    public int getRentalquantity() {
+        return rentalquantity;
+    }
+
+    public void setRentalquantity(int rentalquantity) {
+        this.rentalquantity = rentalquantity;
+    }
+
     public String getType() {
         return type;
     }
@@ -153,4 +168,8 @@ public class ItemsDTO {
     public void setCreated_dt(Date created_dt) {
         this.created_dt = created_dt;
     }
+
+    
+
+    
 }

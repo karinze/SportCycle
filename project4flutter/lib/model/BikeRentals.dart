@@ -54,6 +54,14 @@ class BikeRentals {
     _isActive = value;
   }
 
+  set rentalStartDate(DateTime value) {
+    _rentalStartDate = value;
+  }
+
+  set rentalEndDate(DateTime value) {
+    _rentalEndDate = value;
+  }
+
   String get createdDt => _formatDate(_createdDt)!;
 
   Map<String, dynamic> toJson() {

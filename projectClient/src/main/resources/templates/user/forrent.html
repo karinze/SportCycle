@@ -66,7 +66,7 @@
                                 <div class="site-top-icons">
                                     <ul class="list-inline">
                                         <li class="list-inline-item" th:if="${session.user != null}">
-                                            <p class="d-inline" th:text="${session.username}"></p>
+                                            <p class="d-inline" style="font-family: cursive" th:text="${session.username}"></p>
                                         </li>
                                         <li class="list-inline-item" th:if="${session.user != null}">
                                             <p class="d-inline"></p>
@@ -301,15 +301,25 @@
                     if (distance < 0) {
                         clearInterval(x);
                         document.getElementById(`countdown-${rentalId}`).innerHTML = "Rental period is over.";
+                        console.log("Countdown finished, attempting to call endRental");
                         const xhr = new XMLHttpRequest();
                         xhr.open("POST", "/endRental", true);
                         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                         xhr.onreadystatechange = function () {
-                            if (xhr.readyState === 4 && xhr.status === 200) {
-                                console.log("Rental ended and stock updated");
+                            if (xhr.readyState === 4) {
+                                if (xhr.status === 200) {
+                                    console.log("Rental ended and stock updated");
+
+                                    // Cập nhật trạng thái trên client
+                                    document.querySelector(`.rental[data-rental-id='${rentalId}'] .status span`).innerText = "Inactive";
+                                } else {
+                                    console.error("Error ending rental: " + xhr.status);
+                                }
                             }
                         };
                         xhr.send("rentalId=" + rentalId);
+                    
+
                     } else {
                         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -331,14 +341,13 @@
                     document.getElementById(`start-time-${rentalId}`).innerText = startTimeFormatted;
                     document.getElementById(`end-time-${rentalId}`).innerText = endTimeFormatted;
 
-                    // Only start the countdown if the rental period has started
                     if (now >= startTime) {
                         startCountdown(endTime, rentalId);
                     } else {
                         document.getElementById(`countdown-${rentalId}`).innerHTML = "Rental period has not started yet.";
                     }
                 });
-            }
+            };
 
 
         </script>

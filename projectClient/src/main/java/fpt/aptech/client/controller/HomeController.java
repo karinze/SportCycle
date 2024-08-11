@@ -258,6 +258,7 @@ public class HomeController {
 
     @PostMapping("/doregister")
     public String doregister(Model model, @Valid @ModelAttribute("account") UsersDTO user, BindingResult bindingResult) throws IOException {
+        
         if (bindingResult.hasErrors()) {
             model.addAttribute("account", user);
             if (!user.getEmail().isEmpty()) {
@@ -672,7 +673,7 @@ public class HomeController {
 
                 Items newItem = new Items(
                         items.getName(), items.getBrand(), items.getDescription(),
-                        items.getPrice(), items.getStock(), items.getType(),
+                        items.getPrice(), items.getStock(),items.getRentalquantity(), items.getType(),
                         fileName, items.isIs_visible(), items.getCreated_dt()
                 );
 
@@ -783,12 +784,12 @@ public class HomeController {
 
             if (multipartFile.isEmpty()) {
                 String file = items.getImage();
-                Items editItems = new Items(item.getItem_id(), item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), file, item.isIs_visible(), item.getCreated_dt());
+                Items editItems = new Items(item.getItem_id(), item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(),item.getRentalquantity(), item.getType(), file, item.isIs_visible(), item.getCreated_dt());
                 model.addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class));
                 return "redirect:/indexAdminItems";
             } else {
                 FileCopyUtils.copy(multipartFile.getBytes(), new File(FileUpload, fileName));
-                Items editItems = new Items(item.getItem_id(), item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), fileName, item.isIs_visible(), item.getCreated_dt());
+                Items editItems = new Items(item.getItem_id(), item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(),item.getRentalquantity() , item.getType(), fileName, item.isIs_visible(), item.getCreated_dt());
                 model.addAttribute("Items", rt.postForEntity(urlitems, editItems, Items.class));
                 return "redirect:/indexAdminItems";
             }
@@ -995,7 +996,7 @@ public class HomeController {
             if (newStock > 0) {
                 items.setIs_visible(true);
             }
-            Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), newStock, items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
+            Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), newStock,items.getRentalquantity(), items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
             // Update the item details
             rt.postForObject(urlitems + "/", item, Items.class);
         }
@@ -1023,7 +1024,7 @@ public class HomeController {
             if (newStock > 0) {
                 items.setIs_visible(true);
             }
-            Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), newStock, items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
+            Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), newStock,items.getRentalquantity(), items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
             // Update the item details
             rt.postForObject(urlitems + "/", item, Items.class);
         }
@@ -1287,9 +1288,9 @@ public class HomeController {
         bikeRental.setIs_active(true);
         bikeRental.setCreated_dt(Date.from(Instant.now()));
 
-        item.setStock(item.getStock() - 1);
+        item.setRentalquantity(item.getRentalquantity()- 1);
 
-        Items it = new Items(itemId, item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(), item.getType(), item.getImage(), item.isIs_visible(), item.getCreated_dt());
+        Items it = new Items(itemId, item.getName(), item.getBrand(), item.getDescription(), item.getPrice(), item.getStock(),item.getRentalquantity(), item.getType(), item.getImage(), item.isIs_visible(), item.getCreated_dt());
         BikeRentals rentals = rt.postForObject(urlbikerentals + "/", bikeRental, BikeRentals.class);
         Items i = rt.postForObject(urlitems + "/", it, Items.class);
 
@@ -1329,15 +1330,17 @@ public class HomeController {
         Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
         Items item = rental.getItem();
         Items i = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class);
-        item.setStock(item.getStock() + 1);
+        item.setRentalquantity(item.getRentalquantity()+ 1);
         rental.setIs_active(false);
-
-        Items it = new Items(item.getItem_id(), i.getName(), i.getBrand(), i.getDescription(), i.getPrice(), item.getStock(), i.getType(), i.getImage(), i.isIs_visible(), i.getCreated_dt());
+        
+        Items it = new Items(item.getItem_id(), i.getName(), i.getBrand(), i.getDescription(), i.getPrice(), item.getStock(),item.getRentalquantity(), i.getType(), i.getImage(), i.isIs_visible(), i.getCreated_dt());
         rt.postForObject(urlitems + "/", it, Items.class);
         rt.postForObject(urlbikerentals + "/", rental, BikeRentals.class);
 
         return ResponseEntity.ok("Rental ended and stock updated");
     }
+    
+    
 
     @GetMapping("/cart")
     public String cart(Model model, HttpSession session) {
@@ -1673,7 +1676,7 @@ public class HomeController {
                         if (sub <= 0) {
                             items.setIs_visible(false);
                         }
-                        Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), sub, items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
+                        Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), sub,items.getRentalquantity() , items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
                         rt.postForObject(urlitems + "/", item, Items.class);
                         orderItems.add(savedOrderItem);
                     } catch (Exception e) {
@@ -1769,7 +1772,7 @@ public class HomeController {
                         if (sub <= 0) {
                             items.setIs_visible(false);
                         }
-                        Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), sub, items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
+                        Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), sub,items.getRentalquantity() , items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
                         rt.postForObject(urlitems + "/", item, Items.class);
                         orderItems.add(savedOrderItem);
                     } catch (Exception e) {

@@ -70,7 +70,7 @@
                                 <div class="site-top-icons">
                                     <ul class="list-inline">
                                         <li class="list-inline-item" th:if="${session.user != null}">
-                                            <p class="d-inline" th:text="${session.username}"></p>
+                                            <p class="d-inline" style="font-family: cursive" th:text="${session.username}"></p>
                                         </li>
                                         <li class="list-inline-item" th:if="${session.user != null}">
                                             <p class="d-inline"></p>
@@ -144,7 +144,7 @@
                     </div>
                 </nav>
             </header>
-            
+
             <div class="bg-light py-3">
                 <div class="container">
                     <div class="row">
@@ -199,141 +199,142 @@
                 </div>
                 <div th:if="${oorder == null}">
                     <div class="alert alert-warning" role="alert">
-                    No orders found.
-                    <div>
-                </div>
-            </div>
+                        No orders found.
 
-            <div th:if="${oorder != null}" class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-labelledby="confirmCancelModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="confirmCancelModalLabel">Confirm Cancellation</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            Are you sure you want to cancel this order?
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-                            <form th:if="${oorder != null}" th:action="@{/CancelOrder}" th:object="${oorder}" method="post" class="form-inline">
-                                <input type="hidden" th:field="*{order_id}" />
-                                <input type="hidden" id="status" name="status" value="Cancel" />
-                                <button type="submit" class="btn btn-danger">Yes, Cancel</button>
-                            </form>
+                    </div>
+                </div>
+
+                <div th:if="${oorder != null}" class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-labelledby="confirmCancelModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="confirmCancelModalLabel">Confirm Cancellation</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to cancel this order?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                                <form th:if="${oorder != null}" th:action="@{/CancelOrder}" th:object="${oorder}" method="post" class="form-inline">
+                                    <input type="hidden" th:field="*{order_id}" />
+                                    <input type="hidden" id="status" name="status" value="Cancel" />
+                                    <button type="submit" class="btn btn-danger">Yes, Cancel</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
 
-            <nav aria-label="Page navigation" th:with="math=${T(java.lang.Math)}" th:if="${totalPages > 1}">
-                <ul class="pagination justify-content-center">
-                    <!-- Previous Button -->
-                    <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
-                        <a th:href="@{/informationLine(pageNumber=0,pageSize=${pageSize})}" class="page-link">
-                            <span aria-hidden="true">&laquo;&laquo;</span>
-                        </a>
-                    </li>
-                    <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
-                        <a th:href="@{/informationLine(pageNumber=${currentPage - 1},pageSize=${pageSize})}" class="page-link">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <li th:class="${currentPage > 2} ? 'page-item' : 'd-none'">
-                        <span class="page-link">...</span>
-                    </li>
-                    <th:block th:each="pageNumber : ${#numbers.sequence(math.max(0, currentPage - 2), math.min(totalPages - 1, currentPage + 2))}">
-                        <li class="page-item" th:classappend="${pageNumber == currentPage} ? ' active'">
-                            <a th:href="@{/informationLine(pageNumber=${pageNumber},pageSize=${pageSize})}" class="page-link" th:text="${pageNumber + 1}"></a>
+                <nav aria-label="Page navigation" th:with="math=${T(java.lang.Math)}" th:if="${totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                        <!-- Previous Button -->
+                        <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+                            <a th:href="@{/informationLine(pageNumber=0,pageSize=${pageSize})}" class="page-link">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
                         </li>
-                    </th:block>
-                    <li th:class="${currentPage < totalPages - 3} ? 'page-item' : 'd-none'">
-                        <span class="page-link">...</span>
-                    </li>
-                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? ' disabled'">
-                        <a th:href="@{/informationLine(pageNumber=${currentPage + 1},pageSize=${pageSize})}" class="page-link"><span aria-hidden="true">&raquo;</span></a>
-                    </li>
-                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? ' disabled'">
-                        <a th:href="@{/informationLine(pageNumber=${totalPages - 1},pageSize=${pageSize})}" class="page-link"><span aria-hidden="true">&raquo;&raquo;</span></a>
-                    </li>
-                </ul>
-            </nav>
+                        <li class="page-item" th:classappend="${currentPage == 0} ? ' disabled'">
+                            <a th:href="@{/informationLine(pageNumber=${currentPage - 1},pageSize=${pageSize})}" class="page-link">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li th:class="${currentPage > 2} ? 'page-item' : 'd-none'">
+                            <span class="page-link">...</span>
+                        </li>
+                        <th:block th:each="pageNumber : ${#numbers.sequence(math.max(0, currentPage - 2), math.min(totalPages - 1, currentPage + 2))}">
+                            <li class="page-item" th:classappend="${pageNumber == currentPage} ? ' active'">
+                                <a th:href="@{/informationLine(pageNumber=${pageNumber},pageSize=${pageSize})}" class="page-link" th:text="${pageNumber + 1}"></a>
+                            </li>
+                        </th:block>
+                        <li th:class="${currentPage < totalPages - 3} ? 'page-item' : 'd-none'">
+                            <span class="page-link">...</span>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? ' disabled'">
+                            <a th:href="@{/informationLine(pageNumber=${currentPage + 1},pageSize=${pageSize})}" class="page-link"><span aria-hidden="true">&raquo;</span></a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? ' disabled'">
+                            <a th:href="@{/informationLine(pageNumber=${totalPages - 1},pageSize=${pageSize})}" class="page-link"><span aria-hidden="true">&raquo;&raquo;</span></a>
+                        </li>
+                    </ul>
+                </nav>
 
 
-            <!-- Information Line Section -->
+                <!-- Information Line Section -->
 
 
-            <footer class="site-footer border-top">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-6 mb-5 mb-lg-0">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <h3 class="footer-heading mb-4">Navigations</h3>
+                <footer class="site-footer border-top">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-6 mb-5 mb-lg-0">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h3 class="footer-heading mb-4">Navigations</h3>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4">
+                                        <ul class="list-unstyled">
+                                            <li><a href="#">Sell online</a></li>
+                                            <li><a href="#">Features</a></li>
+                                            <li><a href="#">Shopping cart</a></li>
+                                            <li><a href="#">Store builder</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4">
+                                        <ul class="list-unstyled">
+                                            <li><a href="#">Mobile commerce</a></li>
+                                            <li><a href="#">Dropshipping</a></li>
+                                            <li><a href="#">Website development</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4">
+                                        <ul class="list-unstyled">
+                                            <li><a href="#">Point of sale</a></li>
+                                            <li><a href="#">Hardware</a></li>
+                                            <li><a href="#">Software</a></li>
+                                        </ul>
+                                    </div>
                                 </div>
-                                <div class="col-md-6 col-lg-4">
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="block-5 mb-5">
+                                    <h3 class="footer-heading mb-4">Contact Info</h3>
                                     <ul class="list-unstyled">
-                                        <li><a href="#">Sell online</a></li>
-                                        <li><a href="#">Features</a></li>
-                                        <li><a href="#">Shopping cart</a></li>
-                                        <li><a href="#">Store builder</a></li>
+                                        <li class="address">203 Fake St. Mountain View, San Francisco, California, USA</li>
+                                        <li class="phone"><a>+2 392 3929 210</a></li>
+                                        <li class="email">emailaddress@domain.com</li>
                                     </ul>
                                 </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Mobile commerce</a></li>
-                                        <li><a href="#">Dropshipping</a></li>
-                                        <li><a href="#">Website development</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Point of sale</a></li>
-                                        <li><a href="#">Hardware</a></li>
-                                        <li><a href="#">Software</a></li>
-                                    </ul>
+
+                                <div class="block-7">
+                                    <!--                                <form action="#" method="post">
+                                                                        <label for="email_subscribe" class="footer-heading">Subscribe</label>
+                                                                        <div class="form-group">
+                                                                            <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
+                                                                            <input type="submit" class="btn btn-sm btn-primary" value="Send">
+                                                                        </div>
+                                                                    </form>-->
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
-
-                        </div>
-                        <div class="col-md-6 col-lg-3">
-                            <div class="block-5 mb-5">
-                                <h3 class="footer-heading mb-4">Contact Info</h3>
-                                <ul class="list-unstyled">
-                                    <li class="address">203 Fake St. Mountain View, San Francisco, California, USA</li>
-                                    <li class="phone"><a>+2 392 3929 210</a></li>
-                                    <li class="email">emailaddress@domain.com</li>
-                                </ul>
+                        <div class="row pt-5 mt-5 text-center">
+                            <div class="col-md-12">
+                                <p>
+                                    <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                                    Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
+                                    <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                                </p>
                             </div>
 
-                            <div class="block-7">
-                                <!--                                <form action="#" method="post">
-                                                                    <label for="email_subscribe" class="footer-heading">Subscribe</label>
-                                                                    <div class="form-group">
-                                                                        <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
-                                                                        <input type="submit" class="btn btn-sm btn-primary" value="Send">
-                                                                    </div>
-                                                                </form>-->
-                            </div>
                         </div>
                     </div>
-                    <div class="row pt-5 mt-5 text-center">
-                        <div class="col-md-12">
-                            <p>
-                                <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
-                                <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-            </footer>
+                </footer>
+            </div>
         </div>
 
         <script th:src="@{/js/jquery-3.3.1.min.js}"></script>

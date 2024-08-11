@@ -357,8 +357,9 @@
                                                 <th>Price</th>
                                                 <th>Stock</th>
                                                 <th>Type</th>
+                                                <th>Rental Quantity</th>
                                                 <th>Image</th>
-                                                <th>Created Date</th>
+                                                
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
@@ -370,8 +371,9 @@
                                                 <th>Price</th>
                                                 <th>Stock</th>
                                                 <th>Type</th>
+                                                <th>Rental Quantity</th>
                                                 <th>Image</th>
-                                                <th>Created Date</th>
+                                                
                                                 <th>Actions</th>
                                             </tr>
                                         </tfoot>
@@ -383,8 +385,8 @@
                                                 <td th:text="${f.price.intValue()} + ' $'"></td>
                                                 <td th:text="${f.stock}"></td>
                                                 <td th:text="${f.type}"></td>
+                                                <td th:text="${f.rentalquantity}"></td>
                                                 <td><img th:src="@{'/images/'+${f.image}}" width="100" height="auto"/></td>
-                                                <td th:text="${f.created_dt}"></td>
                                                 <td>
                                                     <a th:href="@{/editAdminItems/{id}(id=${f.item_id})}" class="btn btn-info">Edit</a>
                                                     <a th:href="@{/deleteAdminItems/{id}(id=${f.item_id})}" onclick="confirmDeletion(event)" class="btn btn-danger">Delete</a>
