@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:project4flutter/model/UserDetails.dart';
 import 'package:project4flutter/model/Users.dart';
 import 'package:project4flutter/service/UserDetailsService.dart';
+import 'package:project4flutter/utils/color.dart';
 
 class AccountPage extends StatefulWidget {
   final UserDetails? userDetails;
   final Users? users;
 
-  AccountPage({this.userDetails, this.users});
+  AccountPage({this.userDetails,this.users});
 
   @override
   _AccountPageState createState() => _AccountPageState();
@@ -33,7 +34,8 @@ class _AccountPageState extends State<AccountPage> {
         TextEditingController(text: widget.userDetails?.firstName ?? '');
     _lastNameController =
         TextEditingController(text: widget.userDetails?.lastName ?? '');
-    _emailController = TextEditingController(text: widget.users?.email ?? '');
+    _emailController =
+        TextEditingController(text: widget.users?.email ?? '');
     _phoneController =
         TextEditingController(text: widget.userDetails?.phoneNumber ?? '');
     _addressController =
@@ -88,7 +90,7 @@ class _AccountPageState extends State<AccountPage> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your first name';
                     } else if (value.length > 255) {
-                      return 'First name cannot exceed 255 characters';
+                      return 'Last name cannot be more than 255 characters';
                     }
                     return null;
                   },
@@ -101,7 +103,7 @@ class _AccountPageState extends State<AccountPage> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your last name';
                     } else if (value.length > 255) {
-                      return 'Last name cannot exceed 255 characters';
+                      return 'Last name cannot be more than 255 characters';
                     }
                     return null;
                   },
@@ -112,25 +114,23 @@ class _AccountPageState extends State<AccountPage> {
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: Icon(Icons.email, color: Color(0xFF7971EA)),
+                      prefixIcon: Icon(Icons.email, color: AppColor.mainColor), // Changed to red
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15.0),
                         borderSide: BorderSide(color: Color(0xFF7971EA)),
                       ),
                       filled: true,
                       fillColor: Colors.grey[100],
-                      contentPadding: EdgeInsets.symmetric(
-                          vertical: 15.0, horizontal: 20.0),
+                      contentPadding:
+                      EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your email';
-                      } else if (value.length > 255) {
-                        return 'Email cannot exceed 255 characters';
                       }
                       return null;
                     },
-                    enabled: false, // Ensure this is true or omit if not necessary
+                    enabled: false,
                   ),
                 ),
                 _buildTextFormField(
@@ -140,24 +140,34 @@ class _AccountPageState extends State<AccountPage> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your phone number';
-                    } else if (!RegExp(
-                        r'^(?!0{10,11})(?!1{10,11})(?!2{10,11})(?!3{10,11})(?!4{10,11})(?!5{10,11})(?!6{10,11})(?!7{10,11})(?!8{10,11})(?!9{10,11})\d{10,11}$')
-                        .hasMatch(value)) {
-                      return 'Phone number must be 10-11 digits and cannot be all the same digit';
+                    }
+                    if (value.length < 10) {
+                      return 'Phone number must be at least 10 digits';
+                    }
+                    if (value.length > 11) {
+                      return 'Phone number must be no more than 11 digits';
+                    }
+                    // Check if the first digit is '0'
+                    // if (!value.startsWith('0')) {
+                    //   return 'Phone number must start with 0';
+                    // }
+                    // Check if all characters are digits
+                    if (!RegExp(r'^\d+$').hasMatch(value)) {
+                      return 'Phone number must contain only digits';
+                    }
+                    // Check for repetitive digits
+                    RegExp repetitivePattern = RegExp(r'(\d)\1{10,}');
+                    if (repetitivePattern.hasMatch(value)) {
+                      return 'Phone number contains a digit repeated more than 11 times consecutively';
                     }
                     return null;
                   },
+
                 ),
                 _buildTextFormField(
                   controller: _addressController,
                   labelText: 'Address',
                   icon: Icons.location_on,
-                  validator: (value) {
-                    if (value != null && value.length > 255) {
-                      return 'Address cannot exceed 255 characters';
-                    }
-                    return null;
-                  },
                 ),
                 _buildTextFormField(
                   controller: _noteController,
@@ -176,7 +186,7 @@ class _AccountPageState extends State<AccountPage> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF5148E5),
+                    backgroundColor: AppColor.mainColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -202,7 +212,7 @@ class _AccountPageState extends State<AccountPage> {
         controller: controller,
         decoration: InputDecoration(
           labelText: labelText,
-          prefixIcon: Icon(icon, color: Color(0xFF7971EA)),
+          prefixIcon: Icon(icon, color: AppColor.mainColor), // Changed to red
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15.0),
             borderSide: BorderSide(color: Color(0xFF7971EA)),

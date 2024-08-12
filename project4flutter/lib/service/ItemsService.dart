@@ -18,6 +18,17 @@ class ItemsService {
     return list;
   }
 
+  Future<List<Items>> top10() async {
+    final response = await http.get(Uri.parse("${urlItems}top10"));
+    var data = json.decode(response.body);
+    List<Items> list = [];
+    for (var item in data) {
+      Items items = Items.fromJson(item);
+      list.add(items);
+    }
+    return list;
+  }
+
   Future<Items> findOne(int items_id) async {
     final response = await http.get(Uri.parse("$urlItems $items_id"));
     var data = json.decode(response.body);

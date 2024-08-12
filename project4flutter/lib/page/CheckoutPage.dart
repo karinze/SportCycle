@@ -87,11 +87,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
     if (_formKey.currentState!.validate()) {
       // Show loading dialog
 
-        if (_selectedPaymentMethod == 'Online') {
-          await _processPayPalPayment();
-        } else {
-          await _saveOrderToDatabase('Pending');
-        }
+      if (_selectedPaymentMethod == 'Online') {
+        await _processPayPalPayment();
+      } else {
+        await _saveOrderToDatabase('Pending');
+      }
     }
   }
 
@@ -183,17 +183,17 @@ class _CheckOutPageState extends State<CheckOutPage> {
           int stock = cartItem.item.stock - 1;
 
           Items item = Items(
-            itemId: cartItem.item.itemId,
-            name: cartItem.item.name,
-            image: cartItem.item.image,
-            brand: cartItem.item.brand,
-            description: cartItem.item.description,
-            price: cartItem.item.price,
-            type: cartItem.item.type,
-            createdDt: DateTime.parse(cartItem.item.createdDt),
-            isVisible: stock <= 0 ? false : true,
-            stock: stock,
-            rentalquantity: cartItem.item.rentalquantity
+              itemId: cartItem.item.itemId,
+              name: cartItem.item.name,
+              image: cartItem.item.image,
+              brand: cartItem.item.brand,
+              description: cartItem.item.description,
+              price: cartItem.item.price,
+              type: cartItem.item.type,
+              createdDt: DateTime.parse(cartItem.item.createdDt),
+              isVisible: stock <= 0 ? false : true,
+              stock: stock,
+              rentalquantity: cartItem.item.rentalquantity
           );
           await ItemsService().saveItems(item);
         }
@@ -366,8 +366,25 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your phone number';
-                      } else if (!RegExp(r'^(?!0{10,11})(?!1{10,11})(?!2{10,11})(?!3{10,11})(?!4{10,11})(?!5{10,11})(?!6{10,11})(?!7{10,11})(?!8{10,11})(?!9{10,11})\d{10,11}$').hasMatch(value)) {
-                        return 'Phone number must be between 10 and 11 digits, must be numeric, and cannot be a repeated single digit.';
+                      }
+                      if (value.length < 10) {
+                        return 'Phone number must be at least 10 digits';
+                      }
+                      if (value.length > 11) {
+                        return 'Phone number must be no more than 11 digits';
+                      }
+                      // Check if the first digit is '0'
+                      // if (!value.startsWith('0')) {
+                      //   return 'Phone number must start with 0';
+                      // }
+                      // Check if all characters are digits
+                      if (!RegExp(r'^\d+$').hasMatch(value)) {
+                        return 'Phone number must contain only digits';
+                      }
+                      // Check for repetitive digits
+                      RegExp repetitivePattern = RegExp(r'(\d)\1{10,}');
+                      if (repetitivePattern.hasMatch(value)) {
+                        return 'Phone number contains a digit repeated more than 11 times consecutively';
                       }
                       return null;
                     },
@@ -439,6 +456,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
               child: Text(
                 'Place Order',
                 style: TextStyle(
+                  color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),

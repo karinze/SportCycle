@@ -7,6 +7,7 @@ import 'package:project4flutter/service/OrdersService.dart';
 import 'package:project4flutter/service/OrderItemsService.dart';
 import 'package:project4flutter/service/UsersService.dart';
 import '../model/Users.dart';
+import '../utils/color.dart';
 import 'LoginPage.dart';
 
 class OrderHistoryPage extends StatefulWidget {
@@ -76,11 +77,15 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator()) // Show loading spinner
-          : _isLoggedIn
-          ? _buildOrderList()
-          : _buildLoginButton(),
+      body: _isLoading ? _buildLoadingIndicator() : _isLoggedIn ? _buildOrderList() : _buildLoginButton(),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Center(
+      child: CircularProgressIndicator(
+        color: Colors.deepPurple,
+      ),
     );
   }
 
@@ -113,6 +118,8 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       itemCount: _orders.length,
       itemBuilder: (context, index) {
         final order = _orders[index];
+        final reversedIndex = _orders.length - index; // Reverse the ID
+
         return Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -122,11 +129,11 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
           child: ListTile(
             contentPadding: EdgeInsets.all(20),
             title: Text(
-              'Order #${index + 1}',
+              'Order #${reversedIndex}', // Display ID in decreasing order
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Colors.deepPurple,
+                color: Colors.black,
               ),
             ),
             subtitle: Column(
@@ -136,6 +143,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 Text(
                   'Total Amount: \$${order.totalAmount}',
                   style: TextStyle(
+                    fontWeight: FontWeight.bold,
                     fontSize: 16,
                     color: Colors.grey[800],
                   ),
@@ -150,8 +158,9 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 Text(
                   'Status: ${order.status}',
                   style: TextStyle(
+                    fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Colors.blueAccent,
+                    color: AppColor.mainColor,
                   ),
                 ),
                 if (order.status == 'Pending')
@@ -178,7 +187,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                   ),
               ],
             ),
-            trailing: Icon(Icons.arrow_forward_ios, color: Colors.deepPurple),
+            trailing: Icon(Icons.arrow_forward_ios, color: Colors.black),
             onTap: () async {
               await _fetchOrderItems(order.orderId);
               _showOrderItemsDialog(context);
@@ -188,6 +197,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       },
     );
   }
+
 
   Widget _buildLoginButton() {
     return Center(
@@ -213,9 +223,11 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
             child: Text("Login",
                 style: TextStyle(fontSize: 18, color: Colors.white)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF7971EA), // Updated color
-              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-              textStyle: TextStyle(fontSize: 20, color: Colors.white),
+              backgroundColor: AppColor.login,
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
             ),
           ),
         ],
@@ -243,17 +255,17 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       int stock = i.stock + item.quantity;
 
       Items updatedItem = Items(
-        itemId: i.itemId,
-        name: i.name,
-        image: i.image,
-        brand: i.brand,
-        description: i.description,
-        price: i.price,
-        type: i.type,
-        createdDt: DateTime.parse(i.createdDt),
-        isVisible: stock > 0,
-        stock: stock,
-        rentalquantity: i.rentalquantity
+          itemId: i.itemId,
+          name: i.name,
+          image: i.image,
+          brand: i.brand,
+          description: i.description,
+          price: i.price,
+          type: i.type,
+          createdDt: DateTime.parse(i.createdDt),
+          isVisible: stock > 0,
+          stock: stock,
+          rentalquantity: i.rentalquantity
       );
       await ItemsService().saveItems(updatedItem);
     }
@@ -281,7 +293,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 22.0,
-                    color: Colors.deepPurple,
+                    color: Colors.black,
                   ),
                 ),
                 SizedBox(height: 10.0),
@@ -298,38 +310,26 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                     : ListView.builder(
                   shrinkWrap: true,
                   itemCount: _orderItems.length,
-                  itemBuilder: (context, index) {
+                  itemBuilder: (BuildContext context, int index) {
                     final orderItem = _orderItems[index];
-                    return Container(
-                      margin: EdgeInsets.only(bottom: 8.0),
-                      decoration: BoxDecoration(
-                        color: Colors.deepPurple[50],
-                        borderRadius: BorderRadius.circular(8.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            spreadRadius: 2,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.all(16.0),
-                        title: Text(
-                          orderItem.item.name,
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple,
-                          ),
+                    return ListTile(
+                      contentPadding: EdgeInsets.all(0),
+                      title: Text(
+                        orderItem.item.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
                         ),
-                        subtitle: Text(
-                          'Quantity: ${orderItem.quantity}\nPrice: \$${orderItem.price}',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.black.withOpacity(0.7),
-                          ),
+                      ),
+                      subtitle: Text(
+                        'Quantity: ${orderItem.quantity}',
+                        style: TextStyle(fontSize: 16.0),
+                      ),
+                      trailing: Text(
+                        '\$${orderItem.item.price * orderItem.quantity}',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: Colors.black,
                         ),
                       ),
                     );
@@ -338,18 +338,9 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                 SizedBox(height: 10.0),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(
-                      'Close',
-                      style: TextStyle(
-                        color: Colors.deepPurple,
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Close'),
                   ),
                 ),
               ],

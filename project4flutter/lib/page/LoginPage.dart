@@ -138,7 +138,7 @@ class _LoginState extends State<LoginPage> {
                         }
                       }
                     },
-                    child: const Text("Login"),
+                    child: const Text("Login",style: TextStyle(color: Colors.black),),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

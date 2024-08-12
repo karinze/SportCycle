@@ -19,7 +19,6 @@ class UsersService {
     print("API Response Body: ${response.body}");
 
     if (response.statusCode == 200) {
-      // Kiểm tra nếu phản hồi không phải là một chuỗi JSON hợp lệ
       if (response.body.isEmpty || response.body == 'null') {
         print("Login failed: empty or null response.");
         return null;
@@ -28,7 +27,6 @@ class UsersService {
       try {
         var data = json.decode(response.body);
 
-        // Kiểm tra nếu dữ liệu JSON rỗng hoặc không hợp lệ
         if (data == null || data.isEmpty) {
           print("Login failed: no user data returned.");
           return null;

@@ -24,6 +24,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final List<String> _carouselImages = [
+    'images/img3.jpg',
+    'images/img2.jpg',
+    'images/img1.jpg',
+    'images/img4.jpg',
+    'images/img5.jpg',
+  ];
+
   late List<Items> list = [];
   late List<Items> newestItems = [];
   final ItemsService _apiService = ItemsService();
@@ -46,7 +54,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _fetchData() async {
-    list = await _apiService.findAll();
+    list = await _apiService.top10();
     newestItems = list.take(10).toList(); // Limit to 10 products
     setState(() {});
   }
@@ -119,9 +127,9 @@ class _HomePageState extends State<HomePage> {
       height: 250,
       child: PageView.builder(
         controller: _pageController,
-        itemCount: newestItems.take(5).length, // Limit to 5 products for slider
+        itemCount: _carouselImages.length, // Use the fixed list of images
         itemBuilder: (context, index) {
-          return _buildPageItem(index, newestItems[index]);
+          return _buildPageItem(index);
         },
       ),
     );
@@ -279,7 +287,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildPageItem(int index, Items item) {
+  Widget _buildPageItem(int index) {
     Matrix4 matrix = new Matrix4.identity();
     if (index == _currPageValue.floor()) {
       var currScale = 1 - (_currPageValue - index) * (1 - _scaleFactor);
@@ -302,12 +310,7 @@ class _HomePageState extends State<HomePage> {
       transform: matrix,
       child: GestureDetector(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductDetailPage(item: item,item_id: item.itemId),
-            ),
-          );
+          // Handle image tap if needed
         },
         child: Container(
           height: _height,
@@ -317,7 +320,7 @@ class _HomePageState extends State<HomePage> {
             color: index.isEven ? Colors.blue : Colors.green,
             image: DecorationImage(
               fit: BoxFit.cover,
-              image: AssetImage('images/' + item.image),
+              image: AssetImage(_carouselImages[index]), // Use the fixed image
             ),
           ),
         ),

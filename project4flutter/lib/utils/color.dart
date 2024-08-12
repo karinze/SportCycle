@@ -15,4 +15,5 @@ class AppColor{
   static final Color mainBlackColor = const Color(0xFF4E342E);
   static final Color yellowColor = const Color(0xFFFDC02B);
   static final Color mainBlack = const Color(0xFF000000);
+  static final Color login = const Color(0xFF7971EA);
 }

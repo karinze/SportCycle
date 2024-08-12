@@ -69,10 +69,10 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
           ),
           // Static second logo
           Center(
-              child:Image(
-                image: AssetImage("images/bikelogo2.png"),
-                width: 250,
-              ),
+            child:Image(
+              image: AssetImage("images/bikelogo2.png"),
+              width: 250,
+            ),
           ),
         ],
       ),

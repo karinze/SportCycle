@@ -12,7 +12,15 @@ class CartPage extends StatelessWidget {
     final cart = Provider.of<CartService>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cart'),
+        title: Text('Cart',
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColor.login
+          ),
+
+
+        ),
+
       ),
       body: cart.cartItems.isEmpty
           ? Center(

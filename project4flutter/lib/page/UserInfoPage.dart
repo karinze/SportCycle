@@ -3,6 +3,7 @@ import 'package:project4flutter/page/HomePage.dart';
 import 'package:project4flutter/service/CartService.dart';
 import 'package:project4flutter/service/UserDetailsService.dart';
 import 'package:project4flutter/service/UsersService.dart';
+import 'package:project4flutter/utils/color.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../model/UserDetails.dart';
@@ -161,7 +162,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
               onPressed: () => _logout(context),
               child: Text("Logout", style: TextStyle(fontSize: 18, color: Colors.white)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF5148E5),
+                backgroundColor: AppColor.login,
                 padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                 textStyle: TextStyle(fontSize: 20),
               ),
@@ -192,9 +193,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
               ),
               child: Text("Login",style: TextStyle(fontSize: 18, color: Colors.white)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF7971EA),
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                textStyle: TextStyle(fontSize: 20),
+                backgroundColor: AppColor.login,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
               ),
             ),
           ],

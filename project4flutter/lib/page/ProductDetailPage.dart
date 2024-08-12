@@ -34,7 +34,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.item.name),
+        title: Text("Product",
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColor.login
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -86,7 +91,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   List<Widget> _buildActionButtons() {
-    if (widget.item.rentalquantity > 0) {
+    if (widget.item.rentalquantity > 0 && widget.item.type != 'Accessories') {
       return [
         Expanded(
           child: ElevatedButton(

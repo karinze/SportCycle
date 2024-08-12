@@ -7,6 +7,7 @@ import '../model/BikeRentals.dart';
 import '../service/BikeRentalsService.dart';
 import '../service/ItemsService.dart';
 import '../service/UsersService.dart';
+import '../utils/color.dart';
 import 'LoginPage.dart';
 
 class MyRentPage extends StatefulWidget {
@@ -82,9 +83,11 @@ class _MyRentPageState extends State<MyRentPage> {
             child: Text("Login",
                 style: TextStyle(fontSize: 18, color: Colors.white)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF7971EA), // Updated color
-              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-              textStyle: TextStyle(fontSize: 20, color: Colors.white),
+              backgroundColor: AppColor.login,
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
             ),
           ),
         ],

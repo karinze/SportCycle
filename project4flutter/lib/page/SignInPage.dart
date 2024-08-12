@@ -23,7 +23,7 @@ class _SignupState extends State<Signup> {
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
   final TextEditingController _controllerConfirmPassword =
-      TextEditingController();
+  TextEditingController();
 
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -43,7 +43,7 @@ class _SignupState extends State<Signup> {
       });
 
       final usernameError =
-          await _checkUsernameExistence(_controllerUsername.text);
+      await _checkUsernameExistence(_controllerUsername.text);
       final emailError = await _checkEmailExistence(_controllerEmail.text);
 
       if (usernameError != null || emailError != null) {
@@ -257,7 +257,7 @@ class _SignupState extends State<Signup> {
                     onPressed: _isLoading ? null : _register,
                     child: _isLoading
                         ? const CircularProgressIndicator()
-                        : const Text("Register"),
+                        : const Text("Register",style: TextStyle(color: Colors.black),),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

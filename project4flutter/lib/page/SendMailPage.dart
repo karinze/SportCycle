@@ -156,7 +156,7 @@ class _SendMailPageState extends State<SendMailPage> {
                     await _sendMail();
                   }
                 },
-                child: const Text("Send Mail"),
+                child: const Text("Send Mail",style: TextStyle(color: Colors.black),),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

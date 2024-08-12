@@ -23,10 +23,11 @@ import org.springframework.web.bind.annotation.PathVariable;
  * @author Manh_Chien
  */
 public interface OrderRepository extends JpaRepository<Orders, Integer> {
-    @Query("SELECT o FROM Orders o WHERE o.users.id = :userId")
+    
+    @Query("SELECT o FROM Orders o WHERE o.users.id = :userId ORDER BY o.order_id DESC")
     List<Orders> listOrderByUserId(@Param("userId") UUID userId);
     
-    @Query("SELECT o FROM Orders o WHERE o.users.id = :userId")
+    @Query("SELECT o FROM Orders o WHERE o.users.id = :userId ORDER BY o.order_id DESC")
     Page<Orders> searchOrderByUserId(@Param("userId") UUID userId, Pageable pageable);
     
     @Query("SELECT SUM(o.total_amount) FROM Orders o WHERE MONTH(o.order_date) = MONTH(CURRENT_DATE) AND YEAR(o.order_date) = YEAR(CURRENT_DATE) AND o.status = 'Received'")
