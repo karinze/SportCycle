@@ -149,9 +149,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
             ),
             Divider(),
             ListTile(
-              leading: Icon(Icons.settings, color: Color(0xFF89dad0)),
+              leading: Icon(Icons.manage_accounts_outlined, color: Color(0xFF89dad0)),
               title: Text(
-                'Profile Settings',
+                'Profile',
                 style: TextStyle(fontSize: 18),
               ),
               trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey[400]),
