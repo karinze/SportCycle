@@ -280,7 +280,14 @@
                                             <input class="form-check-input" type="radio" name="brand" value="VINBIKE" id="brand">
                                             <label class="form-check-label" for="VINBIKE"><img th:src="@{/images/Vinbike-3.png}" style="width: 130px"></label>
                                         </li>
-
+                                        <li class="form-check">
+                                            <input class="form-check-input" type="radio" name="brand" value="Other" id="brandOther" onclick="toggleOtherInput()">
+                                            <label class="form-check-label" for="brandOther">Other</label>
+                                        </li>
+                                        <div id="otherBrandDiv" style="display:none;">
+                                            <label for="otherBrand">Enter Other Brand:</label>
+                                            <input type="text" id="otherBrand" name="otherBrand" maxlength="255" class="form-control">
+                                        </div>
                                     </ul>
 
                                     <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeSize')">Bike Size <span class="toggle-arrow">&#9660;</span></h3>
@@ -413,7 +420,7 @@
                         </div>
                     </div>
 
-                    
+
 
                 </div>
             </div>
@@ -464,13 +471,13 @@
                             </div>
 
                             <div class="block-7">
-<!--                                <form action="#" method="post">
-                                    <label for="email_subscribe" class="footer-heading">Subscribe</label>
-                                    <div class="form-group">
-                                        <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
-                                        <input type="submit" class="btn btn-sm btn-primary" value="Send">
-                                    </div>
-                                </form>-->
+                                <!--                                <form action="#" method="post">
+                                                                    <label for="email_subscribe" class="footer-heading">Subscribe</label>
+                                                                    <div class="form-group">
+                                                                        <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
+                                                                        <input type="submit" class="btn btn-sm btn-primary" value="Send">
+                                                                    </div>
+                                                                </form>-->
                             </div>
                         </div>
                     </div>
@@ -500,8 +507,35 @@
                     arrow.innerHTML = "&#9660;";  // Change arrow to down
                 }
             }
+            function toggleOtherInput() {
+                var otherBrandDiv = document.getElementById("otherBrandDiv");
+                var brandRadioButtons = document.getElementsByName("brand");
 
+                // Check if "Other" is selected
+                var otherSelected = false;
+                for (var i = 0; i < brandRadioButtons.length; i++) {
+                    if (brandRadioButtons[i].value === "Other" && brandRadioButtons[i].checked) {
+                        otherSelected = true;
+                        break;
+                    }
+                }
+
+                if (otherSelected) {
+                    otherBrandDiv.style.display = "block";
+                    document.getElementById("otherBrand").setAttribute("required", "true");
+                } else {
+                    otherBrandDiv.style.display = "none";
+                    document.getElementById("otherBrand").removeAttribute("required");
+                }
+            }
+
+// Add an event listener to the radio buttons to toggle the input field
+            document.querySelectorAll('input[name="brand"]').forEach(function (elem) {
+                elem.addEventListener('change', toggleOtherInput);
+            });
         </script>
+
+
 
         <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
         <script th:src="@{/js/jquery-ui.js}"></script>

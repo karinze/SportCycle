@@ -52,6 +52,9 @@
             .form-group {
                 margin-bottom: 1.5rem;
             }
+            #otherBrandDiv {
+                display: none;
+            }
         </style>
     </head>
     <body>
@@ -64,11 +67,34 @@
                     <p class="text-danger" th:errors="*{name}" th:if="${#fields.hasErrors('name')}"></p>
                 </div>
 
+                <!--                <div class="form-group">
+                                    <label for="brand">Enter Brand:</label>
+                                    <input type="text" id="brand" name="brand" class="form-control" th:field="*{brand}">
+                                    <p class="text-danger" th:errors="*{brand}" th:if="${#fields.hasErrors('brand')}"></p>
+                                </div>-->
+
                 <div class="form-group">
                     <label for="brand">Enter Brand:</label>
-                    <input type="text" id="brand" name="brand" class="form-control" th:field="*{brand}">
-                    <p class="text-danger" th:errors="*{brand}" th:if="${#fields.hasErrors('brand')}"></p>
+                    <select id="brand" name="brand" class="form-control" th:field="*{brand}" onchange="toggleOtherBrand()">
+                        <option value="GIANT" th:attr="selected=${items.brand == 'GIANT'}">GIANT</option>
+                        <option value="GTIX" th:attr="selected=${items.brand == 'GTIX'}">GTIX</option>
+                        <option value="MAX" th:attr="selected=${items.brand == 'MAX'}">MAX</option>
+                        <option value="MOMENTUM" th:attr="selected=${items.brand == 'MOMENTUM'}">MOMENTUM</option>
+                        <option value="TOTEM" th:attr="selected=${items.brand == 'TOTEM'}">TOTEM</option>
+                        <option value="TRINX" th:attr="selected=${items.brand == 'TRINX'}">TRINX</option>
+                        <option value="VINBIKE" th:attr="selected=${items.brand == 'VINBIKE'}">VINBIKE</option>
+                        <option value="0" th:attr="selected=${items.brand == '0'}">Other...</option>
+                    </select>
+                    <div id="otherBrandDiv" th:style="${items.brand == '0'} ? 'display:block;' : 'display:none;'">
+                        <input type="text" id="otherBrand" name="otherBrand" 
+                               placeholder="Enter Other Brand..." maxlength="255" 
+                               class="form-control" 
+                               th:value="${otherBrand}">
+                        <p class="text-danger" th:errors="*{brand}" th:if="${#fields.hasErrors('brand')}"></p>
+                    </div>
                 </div>
+
+
 
                 <div class="form-group">
                     <label for="description">Enter Description:</label>
@@ -101,7 +127,7 @@
                     <input type="text" id="rentalquantity" name="rentalquantity" class="form-control" th:field="*{rentalquantity}">
                     <p class="text-danger" th:errors="*{rentalquantity}" th:if="${#fields.hasErrors('rentalquantity')}"></p>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="image">Enter Image:</label>
                     <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
@@ -118,6 +144,21 @@
         </div>
 
         <!-- Bootstrap JS and dependencies (optional, if needed) -->
+        <script>
+            function toggleOtherBrand() {
+                var brandSelect = document.getElementById('brand');
+                var otherBrandDiv = document.getElementById('otherBrandDiv');
+                var otherBrandInput = document.getElementById('otherBrandDiv').querySelector('input[name="otherBrand"]');
+
+                if (brandSelect.value === '0') {
+                    otherBrandInput.setAttribute('required', 'true');
+                    otherBrandDiv.style.display = 'block';
+                } else {
+                    otherBrandInput.removeAttribute('required');
+                    otherBrandDiv.style.display = 'none';
+                }
+            }
+        </script>
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-pzjw8f+ua7Kw1TIqD2AIWM+8l68PHX3v52PiD7j+QvI5jv2xS4eAozpCOjI4BB8C" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTNZvyLQcREeMBmEzCqc5hHE/2e5vKTtwKPfGftrUN5Fxz2KNm" crossorigin="anonymous"></script>

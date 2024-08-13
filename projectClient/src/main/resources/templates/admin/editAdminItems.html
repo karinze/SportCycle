@@ -4,155 +4,197 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to c
 Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
 -->
 <html xmlns:th="https://www.thymeleaf.org/">
-<head>
-    <title>Edit</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <head>
+        <title>Edit</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Bootstrap CSS link -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    <style>
-        body {
-            background-color: #f4f4f9;
-            font-family: 'Arial', sans-serif;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-        }
-        h1 {
-            margin-bottom: 1.5rem;
-            font-size: 2.5rem;
-            color: #343a40;
-            text-transform: uppercase;
-        }
-        label {
-            font-weight: bold;
-            color: #495057;
-        }
-        .form-group input, .form-group select, .form-check-input {
-            border-radius: 4px;
-            border: 1px solid #ced4da;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            border: none;
-            padding: 0.75rem 1.25rem;
-            font-size: 1.25rem;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-        .btn-info {
-            background-color: #17a2b8;
-            border: none;
-            padding: 0.75rem 1.25rem;
-            font-size: 1.25rem;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-        }
-        .btn-info:hover {
-            background-color: #117a8b;
-        }
-        .text-center {
-            text-align: center;
-        }
-        .text-danger {
-            font-size: 0.875rem;
-        }
-        img {
-            border-radius: 8px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container mt-5">
-        <h1 class="text-center">Update Item</h1>
-        <form th:if="${items.type == 'Bike'}" th:action="@{/editAdminBikeProperties/{id}(id=${items.item_id})}" method="get" class="mb-3">
-            <button type="submit" class="btn btn-info btn-block">Edit Bike Properties</button>
-        </form>
-        <form th:action="@{/saveAdminItems}" th:object="${items}" method="post" enctype="multipart/form-data">
+        <!-- Bootstrap CSS link -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+              integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <style>
+            body {
+                background-color: #f4f4f9;
+                font-family: 'Arial', sans-serif;
+            }
+            .container {
+                background-color: #ffffff;
+                padding: 2rem;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                max-width: 800px;
+            }
+            h1 {
+                margin-bottom: 1.5rem;
+                font-size: 2.5rem;
+                color: #343a40;
+                text-transform: uppercase;
+            }
+            label {
+                font-weight: bold;
+                color: #495057;
+            }
+            .form-group input, .form-group select, .form-check-input {
+                border-radius: 4px;
+                border: 1px solid #ced4da;
+            }
+            .btn-primary {
+                background-color: #007bff;
+                border: none;
+                padding: 0.75rem 1.25rem;
+                font-size: 1.25rem;
+                border-radius: 4px;
+                transition: background-color 0.3s ease;
+            }
+            .btn-primary:hover {
+                background-color: #0056b3;
+            }
+            .btn-info {
+                background-color: #17a2b8;
+                border: none;
+                padding: 0.75rem 1.25rem;
+                font-size: 1.25rem;
+                border-radius: 4px;
+                transition: background-color 0.3s ease;
+            }
+            .btn-info:hover {
+                background-color: #117a8b;
+            }
+            .text-center {
+                text-align: center;
+            }
+            .text-danger {
+                font-size: 0.875rem;
+            }
+            img {
+                border-radius: 8px;
+            }
+            #otherBrandDiv {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h1 class="text-center">Update Item</h1>
+            <form th:if="${items.type == 'Bike'}" th:action="@{/editAdminBikeProperties/{id}(id=${items.item_id})}" method="get" class="mb-3">
+                <button type="submit" class="btn btn-info btn-block">Edit Bike Properties</button>
+            </form>
+            <form th:action="@{/saveAdminItems}" th:object="${items}" method="post" enctype="multipart/form-data">
 
-            <!-- Hidden field -->
-            <input type="hidden" name="item_id" th:field="*{item_id}">
+                <!-- Hidden field -->
+                <input type="hidden" name="item_id" th:field="*{item_id}">
 
-            <!-- Form fields with Bootstrap styling -->
-            <div class="form-group">
-                <label for="name">Enter Name:</label>
-                <input type="text" id="name" name="name" class="form-control" th:field="*{name}">
-                <p class="text-danger" th:errors="*{name}" th:if="${#fields.hasErrors('name')}"></p>
-            </div>
+                <!-- Form fields with Bootstrap styling -->
+                <div class="form-group">
+                    <label for="name">Enter Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" th:field="*{name}">
+                    <p class="text-danger" th:errors="*{name}" th:if="${#fields.hasErrors('name')}"></p>
+                </div>
 
-            <div class="form-group">
-                <label for="brand">Enter Brand:</label>
-                <input type="text" id="brand" name="brand" class="form-control" th:field="*{brand}">
-                <p class="text-danger" th:errors="*{brand}" th:if="${#fields.hasErrors('brand')}"></p>
-            </div>
+                <div class="form-group">
+                    <label for="brand">Enter Brand:</label>
+                    <select id="brand" name="brand" class="form-control"  onchange="toggleOtherBrand()">
+                        <option value="GIANT" th:attr="selected=${items.brand == 'GIANT'}">GIANT</option>
+                        <option value="GTIX" th:attr="selected=${items.brand == 'GTIX'}">GTIX</option>
+                        <option value="MAX" th:attr="selected=${items.brand == 'MAX'}">MAX</option>
+                        <option value="MOMENTUM" th:attr="selected=${items.brand == 'MOMENTUM'}">MOMENTUM</option>
+                        <option value="TOTEM" th:attr="selected=${items.brand == 'TOTEM'}">TOTEM</option>
+                        <option value="TRINX" th:attr="selected=${items.brand == 'TRINX'}">TRINX</option>
+                        <option value="VINBIKE" th:attr="selected=${items.brand == 'VINBIKE'}">VINBIKE</option>
+                        <option value="0" th:attr="selected=${items.brand != 'GIANT' && items.brand != 'GTIX' && items.brand != 'MAX' && items.brand != 'MOMENTUM' && items.brand != 'TOTEM' && items.brand != 'TRINX' && items.brand != 'VINBIKE'}">Other...</option>
+                        <!--                        <option value="0" th:attr="selected=${items.brand != 'GIANT' }">Other...</option>-->
 
-            <div class="form-group">
-                <label for="description">Enter Description:</label>
-                <input type="text" id="description" name="description" class="form-control" th:field="*{description}">
-                <p class="text-danger" th:errors="*{description}" th:if="${#fields.hasErrors('description')}"></p>
-            </div>
+                    </select>
+                    <div id="otherBrandDiv" th:style="${items.brand == '0'} ? 'display:block;' : 'display:none;'">
+                        <input th:if="${otherBrand == null}" type="text" id="otherBrand" name="otherBrand" 
+                               placeholder="Enter Other Brand..." maxlength="255" 
+                               class="form-control" 
+                               th:value="${items.brand}">
+                        <input th:if="${otherBrand != null}" type="text" id="otherBrand" name="otherBrand" 
+                               placeholder="Enter Other Brand..." maxlength="255" 
+                               class="form-control" 
+                               th:value="${otherBrand}">
+                        <p class="text-danger" th:errors="*{brand}" th:if="${#fields.hasErrors('brand')}"></p>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label for="price">Enter Price:</label>
-                <input type="text" id="price" name="price" class="form-control" th:field="*{price}">
-                <p class="text-danger" th:errors="*{price}" th:if="${#fields.hasErrors('price')}"></p>
-            </div>
+                <div class="form-group">
+                    <label for="description">Enter Description:</label>
+                    <input type="text" id="description" name="description" class="form-control" th:field="*{description}">
+                    <p class="text-danger" th:errors="*{description}" th:if="${#fields.hasErrors('description')}"></p>
+                </div>
 
-            <div class="form-group">
-                <label for="stock">Enter Stock:</label>
-                <input type="text" id="stock" name="stock" class="form-control" th:field="*{stock}">
-                <p class="text-danger" th:errors="*{stock}" th:if="${#fields.hasErrors('stock')}"></p>
-            </div>
+                <div class="form-group">
+                    <label for="price">Enter Price:</label>
+                    <input type="text" id="price" name="price" class="form-control" th:field="*{price}">
+                    <p class="text-danger" th:errors="*{price}" th:if="${#fields.hasErrors('price')}"></p>
+                </div>
 
-            <div class="form-group">
+                <div class="form-group">
+                    <label for="stock">Enter Stock:</label>
+                    <input type="text" id="stock" name="stock" class="form-control" th:field="*{stock}">
+                    <p class="text-danger" th:errors="*{stock}" th:if="${#fields.hasErrors('stock')}"></p>
+                </div>
+
+                <div class="form-group">
                     <label for="type">Enter Type:</label>
                     <select id="type" name="type" class="form-control" th:field="*{type}">
                         <option value="Bike">Bike</option>
                         <option value="Accessories">Accessories</option>
                     </select>
-            </div>
-            
-            <div class="form-group">
+                </div>
+
+                <div class="form-group">
                     <label for="rentalquantity">Enter Rental Quantity:</label>
                     <input type="text" id="rentalquantity" name="rentalquantity" class="form-control" th:field="*{rentalquantity}">
                     <p class="text-danger" th:errors="*{rentalquantity}" th:if="${#fields.hasErrors('rentalquantity')}"></p>
-            </div>
+                </div>
 
-            <div class="form-group">
-                <label for="image">Enter Image:</label>
-                <img th:src="@{'/images/'+${items.image}}" width="100" height="auto" class="d-block mb-2"/>
-                <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
-                <p class="text-danger" th:errors="*{image}" th:if="${#fields.hasErrors('image')}"></p>
-            </div>
+                <div class="form-group">
+                    <label for="image">Enter Image:</label>
+                    <img th:src="@{'/images/'+${items.image}}" width="100" height="auto" class="d-block mb-2"/>
+                    <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
+                    <p class="text-danger" th:errors="*{image}" th:if="${#fields.hasErrors('image')}"></p>
+                </div>
 
-            <div class="form-check">
-                <input type="checkbox" id="is_visible" name="is_visible" class="form-check-input" th:field="*{is_visible}">
-                <label for="is_visible" class="form-check-label">Visible</label>
-            </div>
+                <div class="form-check">
+                    <input type="checkbox" id="is_visible" name="is_visible" class="form-check-input" th:field="*{is_visible}">
+                    <label for="is_visible" class="form-check-label">Visible</label>
+                </div>
 
-            <button type="submit" class="btn btn-primary mt-3 btn-block" onclick="confirmUpdate(event)">Update</button>
-        </form>
-    </div>
-    <script>
+                <button type="submit" class="btn btn-primary mt-3 btn-block" onclick="confirmUpdate(event)">Update</button>
+            </form>
+        </div>
+        <script>
             function confirmUpdate(event) {
                 if (!confirm('Are you sure to update?')) {
                     event.preventDefault();
                 }
             }
+            function toggleOtherBrand() {
+                var brandSelect = document.getElementById('brand');
+                var otherBrandDiv = document.getElementById('otherBrandDiv');
+                var otherBrandInput = document.getElementById('otherBrandDiv').querySelector('input[name="otherBrand"]');
+
+                if (brandSelect.value === '0') {
+                    otherBrandInput.setAttribute('required', 'true');
+                    otherBrandDiv.style.display = 'block';
+                } else {
+                    otherBrandInput.removeAttribute('required');
+                    otherBrandDiv.style.display = 'none';
+                }
+            }
+
+            // Call the function on page load to ensure the correct state is set
+            document.addEventListener('DOMContentLoaded', function () {
+                toggleOtherBrand();
+            });
         </script>
 
-    <!-- Bootstrap JS and dependencies (optional, if needed) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-pzjw8f+ua7Kw1TIqD2AIWM+8l68PHX3v52PiD7j+QvI5jv2xS4eAozpCOjI4BB8C" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTNZvyLQcREeMBmEzCqc5hHE/2e5vKTtwKPfGftrUN5Fxz2KNm" crossorigin="anonymous"></script>
-</body>
+        <!-- Bootstrap JS and dependencies (optional, if needed) -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-pzjw8f+ua7Kw1TIqD2AIWM+8l68PHX3v52PiD7j+QvI5jv2xS4eAozpCOjI4BB8C" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTNZvyLQcREeMBmEzCqc5hHE/2e5vKTtwKPfGftrUN5Fxz2KNm" crossorigin="anonymous"></script>
+    </body>
 </html>

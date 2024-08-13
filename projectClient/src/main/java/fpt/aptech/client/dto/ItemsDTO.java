@@ -18,7 +18,6 @@ public class ItemsDTO {
     @NotEmpty(message = "Name is required")
     private String name;
 
-    @Size(max = 100, message = "Brand cannot be longer than 100 characters")
     @NotEmpty(message = "Brand is required")
     private String brand;
 
