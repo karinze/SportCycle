@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:project4flutter/model/Coupons.dart';
 import 'package:http/http.dart' as http;
 
+import 'APIService.dart';
+
 class CouponService{
-  static const String url = "http://192.168.1.7:9999/api";
-  static const String urlCoupons = "$url/coupons/";
+  // static const String url = "http://192.168.1.8:9999/api";
+  static const String urlCoupons = "${APIService.url}/coupons/";
 
   Future<List<Coupons>> findAll() async {
     final response = await http.get(Uri.parse(urlCoupons));

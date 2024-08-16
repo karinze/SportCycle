@@ -5,9 +5,11 @@ import '../model/OrderItems.dart';
 import '../model/Orders.dart';
 import 'package:http_parser/http_parser.dart';
 
+import 'APIService.dart';
+
 class OrdersService{
-  static const String url = "http://192.168.1.7:9999/api";
-  static const String urlOrders = "$url/orders/";
+  // static const String url = "http://192.168.1.8:9999/api";
+  static const String urlOrders = "${APIService.url}/orders/";
 
   Future<List<Orders>> findAll() async {
     final response = await http.get(Uri.parse(urlOrders));

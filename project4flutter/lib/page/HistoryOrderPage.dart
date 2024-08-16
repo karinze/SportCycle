@@ -177,7 +177,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                         ),
                       ),
                       onPressed: () {
-                        _cancelOrder(order.orderId);
+                        _showCancelOrderConfirmationDialog(context, order.orderId);
                       },
                       label: Text(
                         'Cancel Order',
@@ -197,6 +197,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       },
     );
   }
+
 
 
   Widget _buildLoginButton() {
@@ -270,6 +271,41 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       await ItemsService().saveItems(updatedItem);
     }
     _fetchOrders(); // Refresh the list after updating the status
+  }
+  void _showCancelOrderConfirmationDialog(BuildContext context, int orderId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Confirm Cancellation'),
+          content: Text('Are you sure you want to cancel this order?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text(
+                'No',
+                style: TextStyle(color: Colors.black), // No button with black text
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+                _cancelOrder(orderId); // Call the method to cancel the order
+              },
+              child: Text(
+                'Yes',
+                style: TextStyle(color: Colors.black), // Yes button with black text
+              ),
+              style: TextButton.styleFrom(
+                backgroundColor: AppColor.mainColor, // Red background for Yes button
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showOrderItemsDialog(BuildContext context) {

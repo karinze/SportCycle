@@ -17,9 +17,11 @@ class _ProductPageState extends State<ProductPage> {
   late List<Items> filteredList = [];
   final ItemsService _apiService = ItemsService();
   final int _itemsPerPage = 10;
-  int _currentPage = 0;
+  Map<String, int> _currentPages = {"Bike": 0, "Accessories": 0};
   String _searchQuery = "";
   final FocusNode _searchFocusNode = FocusNode();
+  String _selectedCategory = "Bike"; // Giá trị mặc định của phân loại
+  List<String> _categories = ["Bike", "Accessories"]; // Danh sách phân loại
 
   @override
   void initState() {
@@ -34,15 +36,21 @@ class _ProductPageState extends State<ProductPage> {
 
   void _fetchData() async {
     list = await _apiService.findAll();
+    print('Fetched items: ${list.map((item) => item.type).toList()}'); // In ra loại phân loại của các sản phẩm
     _updateFilteredList();
     setState(() {});
   }
 
   void _updateFilteredList() {
-    List<Items> currentList = _searchQuery.isEmpty ? list : list.where((item) => item.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    List<Items> currentList = list.where((item) {
+      bool matchesQuery = item.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      bool matchesCategory = item.type.toLowerCase() == _selectedCategory.toLowerCase();
+      return matchesQuery && matchesCategory;
+    }).toList();
 
+    int currentPage = _currentPages[_selectedCategory] ?? 0;
     filteredList = currentList
-        .skip(_currentPage * _itemsPerPage)
+        .skip(currentPage * _itemsPerPage)
         .take(_itemsPerPage)
         .toList();
   }
@@ -50,14 +58,21 @@ class _ProductPageState extends State<ProductPage> {
   void _onSearchChanged(String query) {
     setState(() {
       _searchQuery = query;
-      _currentPage = 0;
+      _currentPages[_selectedCategory] = 0;
       _updateFilteredList();
     });
   }
 
   void _onPageChanged(int page) {
     setState(() {
-      _currentPage = page;
+      _currentPages[_selectedCategory] = page;
+      _updateFilteredList();
+    });
+  }
+
+  void _onCategoryChanged(String category) {
+    setState(() {
+      _selectedCategory = category;
       _updateFilteredList();
     });
   }
@@ -73,16 +88,39 @@ class _ProductPageState extends State<ProductPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: TextField(
-          focusNode: _searchFocusNode,
-          decoration: InputDecoration(
-            hintText: 'Search',
-            prefixIcon: Icon(Icons.search, color: Colors.black54),
-            hintStyle: TextStyle(color: Colors.black45),
-            border: InputBorder.none,
-          ),
-          style: TextStyle(color: Colors.black),
-          onChanged: _onSearchChanged,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: TextField(
+                focusNode: _searchFocusNode,
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  prefixIcon: Icon(Icons.search, color: Colors.black54),
+                  hintStyle: TextStyle(color: Colors.black45),
+                  border: InputBorder.none,
+                ),
+                style: TextStyle(color: Colors.black),
+                onChanged: _onSearchChanged,
+              ),
+            ),
+            SizedBox(width: 10),
+            DropdownButton<String>(
+              value: _selectedCategory,
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  _onCategoryChanged(newValue);
+                }
+              },
+              items: _categories.map((String category) {
+                return DropdownMenuItem<String>(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              underline: SizedBox(),
+            ),
+          ],
         ),
       ),
       body: Padding(
@@ -106,7 +144,7 @@ class _ProductPageState extends State<ProductPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProductDetailPage(item: item,item_id: item.itemId,),
+                          builder: (context) => ProductDetailPage(item: item, item_id: item.itemId),
                         ),
                       );
                     },
@@ -217,7 +255,7 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   Widget _buildPagination() {
-    int totalPages = ((_searchQuery.isEmpty ? list.length : list.where((item) => item.name.toLowerCase().contains(_searchQuery.toLowerCase())).length) / _itemsPerPage).ceil();
+    int totalPages = ((_searchQuery.isEmpty ? list.where((item) => item.type.toLowerCase() == _selectedCategory.toLowerCase()).length : filteredList.length) / _itemsPerPage).ceil();
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -228,7 +266,7 @@ class _ProductPageState extends State<ProductPage> {
             margin: EdgeInsets.symmetric(horizontal: 4.0),
             padding: EdgeInsets.all(8.0),
             decoration: BoxDecoration(
-              color: _currentPage == index ? AppColor.mainColor : Colors.grey,
+              color: _currentPages[_selectedCategory] == index ? AppColor.mainColor : Colors.grey,
               shape: BoxShape.circle,
             ),
             child: Text(

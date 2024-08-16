@@ -1936,6 +1936,7 @@ public class HomeController {
                             .map(Orders::getTotal_amount)
                             .reduce(BigDecimal.ZERO, BigDecimal::add)
             );
+            
 
             model.addAttribute("currentPage", pageNumber);
             model.addAttribute("pageSize", pageSize);

@@ -175,7 +175,7 @@
 
                             </div>
 
-                            <div th:with="math=${T(java.lang.Math)}" class="row" data-aos="fade-up" th:if="${totalPages > 1}">
+                            <div th:with="math=${T(java.lang.Math)}" class="row" data-aos="fade-up" th:if="${totalPages > 1 && type == 'Bike'}">
                                 <div class="col-md-12 text-center">
                                     <div class="site-block-27">
                                         <ul>
@@ -214,27 +214,105 @@
                                 </div>
                             </div>
 
+                            <div th:with="math=${T(java.lang.Math)}" class="row" data-aos="fade-up" th:if="${totalPages > 1 && type == 'Accessories'}">
+                                <div class="col-md-12 text-center">
+                                    <div class="site-block-27">
+                                        <ul>
+                                            <!-- First page button -->
+                                            <li th:classappend="${currentPage == 0} ? 'disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shop(pageNumber=0, pageSize=${pageSize},name=${name}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&lt;&lt;</a>
+                                            </li>
+                                            <!-- Previous page button -->
+                                            <li th:classappend="${currentPage == 0} ? 'disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shop(pageNumber=${currentPage - 1}, pageSize=${pageSize},name=${name}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&lt;</a>
+                                            </li>
+                                            <!-- Ellipsis before the first page number -->
+                                            <li th:classappend="${currentPage > 2} ? 'page-item' : 'd-none'">
+                                                <span>...</span>
+                                            </li>
+                                            <!-- Page numbers -->
+                                            <th:block th:each="page : ${#numbers.sequence(math.max(0, currentPage - 2), math.min(totalPages - 1, currentPage + 2))}">
+                                                <li th:classappend="${page == currentPage} ? 'active'">
+                                                    <a th:href="@{/shop(pageNumber=${page}, pageSize=${pageSize},name=${name}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice})}" th:text="${page + 1}"></a>
+                                                </li>
+                                            </th:block>
+                                            <!-- Ellipsis after the last page number -->
+                                            <li th:classappend="${currentPage < totalPages - 3} ? 'page-item' : 'd-none'">
+                                                <span>...</span>
+                                            </li>
+                                            <!-- Next page button -->
+                                            <li th:classappend="${currentPage >= totalPages - 1} ? 'disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shop(pageNumber=${currentPage + 1}, pageSize=${pageSize},name=${name}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&gt;</a>
+                                            </li>
+                                            <!-- Last page button -->
+                                            <li th:classappend="${currentPage >= totalPages - 1} ? 'disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shop(pageNumber=${totalPages - 1}, pageSize=${pageSize},name=${name}, type=${type}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&gt;&gt;</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div th:with="math=${T(java.lang.Math)}" class="row" data-aos="fade-up" th:if="${totalPages > 1 && brand == null && (type == '' || type == null) && bikeSize == null && bikeWheelSize == null && bikeColor == null && bikeMaterial == null && bikeBrakeType == null}">
+                                <div class="col-md-12 text-center">
+                                    <div class="site-block-27">
+                                        <ul>
+                                            <!-- First page button -->
+                                            <li th:classappend="${currentPage == 0} ? 'disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shop(pageNumber=0, pageSize=${pageSize}, name=${name}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&lt;&lt;</a>
+                                            </li>
+                                            <!-- Previous page button -->
+                                            <li th:classappend="${currentPage == 0} ? 'disabled'" th:style="${currentPage == 0} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shop(pageNumber=${currentPage - 1}, pageSize=${pageSize}, name=${name}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&lt;</a>
+                                            </li>
+                                            <!-- Ellipsis before the first page number -->
+                                            <li th:classappend="${currentPage > 2} ? 'page-item' : 'd-none'">
+                                                <span>...</span>
+                                            </li>
+                                            <!-- Page numbers -->
+                                            <th:block th:each="page : ${#numbers.sequence(math.max(0, currentPage - 2), math.min(totalPages - 1, currentPage + 2))}">
+                                                <li th:classappend="${page == currentPage} ? 'active'">
+                                                    <a th:href="@{/shop(pageNumber=${page}, pageSize=${pageSize}, name=${name}, minPrice=${minPrice}, maxPrice=${maxPrice})}" th:text="${page + 1}"></a>
+                                                </li>
+                                            </th:block>
+                                            <!-- Ellipsis after the last page number -->
+                                            <li th:classappend="${currentPage < totalPages - 3} ? 'page-item' : 'd-none'">
+                                                <span>...</span>
+                                            </li>
+                                            <!-- Next page button -->
+                                            <li th:classappend="${currentPage >= totalPages - 1} ? 'disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shop(pageNumber=${currentPage + 1}, pageSize=${pageSize}, name=${name}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&gt;</a>
+                                            </li>
+                                            <!-- Last page button -->
+                                            <li th:classappend="${currentPage >= totalPages - 1} ? 'disabled'" th:style="${currentPage >= totalPages - 1} ? 'pointer-events: none;opacity: 0.5;'">
+                                                <a th:href="@{/shop(pageNumber=${totalPages - 1}, pageSize=${pageSize}, name=${name}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&gt;&gt;</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
 
 
                         </div>
 
                         <div class="col-md-3 order-1 mb-5 mb-md-0">
                             <div class="border p-4 rounded mb-4">
-                                <h3 class="mb-3 h6 text-uppercase text-black d-block">Categories</h3>
+                                <h3 class="mb-3 h6 text-uppercase text-black d-block">Type</h3>
                                 <ul class="list-unstyled mb-0">
                                     <li class="mb-1">
-                                        <a th:href="@{'/shop'(type='Bike', name=${name}, brand=${brand}, minPrice=${minPrice}, maxPrice=${maxPrice}, bikeSize=${bikeSize}, bikeWheelSize=${bikeWheelSize}, bikeColor=${bikeColor}, bikeMaterial=${bikeMaterial}, bikeBrakeType=${bikeBrakeType})}" class="d-flex">
+                                        <a th:href="@{'/shop'(type='Bike',name=${name})}" class="d-flex">
                                             <span>Bike</span> <span class="text-black ml-auto"></span>
                                         </a>
                                     </li>
                                     <li class="mb-1">
-                                        <a th:href="@{'/shop'(type='Accessories')}" class="d-flex">
+                                        <a th:href="@{'/shop'(type='Accessories',name=${name})}" class="d-flex">
                                             <span>Accessory</span> <span class="text-black ml-auto"></span>
                                         </a>
                                     </li>
                                 </ul>
                             </div>
-                            <div th:if="${type != 'Accessory'}" class="border p-4 rounded mb-4">
+                            <div class="border p-4 rounded mb-4">
                                 <form th:action="@{/shop}" method="get">
                                     <input type="hidden" name="name" th:value="${name}">
                                     <input type="hidden" name="type" th:value="${type}">
@@ -243,170 +321,173 @@
                                         <h3 class="mb-3 h6 text-uppercase text-black d-block">Filter by Price</h3>
                                         <div class="form-group">
                                             <label for="minPrice">Min Price: <span id="minPriceValue">0</span></label>
-                                            <input type="range" name="minPrice" id="minPrice" min="0" max="5000" step="50" value="0" class="form-control-range mb-2" oninput="document.getElementById('minPriceValue').textContent = this.value">
-                                            <label for="maxPrice">Max Price: <span id="maxPriceValue">5000</span></label>
-                                            <input type="range" name="maxPrice" id="maxPrice" min="0" max="5000" step="50" value="5000" class="form-control-range" oninput="document.getElementById('maxPriceValue').textContent = this.value">
+                                            <input type="range" name="minPrice" id="minPrice" min="0" max="10000" step="50" value="0" class="form-control-range mb-2" oninput="document.getElementById('minPriceValue').textContent = this.value">
+                                            <label for="maxPrice">Max Price: <span id="maxPriceValue">10000</span></label>
+                                            <input type="range" name="maxPrice" id="maxPrice" min="0" max="10000" step="50" value="10000" class="form-control-range" oninput="document.getElementById('maxPriceValue').textContent = this.value">
                                         </div>
                                     </div>
 
                                     <!-- Filter by Bike Size -->
-                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('brand')">Brand <span class="toggle-arrow">&#9660;</span></h3>
-                                    <ul class="mb-4" id="brand" style="display:none;">
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="brand" value="GIANT" id="brand">
-                                            <label class="form-check-label" for="GIANT"><img th:src="@{/images/giant.png}" style="width: 130px"></label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="brand" value="GTIX" id="brand">
-                                            <label class="form-check-label" for="GTIX"><img th:src="@{/images/GTIX.jpg}" style="width: 130px"></label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="brand" value="MAX" id="brand">
-                                            <label class="form-check-label" for="MAX"><img th:src="@{/images/maxbike.png}" style="width: 130px"></label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="brand" value="MOMENTUM" id="brand">
-                                            <label class="form-check-label" for="MOMENTUM"><img th:src="@{/images/momentum_02.png}" style="width: 130px"></label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="brand" value="TOTEM" id="brand">
-                                            <label class="form-check-label" for="TOTEM"><img th:src="@{/images/totem-4.png}" style="width: 130px"></label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="brand" value="TRINX" id="brand">
-                                            <label class="form-check-label" for="TRINX"><img th:src="@{/images/TRINX-3.png}" style="width: 130px"></label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="brand" value="VINBIKE" id="brand">
-                                            <label class="form-check-label" for="VINBIKE"><img th:src="@{/images/Vinbike-3.png}" style="width: 130px"></label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="brand" value="Other" id="brandOther" onclick="toggleOtherInput()">
-                                            <label class="form-check-label" for="brandOther">Other</label>
-                                        </li>
-                                        <div id="otherBrandDiv" style="display:none;">
-                                            <label for="otherBrand">Enter Other Brand:</label>
-                                            <input type="text" id="otherBrand" name="otherBrand" maxlength="255" class="form-control">
-                                        </div>
-                                    </ul>
+                                    <div >
+                                        <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('brand')">Brand <span class="toggle-arrow">&#9660;</span></h3>
+                                        <ul class="mb-4" id="brand" style="display:none;">
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="brand" value="GIANT" id="brand">
+                                                <label class="form-check-label" for="GIANT"><img th:src="@{/images/giant.png}" style="width: 130px"></label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="brand" value="GTIX" id="brand">
+                                                <label class="form-check-label" for="GTIX"><img th:src="@{/images/GTIX.jpg}" style="width: 130px"></label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="brand" value="MAX" id="brand">
+                                                <label class="form-check-label" for="MAX"><img th:src="@{/images/maxbike.png}" style="width: 130px"></label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="brand" value="MOMENTUM" id="brand">
+                                                <label class="form-check-label" for="MOMENTUM"><img th:src="@{/images/momentum_02.png}" style="width: 130px"></label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="brand" value="TOTEM" id="brand">
+                                                <label class="form-check-label" for="TOTEM"><img th:src="@{/images/totem-4.png}" style="width: 130px"></label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="brand" value="TRINX" id="brand">
+                                                <label class="form-check-label" for="TRINX"><img th:src="@{/images/TRINX-3.png}" style="width: 130px"></label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="brand" value="VINBIKE" id="brand">
+                                                <label class="form-check-label" for="VINBIKE"><img th:src="@{/images/Vinbike-3.png}" style="width: 130px"></label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="brand" value="Other" id="brandOther" onclick="toggleOtherInput()">
+                                                <label class="form-check-label" for="brandOther">Other</label>
+                                            </li>
+                                            <div id="otherBrandDiv" style="display:none;">
+                                                <label for="otherBrand">Enter Other Brand:</label>
+                                                <input type="text" id="otherBrand" name="otherBrand" maxlength="255" class="form-control">
+                                            </div>
+                                        </ul>
 
-                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeSize')">Bike Size <span class="toggle-arrow">&#9660;</span></h3>
-                                    <ul class="mb-4" id="bikeSize" style="display:none;">
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeSize" value="S" id="sizeSmall">
-                                            <label class="form-check-label" for="sizeSmall">Small</label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeSize" value="M" id="sizeMedium">
-                                            <label class="form-check-label" for="sizeMedium">Medium</label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeSize" value="L" id="sizeLarge">
-                                            <label class="form-check-label" for="sizeLarge">Large</label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeSize" value="XL" id="sizeExtraLarge">
-                                            <label class="form-check-label" for="sizeExtraLarge">Extra Large</label>
-                                        </li>
-                                    </ul>
+                                        <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeSize')">Bike Size <span class="toggle-arrow">&#9660;</span></h3>
+                                        <ul class="mb-4" id="bikeSize" style="display:none;">
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeSize" value="S" id="sizeSmall">
+                                                <label class="form-check-label" for="sizeSmall">Small</label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeSize" value="M" id="sizeMedium">
+                                                <label class="form-check-label" for="sizeMedium">Medium</label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeSize" value="L" id="sizeLarge">
+                                                <label class="form-check-label" for="sizeLarge">Large</label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeSize" value="XL" id="sizeExtraLarge">
+                                                <label class="form-check-label" for="sizeExtraLarge">Extra Large</label>
+                                            </li>
+                                        </ul>
 
-                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeWheelSize')">Bike Wheel Size <span class="toggle-arrow">&#9660;</span></h3>
-                                    <ul class="mb-4" id="bikeWheelSize" style="display:none;">
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeWheelSize" value="700C" id="wheel700C">
-                                            <label class="form-check-label" for="wheel700C">700C</label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeWheelSize" value="26" id="wheel26">
-                                            <label class="form-check-label" for="wheel26">26"</label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeWheelSize" value="27.5" id="wheel27.5">
-                                            <label class="form-check-label" for="wheel27.5">27.5"</label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeWheelSize" value="29" id="wheel29">
-                                            <label class="form-check-label" for="wheel29">29"</label>
-                                        </li>
-                                    </ul>
+                                        <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeWheelSize')">Bike Wheel Size <span class="toggle-arrow">&#9660;</span></h3>
+                                        <ul class="mb-4" id="bikeWheelSize" style="display:none;">
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeWheelSize" value="700C" id="wheel700C">
+                                                <label class="form-check-label" for="wheel700C">700C</label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeWheelSize" value="26" id="wheel26">
+                                                <label class="form-check-label" for="wheel26">26"</label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeWheelSize" value="27.5" id="wheel27.5">
+                                                <label class="form-check-label" for="wheel27.5">27.5"</label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeWheelSize" value="29" id="wheel29">
+                                                <label class="form-check-label" for="wheel29">29"</label>
+                                            </li>
+                                        </ul>
 
-                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeBrakeType')">Bike Brake Type <span class="toggle-arrow">&#9660;</span></h3>
-                                    <ul class="mb-4" id="bikeBrakeType" style="display:none;">
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeBrakeType" value="OilDiscBrakes" id="brakeOil">
-                                            <label class="form-check-label" for="brakeOil">Oil Disc Brakes</label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeBrakeType" value="MechanicalDiscBrakes" id="brakeMechanical">
-                                            <label class="form-check-label" for="brakeMechanical">Mechanical Disc Brakes</label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeBrakeType" value="GumBrake" id="brakeGum">
-                                            <label class="form-check-label" for="brakeGum">Gum Brake</label>
-                                        </li>
-                                    </ul>
+                                        <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeBrakeType')">Bike Brake Type <span class="toggle-arrow">&#9660;</span></h3>
+                                        <ul class="mb-4" id="bikeBrakeType" style="display:none;">
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeBrakeType" value="OilDiscBrakes" id="brakeOil">
+                                                <label class="form-check-label" for="brakeOil">Oil Disc Brakes</label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeBrakeType" value="MechanicalDiscBrakes" id="brakeMechanical">
+                                                <label class="form-check-label" for="brakeMechanical">Mechanical Disc Brakes</label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeBrakeType" value="GumBrake" id="brakeGum">
+                                                <label class="form-check-label" for="brakeGum">Gum Brake</label>
+                                            </li>
+                                        </ul>
 
-                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeMaterial')">Bike Material <span class="toggle-arrow">&#9660;</span></h3>
-                                    <ul class="mb-4" id="bikeMaterial" style="display:none;">
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeMaterial" value="Aluminum" id="materialAluminum">
-                                            <label class="form-check-label" for="materialAluminum">Aluminum</label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeMaterial" value="Composite/Carbon" id="materialComposite">
-                                            <label class="form-check-label" for="materialComposite">Composite/Carbon</label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeMaterial" value="Magie" id="materialMagie">
-                                            <label class="form-check-label" for="materialMagie">Magie</label>
-                                        </li>
-                                    </ul>
+                                        <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeMaterial')">Bike Material <span class="toggle-arrow">&#9660;</span></h3>
+                                        <ul class="mb-4" id="bikeMaterial" style="display:none;">
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeMaterial" value="Aluminum" id="materialAluminum">
+                                                <label class="form-check-label" for="materialAluminum">Aluminum</label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeMaterial" value="Composite/Carbon" id="materialComposite">
+                                                <label class="form-check-label" for="materialComposite">Composite/Carbon</label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeMaterial" value="Magie" id="materialMagie">
+                                                <label class="form-check-label" for="materialMagie">Magie</label>
+                                            </li>
+                                        </ul>
 
-                                    <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeColor')">Color <span class="toggle-arrow">&#9660;</span></h3>
-                                    <ul class="mb-4" id="bikeColor" style="display:none;">
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeColor" value="Red" id="colorRed">
-                                            <label class="form-check-label" for="colorRed">
-                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: red; border: 1px solid #000; margin-right: 5px;"></span>Red
-                                            </label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeColor" value="Black" id="colorBlack">
-                                            <label class="form-check-label" for="colorBlack">
-                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: black; border: 1px solid #000; margin-right: 5px;"></span>Black
-                                            </label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeColor" value="Blue" id="colorBlue">
-                                            <label class="form-check-label" for="colorBlue">
-                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: blue; border: 1px solid #000; margin-right: 5px;"></span>Blue
-                                            </label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeColor" value="White" id="colorWhite">
-                                            <label class="form-check-label" for="colorWhite">
-                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: white; border: 1px solid #000; margin-right: 5px;"></span>White
-                                            </label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeColor" value="Grey" id="colorGrey">
-                                            <label class="form-check-label" for="colorGrey">
-                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: grey; border: 1px solid #000; margin-right: 5px;"></span>Grey
-                                            </label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeColor" value="Titanium" id="colorTitanium">
-                                            <label class="form-check-label" for="colorTitanium">
-                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: #b0b0b0; border: 1px solid #000; margin-right: 5px;"></span>Titanium
-                                            </label>
-                                        </li>
-                                        <li class="form-check">
-                                            <input class="form-check-input" type="radio" name="bikeColor" value="Brown" id="colorBrown">
-                                            <label class="form-check-label" for="colorBrown">
-                                                <span style="display: inline-block; width: 15px; height: 15px; background-color: brown; border: 1px solid #000; margin-right: 5px;"></span>Brown
-                                            </label>
-                                        </li>
-                                    </ul>
+                                        <h3 class="mb-3 h6 text-uppercase text-black d-block clickable" onclick="toggleVisibility('bikeColor')">Color <span class="toggle-arrow">&#9660;</span></h3>
+                                        <ul class="mb-4" id="bikeColor" style="display:none;">
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeColor" value="Red" id="colorRed">
+                                                <label class="form-check-label" for="colorRed">
+                                                    <span style="display: inline-block; width: 15px; height: 15px; background-color: red; border: 1px solid #000; margin-right: 5px;"></span>Red
+                                                </label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeColor" value="Black" id="colorBlack">
+                                                <label class="form-check-label" for="colorBlack">
+                                                    <span style="display: inline-block; width: 15px; height: 15px; background-color: black; border: 1px solid #000; margin-right: 5px;"></span>Black
+                                                </label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeColor" value="Blue" id="colorBlue">
+                                                <label class="form-check-label" for="colorBlue">
+                                                    <span style="display: inline-block; width: 15px; height: 15px; background-color: blue; border: 1px solid #000; margin-right: 5px;"></span>Blue
+                                                </label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeColor" value="White" id="colorWhite">
+                                                <label class="form-check-label" for="colorWhite">
+                                                    <span style="display: inline-block; width: 15px; height: 15px; background-color: white; border: 1px solid #000; margin-right: 5px;"></span>White
+                                                </label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeColor" value="Grey" id="colorGrey">
+                                                <label class="form-check-label" for="colorGrey">
+                                                    <span style="display: inline-block; width: 15px; height: 15px; background-color: grey; border: 1px solid #000; margin-right: 5px;"></span>Grey
+                                                </label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeColor" value="Titanium" id="colorTitanium">
+                                                <label class="form-check-label" for="colorTitanium">
+                                                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #b0b0b0; border: 1px solid #000; margin-right: 5px;"></span>Titanium
+                                                </label>
+                                            </li>
+                                            <li class="form-check">
+                                                <input class="form-check-input" type="radio" name="bikeColor" value="Brown" id="colorBrown">
+                                                <label class="form-check-label" for="colorBrown">
+                                                    <span style="display: inline-block; width: 15px; height: 15px; background-color: brown; border: 1px solid #000; margin-right: 5px;"></span>Brown
+                                                </label>
+                                            </li>
+                                        </ul>
+                                    </div>
+
 
 
                                     <!-- Submit Button -->

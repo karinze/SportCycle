@@ -4,9 +4,11 @@ import '../model/ExternalTokens.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'APIService.dart';
+
 class ExternalTokensService{
-  static const String url = "http://192.168.1.4:9999/api";
-  static const String urlExternalTokens = "$url/externalTokens/";
+  // static const String url = "http://192.168.1.8:9999/api";
+  static const String urlExternalTokens = "${APIService.url}/externalTokens/";
 
   Future<ExternalTokens> saveBikeRentals(ExternalTokens externalTokens) async {
     final response = await http.post(

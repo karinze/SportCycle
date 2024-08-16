@@ -32,7 +32,7 @@
             .site-block-top-search .form-control {
                 flex-grow: 1;
             }
-            
+
             .modal {
                 z-index: 1050; /* Bootstrap's default z-index for modals */
             }
@@ -146,7 +146,13 @@
                 </nav>
             </header>
 
-
+            <div class="bg-light py-3">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12 mb-0"><a th:href="@{/}">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Latest Order</strong></div>
+                    </div>
+                </div>
+            </div>
 
             <div class="container mt-5">
                 <h2 class="mb-4">Latest Order</h2>
@@ -189,105 +195,105 @@
                 </div>
                 <div th:if="${order == null}">
                     <div class="alert alert-warning" role="alert">
-                    No latest order found.
-                    <div>
-                </div>
-            </div>
-
-            <div th:if="${order != null}" class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-labelledby="confirmCancelModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="confirmCancelModalLabel">Confirm Cancellation</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            Are you sure you want to cancel this order?
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-                            <form th:if="${order.status == 'Pending'}" th:action="@{/CancelOrderlast}" th:object="${order}" method="post" class="form-inline">
-                                <input type="hidden" th:field="*{order_id}" />
-                                <input type="hidden" id="status" name="status" value="Cancel" />
-                                <button type="submit" class="btn btn-danger">Yes, Cancel</button>
-                            </form>
+                        No latest order found.
+                        <div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <!-- Information Line Section -->
 
-
-            <footer class="site-footer border-top">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-6 mb-5 mb-lg-0">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <h3 class="footer-heading mb-4">Navigations</h3>
+                    <div th:if="${order != null}" class="modal fade" id="confirmCancelModal" tabindex="-1" role="dialog" aria-labelledby="confirmCancelModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="confirmCancelModalLabel">Confirm Cancellation</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
                                 </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Sell online</a></li>
-                                        <li><a href="#">Features</a></li>
-                                        <li><a href="#">Shopping cart</a></li>
-                                        <li><a href="#">Store builder</a></li>
-                                    </ul>
+                                <div class="modal-body">
+                                    Are you sure you want to cancel this order?
                                 </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Mobile commerce</a></li>
-                                        <li><a href="#">Dropshipping</a></li>
-                                        <li><a href="#">Website development</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Point of sale</a></li>
-                                        <li><a href="#">Hardware</a></li>
-                                        <li><a href="#">Software</a></li>
-                                    </ul>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                                    <form th:if="${order.status == 'Pending'}" th:action="@{/CancelOrderlast}" th:object="${order}" method="post" class="form-inline">
+                                        <input type="hidden" th:field="*{order_id}" />
+                                        <input type="hidden" id="status" name="status" value="Cancel" />
+                                        <button type="submit" class="btn btn-danger">Yes, Cancel</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
-
-                        </div>
-                        <div class="col-md-6 col-lg-3">
-                            <div class="block-5 mb-5">
-                                <h3 class="footer-heading mb-4">Contact Info</h3>
-                                <ul class="list-unstyled">
-                                    <li class="address">203 Fake St. Mountain View, San Francisco, California, USA</li>
-                                    <li class="phone"><a>+2 392 3929 210</a></li>
-                                    <li class="email">emailaddress@domain.com</li>
-                                </ul>
-                            </div>
-
-                            <div class="block-7">
-                                <!--                                <form action="#" method="post">
-                                                                    <label for="email_subscribe" class="footer-heading">Subscribe</label>
-                                                                    <div class="form-group">
-                                                                        <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
-                                                                        <input type="submit" class="btn btn-sm btn-primary" value="Send">
-                                                                    </div>
-                                                                </form>-->
-                            </div>
-                        </div>
                     </div>
-                    <div class="row pt-5 mt-5 text-center">
-                        <div class="col-md-12">
-                            <p>
-                                <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                                Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
-                                <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                            </p>
-                        </div>
+                    <!-- Information Line Section -->
 
-                    </div>
                 </div>
-            </footer>
+                <footer class="site-footer border-top">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-6 mb-5 mb-lg-0">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h3 class="footer-heading mb-4">Navigations</h3>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4">
+                                        <ul class="list-unstyled">
+                                            <li><a href="#">Sell online</a></li>
+                                            <li><a href="#">Features</a></li>
+                                            <li><a href="#">Shopping cart</a></li>
+                                            <li><a href="#">Store builder</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4">
+                                        <ul class="list-unstyled">
+                                            <li><a href="#">Mobile commerce</a></li>
+                                            <li><a href="#">Dropshipping</a></li>
+                                            <li><a href="#">Website development</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4">
+                                        <ul class="list-unstyled">
+                                            <li><a href="#">Point of sale</a></li>
+                                            <li><a href="#">Hardware</a></li>
+                                            <li><a href="#">Software</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="block-5 mb-5">
+                                    <h3 class="footer-heading mb-4">Contact Info</h3>
+                                    <ul class="list-unstyled">
+                                        <li class="address">203 Fake St. Mountain View, San Francisco, California, USA</li>
+                                        <li class="phone"><a>+2 392 3929 210</a></li>
+                                        <li class="email">emailaddress@domain.com</li>
+                                    </ul>
+                                </div>
+
+                                <div class="block-7">
+                                    <!--                                <form action="#" method="post">
+                                                                        <label for="email_subscribe" class="footer-heading">Subscribe</label>
+                                                                        <div class="form-group">
+                                                                            <input type="text" class="form-control py-4" id="email_subscribe" placeholder="Email">
+                                                                            <input type="submit" class="btn btn-sm btn-primary" value="Send">
+                                                                        </div>
+                                                                    </form>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row pt-5 mt-5 text-center">
+                            <div class="col-md-12">
+                                <p>
+                                    <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                                    Copyright &copy;<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>document.write(new Date().getFullYear());</script> All rights reserved 
+                                    <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                </footer>
             </div>
         </div>
 

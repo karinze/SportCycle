@@ -356,15 +356,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return;
     }
 
-
-
     if (_endDate!.isBefore(_startDate!)) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('End date cannot be earlier than start date.')));
       return;
     }
 
+    // Check if rental duration is at least 1 hour
+    final duration = _endDate!.difference(_startDate!).inMinutes;
+    if (duration < 60) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Rental duration must be at least 1 hour.')));
+      return;
+    }
+
     await _initiatePayPalCheckout();
   }
+
 
   Future<void> _initiatePayPalCheckout() async {
     Navigator.push(

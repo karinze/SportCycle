@@ -156,7 +156,7 @@ class _AccountPageState extends State<AccountPage> {
                       return 'Phone number must contain only digits';
                     }
                     // Check for repetitive digits
-                    RegExp repetitivePattern = RegExp(r'(\d)\1{10,}');
+                    RegExp repetitivePattern = RegExp(r'(\d)\1{9,10}');
                     if (repetitivePattern.hasMatch(value)) {
                       return 'Phone number contains a digit repeated more than 11 times consecutively';
                     }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="https://www.thymeleaf.org/">
 
     <head>
         <meta charset="utf-8">
@@ -15,7 +15,7 @@
         <link href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700&display=swap" rel="stylesheet">
 
         <!-- Custom styles for this template-->
-        <link href="css/sb-admin-2.min.css" rel="stylesheet">
+        <link  rel="stylesheet" th:href="@{/css/sb-admin-2.min.css}">
         <style>
             body {
                 background: linear-gradient(135deg, #ffffff, #d3f9d8);
@@ -118,10 +118,10 @@
         </div>
 
         <!-- Bootstrap core JavaScript-->
-        <script src="vendor/jquery/jquery.min.js"></script>
-        <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-        <script src="js/sb-admin-2.min.js"></script>
+        <script th:src="@{/vendor/jquery/jquery.min.js}"></script>
+        <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+        <script th:src="@{/vendor/jquery-easing/jquery.easing.min.js}"></script>
+        <script th:src="@{/js/sb-admin-2.min.js}"></script>
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 const form = document.querySelector("form.user");

@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:project4flutter/service/APIService.dart';
 
 import '../model/BikeProperties.dart';
 
 class BikePropertiesService {
-  static const String url = "http://192.168.1.7:9999/api";
-  static const String urlBikeproperties = "$url/bikeproperties/";
+  // static const String url = "http://192.168.1.8:9999/api";
+  static const String urlBikeproperties = "${APIService.url}/bikeproperties/";
 
   Future<List<BikeProperties>> findAll() async {
     final response = await http.get(Uri.parse(urlBikeproperties));

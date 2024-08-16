@@ -4,11 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../model/Users.dart';
+import 'APIService.dart';
 
 class UsersService {
-  static const String url = "http://192.168.1.7:9999/api";
-  static const String urlUsers = "$url/users/";
-  static const String urlAuth = "$url/auth/";
+  // static const String url = "http://192.168.1.8:9999/api";
+  static const String urlUsers = "${APIService.url}/users/";
+  static const String urlAuth = "${APIService.url}/auth/";
   static const String userIdKey = 'userId';
 
   Future<Users?> checkLogin(String username, String password) async {
@@ -33,7 +34,10 @@ class UsersService {
         }
 
         Users user = Users.fromJson(data);
-
+        if (user.role == true) {
+          print("Login failed: no user data returned.");
+          return null;
+        }
         // Save session
         final prefs = await SharedPreferences.getInstance();
         if (prefs.getString('username') != null ||
@@ -171,7 +175,7 @@ class UsersService {
 
   Future<void> sendMail(Users users) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.7:9999/api/users/sendmail'),
+      Uri.parse('http://192.168.1.8:9999/api/users/sendmail'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

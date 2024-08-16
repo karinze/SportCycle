@@ -2,10 +2,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../model/Items.dart';
+import 'APIService.dart';
 
 class ItemsService {
-  static const String url = "http://192.168.1.7:9999/api";
-  static const String urlItems = "$url/items/";
+  // static const String url = "http://192.168.1.8:9999/api";
+  static const String urlItems = "${APIService.url}/items/";
 
   Future<List<Items>> findAll() async {
     final response = await http.get(Uri.parse(urlItems));

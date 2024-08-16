@@ -4,10 +4,11 @@ import 'package:project4flutter/model/Orders.dart';
 import 'dart:convert';
 
 import '../model/OrderItems.dart';
+import 'APIService.dart';
 
 class OrderItemsService{
-  static const String url = "http://192.168.1.7:9999/api";
-  static const String urlOrderitems = "$url/orderitems/";
+  // static const String url = "http://192.168.1.8:9999/api";
+  static const String urlOrderitems = "${APIService.url}/orderitems/";
 
   Future<List<OrderItems>> findAll() async {
     final response = await http.get(Uri.parse(urlOrderitems));

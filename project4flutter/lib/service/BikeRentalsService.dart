@@ -2,9 +2,11 @@ import '../model/BikeRentals.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'APIService.dart';
+
 class BikeRentalsService{
-  static const String url = "http://192.168.1.7:9999/api";
-  static const String urlBikerentals = "$url/bikerentals/";
+  // static const String url = "http://192.168.1.8:9999/api";
+  static const String urlBikerentals = "${APIService.url}/bikerentals/";
 
   Future<List<BikeRentals>> findAll() async {
     final response = await http.get(Uri.parse(urlBikerentals));

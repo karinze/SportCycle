@@ -4,10 +4,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../model/Users.dart';
+import 'APIService.dart';
 
 class UserDetailsService {
-  static const String url = "http://192.168.1.7:9999/api";
-  static const String urlUserDetails = "$url/userdetail/";
+  // static const String url = "http://192.168.1.8:9999/api";
+  static const String urlUserDetails = "${APIService.url}/userdetail/";
   static const String userIdKey = 'userId';
   Future<UserDetails> findOne(int userDetailsId) async {
     final response = await http.get(Uri.parse("$urlUserDetails$userDetailsId"));

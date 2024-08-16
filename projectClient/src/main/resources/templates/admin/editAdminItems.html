@@ -110,7 +110,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                         <input th:if="${otherBrand == null}" type="text" id="otherBrand" name="otherBrand" 
                                placeholder="Enter Other Brand..." maxlength="255" 
                                class="form-control" 
-                               th:value="${items.brand}">
+                               th:value="${(items.brand != 'GIANT' && items.brand != 'GTIX' && items.brand != 'MAX' && items.brand != 'MOMENTUM' && items.brand != 'TOTEM' && items.brand != 'TRINX' && items.brand != 'VINBIKE') ? items.brand : ''}"/>
                         <input th:if="${otherBrand != null}" type="text" id="otherBrand" name="otherBrand" 
                                placeholder="Enter Other Brand..." maxlength="255" 
                                class="form-control" 
@@ -133,19 +133,19 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
 
                 <div class="form-group">
                     <label for="stock">Enter Stock:</label>
-                    <input type="text" id="stock" name="stock" class="form-control" th:field="*{stock}">
+                    <input type="text" id="stock" name="stock" class="form-control" th:field="*{stock}" oninput="checkStockAndVisibility()">
                     <p class="text-danger" th:errors="*{stock}" th:if="${#fields.hasErrors('stock')}"></p>
                 </div>
 
                 <div class="form-group">
                     <label for="type">Enter Type:</label>
-                    <select id="type" name="type" class="form-control" th:field="*{type}">
+                    <select id="type" name="type" class="form-control" th:field="*{type}" onchange="toggleRentalQuantity()">
                         <option value="Bike">Bike</option>
                         <option value="Accessories">Accessories</option>
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="rentalQuantityDiv">
                     <label for="rentalquantity">Enter Rental Quantity:</label>
                     <input type="text" id="rentalquantity" name="rentalquantity" class="form-control" th:field="*{rentalquantity}">
                     <p class="text-danger" th:errors="*{rentalquantity}" th:if="${#fields.hasErrors('rentalquantity')}"></p>
@@ -186,8 +186,33 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                 }
             }
 
-            // Call the function on page load to ensure the correct state is set
+            function toggleRentalQuantity() {
+                var typeSelect = document.getElementById('type');
+                var rentalQuantityDiv = document.getElementById('rentalQuantityDiv');
+
+                if (typeSelect.value === 'Accessories') {
+                    rentalQuantityDiv.style.display = 'none';
+                } else {
+                    rentalQuantityDiv.style.display = 'block';
+                }
+            }
+
+            function checkStock() {
+                var stockInput = document.getElementById('stock');
+                var isVisibleCheckbox = document.getElementById('is_visible');
+
+                if (stockInput.value === '0') {
+                    isVisibleCheckbox.checked = false;
+                    isVisibleCheckbox.setAttribute('disabled', 'true');
+                } else {
+                    isVisibleCheckbox.removeAttribute('disabled');
+                }
+            }
+
+            // Call these functions on page load to set initial state
             document.addEventListener('DOMContentLoaded', function () {
+                toggleRentalQuantity();
+                checkStock();
                 toggleOtherBrand();
             });
         </script>
