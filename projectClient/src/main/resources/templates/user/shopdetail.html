@@ -468,11 +468,16 @@
                     rentalEndDate.setMinutes(rentalEndDate.getMinutes() - rentalEndDate.getTimezoneOffset());
                     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 
+                    var hoursBetween = (rentalEndDate - rentalStartDate) / 3600000;
+
                     if (rentalStartDate < now) {
                         showError("Rental start date must be at least the current date and time.");
                         event.preventDefault();
                     } else if (rentalEndDate <= rentalStartDate) {
                         showError("Rental end date must be greater than the start date.");
+                        event.preventDefault();
+                    } else if (hoursBetween < 1) {
+                        showError("Rental period must be at least one hour.");
                         event.preventDefault();
                     } else {
                         document.getElementById('error-message').style.display = 'none';
@@ -517,6 +522,7 @@
                 // Initial calculation on page load
                 calculateCost();
             });
+
         </script>
     </body>
 </html>
