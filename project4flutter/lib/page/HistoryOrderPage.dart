@@ -244,7 +244,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     Orders updatedOrder = Orders(
       orderId: order.orderId,
       orderDate: DateTime.parse(order.orderDate),
-      status: "Cancelled",
+      status: "Cancel",
       totalAmount: order.totalAmount,
       createdDt: DateTime.parse(order.createdDt),
       users: user,
