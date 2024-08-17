@@ -120,12 +120,8 @@
                                     <li><a th:href="@{/forrent}">For Rent</a></li>
                                 </ul>
                             </li>
-                            <li class="has-children" th:if="${session.user != null}">
-                                <a href="#">Information Line</a>
-                                <ul class="dropdown">
-                                    <li><a th:href="@{/informationLine}">Order History</a></li>
-                                    <li><a th:href="@{/latestOrder}">Latest Order</a></li>
-                                </ul>
+                            <li th:if="${session.user != null}">
+                                <a th:href="@{/informationLine}">Order History</a>
                             </li>
                             
                             <li><a  th:href="@{/contact}">Contact</a></li>
@@ -237,7 +233,12 @@
                                 <div class="item" th:each="f : ${top10}">
                                     <div class="block-4 text-center">
                                         <figure class="block-4-image">
-                                            <img th:src="@{'/images/' + ${f.image}}" alt="Image placeholder" class="img-fluid">
+                                            <a th:href="@{/shopdetail/{id}(id=${f.item_id})}">
+                                                <img th:src="@{'/images/'+${f.image}}" alt="Image placeholder" class="img-fluid rounded-top">
+                                            </a>
+                                            
+                                                <span th:if="${f.stock == 0}" class="sold-out-text" style="position: absolute; top: 10px; right: 10px; background: red; color: white; padding: 2px 5px; font-size: 12px; border-radius: 3px;">Sold Out</span>
+
                                         </figure>
                                         <div class="block-4-text p-4">
                                             <h3><a th:href="@{/shopdetail/{id}(id=${f.item_id})}" th:text="${f.name}"></a></h3>
@@ -278,33 +279,6 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-lg-6 mb-5 mb-lg-0">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <h3 class="footer-heading mb-4">Navigations</h3>
-                                </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Sell online</a></li>
-                                        <li><a href="#">Features</a></li>
-                                        <li><a href="#">Shopping cart</a></li>
-                                        <li><a href="#">Store builder</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Mobile commerce</a></li>
-                                        <li><a href="#">Dropshipping</a></li>
-                                        <li><a href="#">Website development</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Point of sale</a></li>
-                                        <li><a href="#">Hardware</a></li>
-                                        <li><a href="#">Software</a></li>
-                                    </ul>
-                                </div>
-                            </div>
                         </div>
                         <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
 

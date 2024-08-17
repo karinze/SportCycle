@@ -1,10 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:project4flutter/service/ItemsService.dart';
 import 'package:project4flutter/utils/color.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/Items.dart';
+import '../model/Users.dart';
 import '../service/CartService.dart';
+import '../service/UsersService.dart';
 import 'CartPage.dart';
+import 'HomePage.dart';
 import 'ProductDetailPage.dart';
 
 class ProductPage extends StatefulWidget {
@@ -26,12 +32,43 @@ class _ProductPageState extends State<ProductPage> {
   @override
   void initState() {
     super.initState();
+    _checkAccountStatus();
     _fetchData();
 
     // Unfocus the search field when the page is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).unfocus();
     });
+  }
+
+  void _checkAccountStatus() async {
+    final interval = Duration(seconds: 2); // Check every 5 minutes
+    Timer.periodic(interval, (timer) async {
+      final prefs = await SharedPreferences.getInstance();
+      final username = prefs.getString('username');
+      final userId = prefs.getString('userId');
+
+      if (username != null && userId != null) {
+        // Call an API to get the latest user info
+        Users? user = await UsersService().findOne(userId);
+
+        if (user != null && user.block) {
+          // If account is blocked, log the user out
+          await _logout();
+          timer.cancel(); // Stop the periodic check after logging out
+        }
+      }
+    });
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear the session
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => HomePage()),
+          (Route<dynamic> route) => false,
+    );
   }
 
   void _fetchData() async {
@@ -148,63 +185,92 @@ class _ProductPageState extends State<ProductPage> {
                         ),
                       );
                     },
-                    child: Card(
-                      elevation: 2.0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: Image(
-                              image: AssetImage('images/' + item.image),
-                              fit: BoxFit.cover,
-                            ),
+                    child: Stack(
+                      children: [
+                        Card(
+                          elevation: 2.0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.name,
-                                  style: TextStyle(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: Image(
+                                  image: AssetImage('images/' + item.image),
+                                  fit: BoxFit.cover,
                                 ),
-                                Text(
-                                  item.brand,
-                                  style: TextStyle(
-                                    fontSize: 14.0,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      '\$${item.price}',
+                                      item.name,
                                       style: TextStyle(
-                                        fontSize: 14.0,
+                                        fontSize: 16.0,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    IconButton(
-                                      icon: Icon(Icons.add_shopping_cart),
-                                      onPressed: () {
-                                        Provider.of<CartService>(context, listen: false)
-                                            .addToCart(item);
-                                      },
+                                    Text(
+                                      item.brand,
+                                      style: TextStyle(
+                                        fontSize: 14.0,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          '\$${item.price}',
+                                          style: TextStyle(
+                                            fontSize: 14.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.add_shopping_cart),
+                                          onPressed: item.stock > 0
+                                              ? () {
+                                            Provider.of<CartService>(context, listen: false)
+                                                .addToCart(item);
+                                          }
+                                              : null, // Disable the button if the stock is 0
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (item.stock == 0)
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(10.0),
+                                  bottomRight: Radius.circular(10.0),
+                                ),
+                              ),
+                              child: Text(
+                                'Out of Stock',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.0,
+                                ),
+                              ),
                             ),
                           ),
-                        ],
-                      ),
+                      ],
                     ),
                   );
                 },

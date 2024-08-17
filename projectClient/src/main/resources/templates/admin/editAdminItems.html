@@ -81,7 +81,8 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                 <button type="submit" class="btn btn-info btn-block">Edit Bike Properties</button>
             </form>
             <form th:action="@{/saveAdminItems}" th:object="${items}" method="post" enctype="multipart/form-data">
-
+                <h1 th:text="${i}"></h1>
+                <h1 th:text="${it}"></h1>
                 <!-- Hidden field -->
                 <input type="hidden" name="item_id" th:field="*{item_id}">
 
@@ -132,7 +133,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                 </div>
 
                 <div class="form-group">
-                    <label for="stock">Enter Stock:</label>
+                    <label for="stock">Enter Quantity:</label>
                     <input type="text" id="stock" name="stock" class="form-control" th:field="*{stock}" oninput="checkStockAndVisibility()">
                     <p class="text-danger" th:errors="*{stock}" th:if="${#fields.hasErrors('stock')}"></p>
                 </div>
@@ -146,14 +147,14 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                 </div>
 
                 <div class="form-group" id="rentalQuantityDiv">
-                    <label for="rentalquantity">Enter Rental Quantity:</label>
+                    <label for="rentalquantity">Enter Rent-only Quantity:</label>
                     <input type="text" id="rentalquantity" name="rentalquantity" class="form-control" th:field="*{rentalquantity}">
                     <p class="text-danger" th:errors="*{rentalquantity}" th:if="${#fields.hasErrors('rentalquantity')}"></p>
                 </div>
 
                 <div class="form-group">
                     <label for="image">Enter Image:</label>
-                    <img th:src="@{'/images/'+${items.image}}" width="100" height="auto" class="d-block mb-2"/>
+                    <img th:src="@{'/images/'+${images}}" width="100" height="auto" class="d-block mb-2"/>
                     <input type="file" id="image" name="image" class="form-control-file" th:field="*{image}">
                     <p class="text-danger" th:errors="*{image}" th:if="${#fields.hasErrors('image')}"></p>
                 </div>
@@ -197,22 +198,11 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this temp
                 }
             }
 
-            function checkStock() {
-                var stockInput = document.getElementById('stock');
-                var isVisibleCheckbox = document.getElementById('is_visible');
-
-                if (stockInput.value === '0') {
-                    isVisibleCheckbox.checked = false;
-                    isVisibleCheckbox.setAttribute('disabled', 'true');
-                } else {
-                    isVisibleCheckbox.removeAttribute('disabled');
-                }
-            }
+            
 
             // Call these functions on page load to set initial state
             document.addEventListener('DOMContentLoaded', function () {
                 toggleRentalQuantity();
-                checkStock();
                 toggleOtherBrand();
             });
         </script>

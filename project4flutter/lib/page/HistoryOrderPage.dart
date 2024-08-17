@@ -18,6 +18,7 @@ class OrderHistoryPage extends StatefulWidget {
 class _OrderHistoryPageState extends State<OrderHistoryPage> {
   List<Orders> _orders = [];
   List<OrderItems> _orderItems = [];
+  List<double> _discounts = [];
   bool _isLoggedIn = false;
   bool _isLoading = true;
   String? _userId;
@@ -45,8 +46,24 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     if (_userId == null) return;
     OrdersService ordersService = OrdersService();
     List<Orders> orders = await ordersService.findUser(_userId!);
+
+    List<double> discounts = [];
+    for (Orders order in orders) {
+      double itemsTotalPrice = 0;
+      List<OrderItems> orderItems = await OrderItemsService().findOrder(order);
+      for (var orderItem in orderItems) {
+        itemsTotalPrice += orderItem.item.price * orderItem.quantity;
+      }
+      double discount = itemsTotalPrice - order.totalAmount;
+      if(discount < 0){
+        discount = 0;
+      }
+      discounts.add(discount); // Add the discount to the list
+    }
+
     setState(() {
       _orders = orders;
+      _discounts = discounts; // Store discounts in state
     });
   }
 
@@ -54,6 +71,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     OrderItemsService orderItemsService = OrderItemsService();
     Orders order = await OrdersService().findOne(orderId);
     List<OrderItems> orderItems = await orderItemsService.findOrder(order);
+
     setState(() {
       _orderItems = orderItems;
     });
@@ -118,7 +136,17 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
       itemCount: _orders.length,
       itemBuilder: (context, index) {
         final order = _orders[index];
+        final discount = _discounts[index];
         final reversedIndex = _orders.length - index; // Reverse the ID
+
+        // Assuming you have access to the order's items list
+        double itemsTotalPrice = 0;
+        for (var orderItem in _orderItems) { // Iterate over the fetched order items
+          itemsTotalPrice += orderItem.item.price * orderItem.quantity;
+        }
+
+        // Calculate the discount
+
 
         return Card(
           shape: RoundedRectangleBorder(
@@ -146,6 +174,15 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                     color: Colors.grey[800],
+                  ),
+                ),
+                // Display discount only if it's greater than 0
+                Text(
+                  'Discount: \$${discount.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.green,
                   ),
                 ),
                 Text(

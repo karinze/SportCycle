@@ -122,11 +122,21 @@ class _LoginState extends State<LoginPage> {
                         );
 
                         if (user != null) {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => HomePage()),
-                                (route) => false,
-                          );
+                          if(user.block){
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Account has been locked."),
+                                backgroundColor: Colors.black87,
+                              ),
+                            );
+                          }else{
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (context) => HomePage()),
+                                  (route) => false,
+                            );
+                          }
+
 
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

@@ -158,4 +158,10 @@ public class ItemController {
     public List<Items> listTop10() {
         return service.findTop10NewestItems();
     }
+    
+    @GetMapping("/findName/{name}")
+    @ResponseStatus(HttpStatus.OK)
+    public Items findName(@PathVariable("name") String name) {
+        return service.findName(name);
+    }
 }

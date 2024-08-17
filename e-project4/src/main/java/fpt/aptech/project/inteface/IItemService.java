@@ -41,7 +41,7 @@ public interface IItemService {
     public List<Items> searchItems(String name, String brand,String type , BigDecimal minPrice, BigDecimal maxPrice,
             String bikeSize, String bikeWheelSize, String bikeColor, String bikeMaterial,
             String bikeBrakeType);
-    
+    public Items findName(String name);
     
     public List<Items> findTop10NewestItems();
 }

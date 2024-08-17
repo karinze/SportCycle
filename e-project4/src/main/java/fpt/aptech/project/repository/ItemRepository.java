@@ -30,7 +30,8 @@ public interface ItemRepository extends JpaRepository<Items, Integer> {
 
     @Query("Select e From Items e Where e.item_id = :item_id")
     List<Items> searchByid(@Param("item_id") int item_id);
-
+    @Query("Select e From Items e Where e.name = :name")
+    Items findName (@Param("name") String name);
     @Query("SELECT i FROM Items i WHERE i.price BETWEEN :minPrice AND :maxPrice")
     Page<Items> filterByPrice(@Param("minPrice") BigDecimal minPrice, @Param("maxPrice") BigDecimal maxPrice, Pageable pageable);
 

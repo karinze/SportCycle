@@ -1,14 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:project4flutter/service/ItemsService.dart';
 import 'package:project4flutter/utils/color.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_paypal_checkout/flutter_paypal_checkout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/BikeRentals.dart';
 import '../model/Items.dart';
 import '../model/Users.dart';
 import '../service/BikeRentalsService.dart';
 import '../service/CartService.dart';
 import '../service/UsersService.dart';
+import 'HomePage.dart';
 import 'MyRentPage.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -29,6 +33,41 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   final TextEditingController _endDateController = TextEditingController();
   double _rentalPrice = 0.0;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAccountStatus();
+  }
+  void _checkAccountStatus() async {
+    final interval = Duration(seconds: 2); // Check every 5 minutes
+    Timer.periodic(interval, (timer) async {
+      final prefs = await SharedPreferences.getInstance();
+      final username = prefs.getString('username');
+      final userId = prefs.getString('userId');
+
+      if (username != null && userId != null) {
+        // Call an API to get the latest user info
+        Users? user = await UsersService().findOne(userId);
+
+        if (user != null && user.block) {
+          // If account is blocked, log the user out
+          await _logout();
+          timer.cancel(); // Stop the periodic check after logging out
+        }
+      }
+    });
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear the session
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => HomePage()),
+          (Route<dynamic> route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,13 +111,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Quantity', style: TextStyle(fontSize: 18)),
-                _buildQuantitySelector(),
-              ],
-            ),
+            // Hide quantity selector if stock is 0
+            if (widget.item.stock > 0)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Quantity', style: TextStyle(fontSize: 18)),
+                  _buildQuantitySelector(),
+                ],
+              ),
             SizedBox(height: 30),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -91,8 +132,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   List<Widget> _buildActionButtons() {
-    if (widget.item.rentalquantity > 0 && widget.item.type != 'Accessories') {
-      return [
+    List<Widget> actionButtons = [];
+
+    // Add to Cart button (only if stock is greater than 0)
+    if (widget.item.stock > 0) {
+      actionButtons.add(
         Expanded(
           child: ElevatedButton(
             onPressed: _addToCart,
@@ -103,7 +147,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Text('Add to Cart', style: TextStyle(color: Colors.white)),
           ),
         ),
-        SizedBox(width: 10),
+      );
+    }
+
+    // Rent a Bicycle button (only if rental quantity is greater than 0 and item type is not 'Accessories')
+    if (widget.item.rentalquantity > 0 && widget.item.type != 'Accessories') {
+      if (actionButtons.isNotEmpty) {
+        actionButtons.add(SizedBox(width: 10));
+      }
+      actionButtons.add(
         Expanded(
           child: ElevatedButton(
             onPressed: () {
@@ -116,23 +168,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Text('Rent a Bicycle', style: TextStyle(color: Colors.white)),
           ),
         ),
-      ];
-    } else {
-      return [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: _addToCart,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-            child: Text('Add to Cart', style: TextStyle(color: Colors.white)),
-          ),
-        ),
-      ];
+      );
     }
-  }
 
+    return actionButtons;
+  }
 
   Widget _buildQuantitySelector() {
     return Row(
@@ -221,7 +261,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-
         Text("Rental Quantity: ${widget.item.rentalquantity}"),
         SizedBox(height: 10),
         TextField(
@@ -313,7 +352,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
           ),
         ),
-
       ],
     );
   }
@@ -370,7 +408,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
     await _initiatePayPalCheckout();
   }
-
 
   Future<void> _initiatePayPalCheckout() async {
     Navigator.push(

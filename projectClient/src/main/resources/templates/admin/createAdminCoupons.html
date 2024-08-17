@@ -60,7 +60,7 @@
             <form th:action="@{/createAdminCoupons}" th:object="${coupons}" method="post">
                 <div class="form-group">
                     <label for="code">Enter Code:</label>
-                    <input type="text" id="code" name="code" class="form-control" th:field="*{code}">
+                    <input type="text" id="code" name="code" class="form-control" th:field="*{code}" oninput="this.value = this.value.toUpperCase()">
                     <p class="text-danger" th:errors="*{code}" th:if="${#fields.hasErrors('code')}"></p>
                 </div>
 

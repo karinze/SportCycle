@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_paypal_checkout/flutter_paypal_checkout.dart';
 import 'package:project4flutter/model/Items.dart';
 import 'package:project4flutter/service/ItemsService.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/OrderItems.dart';
 import '../model/Orders.dart';
 import '../model/Users.dart';
@@ -52,6 +55,37 @@ class _CheckOutPageState extends State<CheckOutPage> {
     _noteController = TextEditingController();
 
     _loadUserDetails();
+    _checkAccountStatus();
+  }
+
+  void _checkAccountStatus() async {
+    final interval = Duration(seconds: 2); // Check every 5 minutes
+    Timer.periodic(interval, (timer) async {
+      final prefs = await SharedPreferences.getInstance();
+      final username = prefs.getString('username');
+      final userId = prefs.getString('userId');
+
+      if (username != null && userId != null) {
+        // Call an API to get the latest user info
+        Users? user = await UsersService().findOne(userId);
+
+        if (user != null && user.block) {
+          // If account is blocked, log the user out
+          await _logout();
+          timer.cancel(); // Stop the periodic check after logging out
+        }
+      }
+    });
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear the session
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => HomePage()),
+          (Route<dynamic> route) => false,
+    );
   }
 
   Future<void> _loadUserDetails() async {
@@ -180,7 +214,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
           o.add(orderItem);
           await orderItemsService.saveOrderItems(orderItem);
-          int stock = cartItem.item.stock - 1;
+          int stock = cartItem.item.stock - cartItem.quantity;
 
           Items item = Items(
               itemId: cartItem.item.itemId,
@@ -384,7 +418,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                       // Check for repetitive digits
                       RegExp repetitivePattern = RegExp(r'(\d)\1{9,10}');
                       if (repetitivePattern.hasMatch(value)) {
-                        return 'Phone number contains a digit repeated more than 11 times consecutively';
+                        return 'Please do not spam a number more than 11 times';
                       }
                       return null;
                     },

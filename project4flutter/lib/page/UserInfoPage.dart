@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:project4flutter/page/HomePage.dart';
 import 'package:project4flutter/service/CartService.dart';
@@ -26,6 +28,37 @@ class _UserInfoPageState extends State<UserInfoPage> {
   void initState() {
     super.initState();
     _loadUserInfo();
+    _checkAccountStatus();
+  }
+
+  void _checkAccountStatus() async {
+    final interval = Duration(seconds: 2); // Check every 5 minutes
+    Timer.periodic(interval, (timer) async {
+      final prefs = await SharedPreferences.getInstance();
+      final username = prefs.getString('username');
+      final userId = prefs.getString('userId');
+
+      if (username != null && userId != null) {
+        // Call an API to get the latest user info
+        Users? user = await UsersService().findOne(userId);
+
+        if (user != null && user.block) {
+          // If account is blocked, log the user out
+          await _logoutt();
+          timer.cancel(); // Stop the periodic check after logging out
+        }
+      }
+    });
+  }
+
+  Future<void> _logoutt() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear the session
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => HomePage()),
+          (Route<dynamic> route) => false,
+    );
   }
 
   Future<void> _loadUserInfo() async {

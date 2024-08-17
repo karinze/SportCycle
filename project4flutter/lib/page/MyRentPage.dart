@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project4flutter/model/Items.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/BikeRentals.dart';
+import '../model/Users.dart';
 import '../service/BikeRentalsService.dart';
 import '../service/ItemsService.dart';
 import '../service/UsersService.dart';
 import '../utils/color.dart';
+import 'HomePage.dart';
 import 'LoginPage.dart';
 
 class MyRentPage extends StatefulWidget {
@@ -24,8 +27,37 @@ class _MyRentPageState extends State<MyRentPage> {
   void initState() {
     super.initState();
     _checkLoginStatus();
+    _checkAccountStatus();
+  }
+  void _checkAccountStatus() async {
+    final interval = Duration(seconds: 2); // Check every 5 minutes
+    Timer.periodic(interval, (timer) async {
+      final prefs = await SharedPreferences.getInstance();
+      final username = prefs.getString('username');
+      final userId = prefs.getString('userId');
+
+      if (username != null && userId != null) {
+        // Call an API to get the latest user info
+        Users? user = await UsersService().findOne(userId);
+
+        if (user != null && user.block) {
+          // If account is blocked, log the user out
+          await _logout();
+          timer.cancel(); // Stop the periodic check after logging out
+        }
+      }
+    });
   }
 
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear the session
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => HomePage()),
+          (Route<dynamic> route) => false,
+    );
+  }
   Future<void> _checkLoginStatus() async {
     bool isLoggedIn = await UsersService().isLoggedIn();
     setState(() {

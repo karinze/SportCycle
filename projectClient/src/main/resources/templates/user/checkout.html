@@ -116,12 +116,8 @@
                                     <li><a th:href="@{/forrent}">For Rent</a></li>
                                 </ul>
                             </li>
-                            <li class="has-children" th:if="${session.user != null}">
-                                <a href="#">Information Line</a>
-                                <ul class="dropdown">
-                                    <li><a th:href="@{/informationLine}">Order History</a></li>
-                                    <li><a th:href="@{/latestOrder}">Latest Order</a></li>
-                                </ul>
+                            <li th:if="${session.user != null}">
+                                <a th:href="@{/informationLine}">Order History</a>
                             </li>
                             <li><a th:href="@{/contact}">Contact</a></li>
                         </ul>
@@ -232,7 +228,7 @@
                                                 <div class="form-group">
                                                     <label for="paymentMethod">Select Payment Method:</label>
                                                     <select id="paymentMethod" name="paymentMethod" class="form-control">
-                                                        <option value="online">Online (PayPal)</option>
+                                                        <option th:if="${finalTotalPrice > 0}" value="online">Online (PayPal)</option>
                                                         <option value="offline">Offline</option>
                                                     </select>
                                                 </div>
@@ -253,33 +249,7 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-lg-6 mb-5 mb-lg-0">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <h3 class="footer-heading mb-4">Navigations</h3>
-                                </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Sell online</a></li>
-                                        <li><a href="#">Features</a></li>
-                                        <li><a href="#">Shopping cart</a></li>
-                                        <li><a href="#">Store builder</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Mobile commerce</a></li>
-                                        <li><a href="#">Dropshipping</a></li>
-                                        <li><a href="#">Website development</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6 col-lg-4">
-                                    <ul class="list-unstyled">
-                                        <li><a href="#">Point of sale</a></li>
-                                        <li><a href="#">Hardware</a></li>
-                                        <li><a href="#">Software</a></li>
-                                    </ul>
-                                </div>
-                            </div>
+                        
                         </div>
                         <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
 

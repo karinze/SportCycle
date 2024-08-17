@@ -66,6 +66,17 @@ public class OrderService implements IOrderService {
    @Transactional
 public void sendBillMail(Users users, Orders order, List<OrderItems> orderItems) {
     try {
+        BigDecimal totalItemsPrice = BigDecimal.ZERO;
+         for (OrderItems item : orderItems) {
+            totalItemsPrice = totalItemsPrice.add(item.getItem().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+        }
+
+        // Calculate the discount
+         BigDecimal discount = totalItemsPrice.subtract(order.getTotal_amount());
+        if (discount.compareTo(BigDecimal.ZERO) < 0) {
+            discount = BigDecimal.ZERO;
+        }
+        
         StringBuilder billContent = new StringBuilder();
         billContent.append("<html><body style='font-family: Arial, sans-serif; color: #333; background-color: #f9f9f9;'>")
                 .append("<div style='max-width: 450px; margin: 40px auto; padding: 30px; border-radius: 10px; background: #ffffff; box-shadow: 0 15px 30px rgba(0,0,0,0.1); border: 1px solid #e0e0e0;'>")
@@ -82,32 +93,43 @@ public void sendBillMail(Users users, Orders order, List<OrderItems> orderItems)
                 .append("<th style='padding: 12px; text-align: left;'>Item</th>")
                 .append("<th style='padding: 12px; text-align: center;'>Quantity</th>")
                 .append("<th style='padding: 12px; text-align: right;'>Price</th>")
+                .append("<th style='padding: 12px; text-align: right;'>Order Date</th>")
+                .append("<th style='padding: 12px; text-align: right;'>Total Price</th>")
+
                 .append("</tr>")
                 .append("</thead>")
                 .append("<tbody>");
 
         for (OrderItems item : orderItems) {
+            BigDecimal totalPrice = BigDecimal.ZERO;
+            totalPrice = item.getItem().getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
             billContent.append("<tr style='border-bottom: 1px solid #ddd;'>")
                     .append("<td style='padding: 12px; color: #333;'>").append(item.getItem().getName()).append("</td>")
                     .append("<td style='padding: 12px; text-align: center; color: #333;'>").append(item.getQuantity()).append("</td>")
-                    .append("<td style='padding: 12px; text-align: right; color: #333;'>$").append(item.getPrice().intValue()).append("</td>")
+                    .append("<td style='padding: 12px; text-align: right; color: #333;'>$").append(item.getItem().getPrice().intValue()).append("</td>")
+                    .append("<td style='padding: 12px; text-align: right; color: #333;'>").append(order.getCreated_dt()).append("</td>")
+                    .append("<td style='padding: 12px; text-align: right; color: #333;'>$").append(totalPrice.intValue()).append("</td>")
                     .append("</tr>");
         }
-
-        billContent.append("<tr style='background: #f4f4f4;'>")
-                .append("<td colspan='2' style='padding: 15px; text-align: right; font-weight: bold; color: #333;'>Total Amount:</td>")
-                .append("<td style='padding: 15px; text-align: right; font-weight: bold; color: #333;'>$").append(order.getTotal_amount().intValue()).append("</td>")
-                .append("</tr>")
-                .append("</tbody>")
-                .append("</table>")
-                .append("<div style='padding: 20px 0; text-align: center;'>")
-                .append("<p style='font-size: 16px; color: #666;'>We hope you enjoy your purchase! If you have any questions, feel free to <a href='#' style='color: #4CAF50; text-decoration: none;'>contact us</a>.</p>")
-                .append("</div>")
-                .append("<div style='text-align: center; padding: 20px; background: #f4f4f4; border-radius: 0 0 10px 10px;'>")
-                .append("<p style='font-size: 14px; color: #888;'>© 2024 SportCycle Shop. All rights reserved.</p>")
-                .append("</div>")
-                .append("</div>")
-                .append("</body></html>");
+        
+        billContent.append("<tr style='background-color: #f9f9f9;'>")
+                    .append("<td colspan='4' style='padding: 10px; text-align: right; font-weight: bold; color: #333;'>Discount:</td>")
+                    .append("<td style='padding: 10px; text-align: right; font-weight: bold; color: #333;'>$").append(discount.intValue()).append("</td>")
+                    .append("</tr>")
+                    .append("<tr style='background-color: #f9f9f9;'>")
+                    .append("<td colspan='4' style='padding: 10px; text-align: right; font-weight: bold; color: #333;'>Total Amount:</td>")
+                    .append("<td style='padding: 10px; text-align: right; font-weight: bold; color: #333;'>$").append(order.getTotal_amount().intValue()).append("</td>")
+                    .append("</tr>")
+                    .append("</tbody>")
+                    .append("</table>")
+                    .append("<div style='padding: 20px 0; text-align: center;'>")
+                    .append("<p style='font-size: 16px; color: #666;'>We hope you enjoy your purchase! If you have any questions, feel free to <a href='#' style='color: #4CAF50; text-decoration: none;'>contact us</a>.</p>")
+                    .append("</div>")
+                    .append("<div style='text-align: center; padding: 15px; background-color: #f9f9f9; border-radius: 0 0 8px 8px;'>")
+                    .append("<p style='font-size: 14px; color: #888;'>© 2024 SportCycle Shop. All rights reserved.</p>")
+                    .append("</div>")
+                    .append("</div>")
+                    .append("</body></html>");
 
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -125,6 +147,7 @@ public void sendBillMail(Users users, Orders order, List<OrderItems> orderItems)
         // Add further logging as needed
     }
 }
+
 
 
     @Override

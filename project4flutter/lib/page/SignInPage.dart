@@ -62,6 +62,7 @@ class _SignupState extends State<Signup> {
           email: _controllerEmail.text,
           password: _controllerPassword.text,
           role: false,
+          block: false,
           created_dt: DateTime.now(),
         );
         await _usersService.saveUsers(newUser);

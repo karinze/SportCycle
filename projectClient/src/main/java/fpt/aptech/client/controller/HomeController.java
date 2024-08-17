@@ -162,6 +162,11 @@ public class HomeController {
                 session.setAttribute("admin", username);
                 return "redirect:/dashboard";
             } else {
+                if (users.isBlock()) {
+                    model.addAttribute("account", new Users());
+                    model.addAttribute("error", "Account has been locked");
+                    return "login/login";
+                }
                 session.setAttribute("user", users.getEmail());
                 Users user = rt.getForObject(urlusers + "/findemail/" + users.getEmail(), Users.class);
                 session.setAttribute("username", user.getUsername());
@@ -275,18 +280,24 @@ public class HomeController {
             }
             return "login/register";
         } else {
-            if (!user.getEmail().isEmpty()) {
-                Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class);
+            Users users = rt.getForObject(urlusers + "/findemail/" + user.getEmail(), Users.class);
+            Users u = rt.getForObject(urlusers + "/findusername/" + user.getUsername(), Users.class);
+            if (users != null || u != null) {
                 if (users != null) {
                     bindingResult.rejectValue("email", "error.account", "Email already exists");
-                    return "login/register";
                 }
+                if (u != null) {
+                    bindingResult.rejectValue("username", "error.account", "Username already exists");
+                }
+                return "login/register";
+
             }
 
             user.setUser_id(UUID.randomUUID());
             user.setRole(false);
+            user.setBlock(false);
             user.setCreated_dt(Date.from(Instant.now()));
-            Users newUsers = new Users(user.getUser_id(), user.getUsername(), user.getPassword(), user.getEmail(), user.isRole(), user.getCreated_dt());
+            Users newUsers = new Users(user.getUser_id(), user.getUsername(), user.getPassword(), user.getEmail(), user.isRole(), user.isBlock(), user.getCreated_dt());
             rt.postForEntity(urlusers, newUsers, Users.class);
             model.addAttribute("success", "Account registration successful");
             model.addAttribute("account", new Users());
@@ -376,7 +387,7 @@ public class HomeController {
 
             users.setUsername(users.getUsername());
 
-            Users acc = new Users(users.getUser_id(), users.getUsername(), users.getPassword(), users.getEmail(), users.isRole(), users.getCreated_dt());
+            Users acc = new Users(users.getUser_id(), users.getUsername(), users.getPassword(), users.getEmail(), users.isRole(), users.isBlock(), users.getCreated_dt());
 
             model.addAttribute("Users", rt.postForEntity(urlusers + "/resetpassword", acc, Users.class));
         }
@@ -658,7 +669,12 @@ public class HomeController {
 
         if (bindingResult.hasErrors() || (multipartFile != null && !multipartFile.isEmpty() && !multipartFile.getContentType().startsWith("image/"))) {
             System.out.println("Binding Result Errors: " + bindingResult.getAllErrors());
-
+            if (!items.getName().isEmpty()) {
+                Items item = rt.getForObject(urlitems + "/findName/" + items.getName(), Items.class);
+                if (item != null) {
+                    bindingResult.rejectValue("name", "error.items", "There is already an item with this name!");
+                }
+            }
             if (multipartFile != null && !multipartFile.isEmpty() && !multipartFile.getContentType().startsWith("image/")) {
                 bindingResult.rejectValue("image", "error.items", "Only image files are allowed.");
             }
@@ -669,6 +685,15 @@ public class HomeController {
             if ("0".equals(items.getBrand())) {
                 items.setBrand(otherBrand);
             }
+            Items i = rt.getForObject(urlitems + "/findName/" + items.getName(), Items.class);
+
+            if (i != null) {
+                bindingResult.rejectValue("name", "error.items", "There is already an item with this name!");
+                model.addAttribute("otherBrand", otherBrand);
+                model.addAttribute("items", items);
+                return "admin/createAdminItems";
+            }
+
             if (multipartFile != null && !multipartFile.isEmpty()) {
                 String fileName = multipartFile.getOriginalFilename();
                 FileCopyUtils.copy(items.getImage().getBytes(), new File(FileUpload, fileName));
@@ -755,6 +780,7 @@ public class HomeController {
             Items p = rt.getForObject(urlitems + "/" + id, Items.class
             );
             model.addAttribute("items", p);
+            model.addAttribute("images", p.getImage());
             model.addAttribute("otherBrand", null);
             return "admin/editAdminItems";
         } else {
@@ -770,7 +796,15 @@ public class HomeController {
 
         if (bindingResult.hasErrors()) {
             Items p = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class);
+            if (!item.getName().isEmpty()) {
+                Items i = rt.getForObject(urlitems + "/findName/" + items.getName(), Items.class);
+                if (i != null && !item.getName().equals(items.getName())) {
+                    bindingResult.rejectValue("name", "error.items", "There is already an item with this name!");
+                }
+            }
             model.addAttribute("otherBrand", otherBrand);
+            model.addAttribute("images", p.getImage());
+
             model.addAttribute("items", item);
             return "admin/editAdminItems";
         } else {
@@ -780,7 +814,16 @@ public class HomeController {
             MultipartFile multipartFile = item.getImage();
             String fileName = multipartFile.getOriginalFilename();
             item.setCreated_dt(items.getCreated_dt());
+            Items i = rt.getForObject(urlitems + "/findName/" + items.getName(), Items.class);
 
+            if (i != null && !item.getName().equals(items.getName())) {
+                bindingResult.rejectValue("name", "error.items", "There is already an item with this name!");
+                model.addAttribute("otherBrand", otherBrand);
+                model.addAttribute("images", items.getImage());
+
+                model.addAttribute("items", item);
+                return "admin/editAdminItems";
+            }
             if (!multipartFile.isEmpty()) {
                 // Check if the uploaded file is an image
                 String contentType = multipartFile.getContentType();
@@ -908,6 +951,34 @@ public class HomeController {
         }
     }
 
+    @PostMapping("/userblock/{id}")
+    public String editUserBlock(Model model,@PathVariable UUID id,HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+            Users users = rt.getForObject(urlusers + "/" + id, Users.class);
+            users.setBlock(true);
+            Users user = new Users(users.getUser_id(), users.getUsername(), users.getPassword(), users.getEmail(),users.isRole() , users.isBlock(), users.getCreated_dt());
+            rt.postForEntity(urlusers, user, Users.class);
+
+            return "redirect:/indexAdminUsers";
+        } else {
+            return "redirect:/login";
+        }
+    }
+    
+    @PostMapping("/userunblock/{id}")
+    public String editUserUnlock(Model model,@PathVariable UUID id,HttpSession session) {
+        if (session.getAttribute("admin") != null) {
+            Users users = rt.getForObject(urlusers + "/" + id, Users.class);
+            users.setBlock(false);
+            Users user = new Users(users.getUser_id(), users.getUsername(), users.getPassword(), users.getEmail(),users.isRole() , users.isBlock(), users.getCreated_dt());
+            rt.postForEntity(urlusers, user, Users.class);
+
+            return "redirect:/indexAdminUsers";
+        } else {
+            return "redirect:/login";
+        }
+    }
+            
     @GetMapping("/indexAdminOrders")
     public String
             indexAdminOrders(Model model, HttpSession session) {
@@ -1001,9 +1072,6 @@ public class HomeController {
             items.setStock(newStock);
 
             // Set visibility based on the new stock
-            if (newStock > 0) {
-                items.setIs_visible(true);
-            }
             Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), newStock, items.getRentalquantity(), items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
             // Update the item details
             rt.postForObject(urlitems + "/", item, Items.class);
@@ -1029,9 +1097,6 @@ public class HomeController {
             items.setStock(newStock);
 
             // Set visibility based on the new stock
-            if (newStock > 0) {
-                items.setIs_visible(true);
-            }
             Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), newStock, items.getRentalquantity(), items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
             // Update the item details
             rt.postForObject(urlitems + "/", item, Items.class);
@@ -1093,7 +1158,13 @@ public class HomeController {
 //        for (int i = 0; i < limit; i++) {
 //            a.add(p.get(i));
 //        }
-
+        String email = (String) session.getAttribute("user");
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
         List<Items> a = rt.getForObject(urlitems + "/top10", List.class);
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
@@ -1108,6 +1179,13 @@ public class HomeController {
 
     @GetMapping("/about")
     public String about(Model model, HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
             model.addAttribute("countcartItems", count);
@@ -1141,6 +1219,12 @@ public class HomeController {
         if (email == null) {
             return "redirect:/login";
         }
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
 
         Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
         // Fetch the rentals and total count separately
@@ -1173,6 +1257,12 @@ public class HomeController {
         String email = (String) session.getAttribute("user");
         if (email == null) {
             return "redirect:/login";
+        }
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
         }
 
         Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
@@ -1277,6 +1367,12 @@ public class HomeController {
         if (email == null) {
             return "redirect:/login";
         }
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
         String rentalStartDateStr = (String) session.getAttribute("rentalStartDateStr");
         String rentalEndDateStr = (String) session.getAttribute("rentalEndDateStr");
 
@@ -1316,6 +1412,12 @@ public class HomeController {
         if (email == null) {
             return "redirect:/login";
         }
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
         session.removeAttribute("rentalEndDateStr");
         int itemId = (int) session.getAttribute("itemid");
         model.addAttribute("message", "Payment was cancelled.");
@@ -1350,6 +1452,14 @@ public class HomeController {
 
     @GetMapping("/cart")
     public String cart(Model model, HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
+
         List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
 
         if (cartItems == null) {
@@ -1359,6 +1469,7 @@ public class HomeController {
         // Calculate total price and merge cart items
         Map<Integer, CartItems> mergedCart = new LinkedHashMap<>();
         BigDecimal totalPrice = BigDecimal.ZERO;
+        boolean hasStockError = false;
 
         for (CartItems item : cartItems) {
             if (mergedCart.containsKey(item.getItem_id())) {
@@ -1372,6 +1483,12 @@ public class HomeController {
                 newItem.setImage(item.getImage());
                 newItem.setTotalQuantity(item.getTotalQuantity());
                 mergedCart.put(item.getItem_id(), newItem);
+            }
+
+            // Check if stock is less than totalQuantity
+            if (item.getStock() < item.getTotalQuantity()) {
+                hasStockError = true;
+                model.addAttribute("stockError", "Insufficient stock for item: " + item.getName());
             }
 
             totalPrice = totalPrice.add(item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())));
@@ -1398,12 +1515,19 @@ public class HomeController {
         }
 
         BigDecimal finalTotalPrice = totalPrice.subtract(totalDiscount);
+        if (finalTotalPrice.compareTo(BigDecimal.ZERO) < 0) {
+            finalTotalPrice = BigDecimal.ZERO;
+        }
 
         model.addAttribute("cartItems", mergedCartItems);
         model.addAttribute("totalPrice", totalPrice);
         model.addAttribute("totalDiscount", totalDiscount);
         model.addAttribute("finalTotalPrice", finalTotalPrice);
         model.addAttribute("appliedCoupons", appliedCoupons);
+
+        if (hasStockError) {
+            model.addAttribute("errorMessage", "Some items have insufficient stock.");
+        }
 
         return "user/cart";
     }
@@ -1459,54 +1583,32 @@ public class HomeController {
 
     @GetMapping("/checkout")
     public String checkout(Model model, HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
         if (session.getAttribute("user") != null) {
-            String email = (String) session.getAttribute("user");
+
             List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
             if (cartItems == null) {
                 cartItems = new ArrayList<>(); // Initialize empty list if null
             }
 
             BigDecimal totalPrice = BigDecimal.ZERO;
+            boolean hasStockError = false;
 
+            // Calculate total price and check stock availability
             for (CartItems item : cartItems) {
-                totalPrice = totalPrice.add(item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())));
-                Items items = rt.getForObject(urlitems + "/" + item.getItem_id(), Items.class);
-                if (items.getStock() < item.getTotalQuantity()) {
-                    model.addAttribute("error", "The quantity in the shopping cart is greater than the quantity in stock");
-
-                    // Recalculate total price and merge cart items for cart page
-                    Map<Integer, CartItems> mergedCart = new LinkedHashMap<>();
-                    BigDecimal totalPrices = BigDecimal.ZERO;
-
-                    for (CartItems i : cartItems) {
-                        if (mergedCart.containsKey(i.getItem_id())) {
-                            CartItems existingItem = mergedCart.get(i.getItem_id());
-                            existingItem.setTotalQuantity(existingItem.getTotalQuantity() + i.getTotalQuantity());
-                        } else {
-                            CartItems newItem = new CartItems();
-                            newItem.setItem_id(i.getItem_id());
-                            newItem.setName(i.getName());
-                            newItem.setPrice(i.getPrice());
-                            newItem.setImage(i.getImage());
-                            newItem.setTotalQuantity(i.getTotalQuantity());
-                            mergedCart.put(i.getItem_id(), newItem);
-                        }
-                        totalPrices = totalPrices.add(i.getPrice().multiply(BigDecimal.valueOf(i.getTotalQuantity())));
-                    }
-
-                    if (session.getAttribute("countcartItems") != null) {
-                        int count = (int) session.getAttribute("countcartItems");
-                        model.addAttribute("countcartItems", count);
-                    } else {
-                        model.addAttribute("countcartItems", 0);
-                    }
-
-                    List<CartItems> mergedCartItems = new ArrayList<>(mergedCart.values());
-
-                    model.addAttribute("cartItems", mergedCartItems);
-                    model.addAttribute("totalPrice", totalPrices);
-                    return "user/cart";
+                // Check if stock is less than totalQuantity
+                if (item.getStock() < item.getTotalQuantity()) {
+                    hasStockError = true;
+                    model.addAttribute("error", "Quantity is exceeding sales");
                 }
+
+                totalPrice = totalPrice.add(item.getPrice().multiply(BigDecimal.valueOf(item.getTotalQuantity())));
             }
 
             // Apply coupons
@@ -1521,11 +1623,16 @@ public class HomeController {
             }
 
             BigDecimal finalTotalPrice = totalPrice.subtract(totalDiscount);
+            if (finalTotalPrice.compareTo(BigDecimal.ZERO) < 0) {
+                finalTotalPrice = BigDecimal.ZERO;
+            }
 
+            // Add attributes to the model
             model.addAttribute("cartItems", cartItems);
             model.addAttribute("totalPrice", totalPrice);
             model.addAttribute("totalDiscount", totalDiscount);
             model.addAttribute("finalTotalPrice", finalTotalPrice);
+            model.addAttribute("appliedCoupons", appliedCoupons);
 
             if (session.getAttribute("countcartItems") != null) {
                 int count = (int) session.getAttribute("countcartItems");
@@ -1533,6 +1640,12 @@ public class HomeController {
             } else {
                 model.addAttribute("countcartItems", 0);
             }
+
+            // If there is a stock error, return to the cart page
+            if (hasStockError) {
+                return "user/cart"; // Redirect to cart with all necessary model attributes
+            }
+
             model.addAttribute("account", new Users());
             Users u = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
             model.addAttribute("userdetail", new UserDetails());
@@ -1775,9 +1888,7 @@ public class HomeController {
                         OrderItems savedOrderItem = rt.postForObject(urlorderitems, orderItem, OrderItems.class);
 
                         int sub = items.getStock() - cartItem.getTotalQuantity();
-                        if (sub <= 0) {
-                            items.setIs_visible(false);
-                        }
+
                         Items item = new Items(items.getItem_id(), items.getName(), items.getBrand(), items.getDescription(), items.getPrice(), sub, items.getRentalquantity(), items.getType(), items.getImage(), items.isIs_visible(), items.getCreated_dt());
                         rt.postForObject(urlitems + "/", item, Items.class);
                         orderItems.add(savedOrderItem);
@@ -1890,6 +2001,12 @@ public class HomeController {
         if (email == null) {
             return "redirect:/login";
         }
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
 
         try {
             Users users = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
@@ -1936,7 +2053,6 @@ public class HomeController {
                             .map(Orders::getTotal_amount)
                             .reduce(BigDecimal.ZERO, BigDecimal::add)
             );
-            
 
             model.addAttribute("currentPage", pageNumber);
             model.addAttribute("pageSize", pageSize);
@@ -2030,6 +2146,13 @@ public class HomeController {
 
     @GetMapping("/contact")
     public String contact(Model model, HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
             model.addAttribute("countcartItems", count);
@@ -2055,6 +2178,13 @@ public class HomeController {
             @RequestParam(value = "bikeMaterial", required = false) String bikeMaterial,
             @RequestParam(value = "bikeBrakeType", required = false) String bikeBrakeType,
             @RequestParam(value = "otherBrand", required = false) String otherBrand) {
+        String email = (String) session.getAttribute("user");
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
 
         String filterUrl = urlitems + "/filter?pageNumber=" + pageNumber + "&pageSize=" + pageSize;
         String showfilterUrl = urlitems + "/showfilter?name=" + (name != null ? name : "");
@@ -2152,6 +2282,13 @@ public class HomeController {
     @GetMapping("/shopsearch")
     public String shopsearch(Model model, HttpSession session, @RequestParam("name") String name, @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "9") int pageSize) {
+        String email = (String) session.getAttribute("user");
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
         if (name != null && !name.isEmpty()) {
             ResponseEntity<List<Items>> response = rt.exchange(
                     urlitems + "/searchp/" + name + "?pageNumber=" + pageNumber + "&pageSize=" + pageSize,
@@ -2201,6 +2338,13 @@ public class HomeController {
 //        for (int i = 0; i < limit; i++) {
 //            a.add(p.get(i));
 //        }
+        String email = (String) session.getAttribute("user");
+        if (email != null) {
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if (user.isBlock()) {
+                session.removeAttribute("user");
+            }
+        }
         List<Items> a = rt.getForObject(urlitems + "/top10", List.class);
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
@@ -2220,6 +2364,13 @@ public class HomeController {
 
     @GetMapping("/thankyou")
     public String thankyou(Model model, HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if(email != null){
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if(user.isBlock()){
+                session.removeAttribute("user");
+            }
+        }
         if (session.getAttribute("countcartItems") != null) {
             int count = (int) session.getAttribute("countcartItems");
             model.addAttribute("countcartItems", count);
@@ -2294,6 +2445,13 @@ public class HomeController {
 
     @GetMapping("/deletecart/{itemId}")
     public String deleteCart(@PathVariable int itemId, HttpSession session) {
+        String email = (String) session.getAttribute("user");
+        if(email != null){
+            Users user = rt.getForObject(urlusers + "/findemail/" + email, Users.class);
+            if(user.isBlock()){
+                session.removeAttribute("user");
+            }
+        }
         List<CartItems> cartItems = (List<CartItems>) session.getAttribute("cartItems");
         if (cartItems != null) {
             cartItems.removeIf(item -> item.getItem_id() == itemId);

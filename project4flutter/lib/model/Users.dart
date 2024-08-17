@@ -7,6 +7,7 @@ class Users {
     required String password,
     required String email,
     required bool role,
+    required bool block,
     DateTime? created_dt,
   }) {
     _user_id = user_id ?? _generateUniqueId();
@@ -14,6 +15,7 @@ class Users {
     _password = password;
     _email = email;
     _role = role;
+    _block = block;
     _created_dt = created_dt ?? DateTime.now();
   }
 
@@ -23,6 +25,7 @@ class Users {
     _password = json['password'];
     _email = json['email'];
     _role = json['role'];
+    _block = json['block'];
     _created_dt = _parseDate(json['created_dt']);
   }
 
@@ -31,6 +34,7 @@ class Users {
   String? _password;
   String? _email;
   bool? _role;
+  bool? _block;
   DateTime? _created_dt;
 
   String get user_id => _user_id!;
@@ -38,6 +42,7 @@ class Users {
   String get password => _password!;
   String get email => _email!;
   bool get role => _role!;
+  bool get block => _block!;
   String get created_dt => _formatDate(_created_dt)!;
 
   Map<String, dynamic> toJson() {
@@ -47,6 +52,7 @@ class Users {
     map['password'] = _password;
     map['email'] = _email;
     map['role'] = _role;
+    map['block'] = _block;
     map['created_dt'] = _formatDate(_created_dt) ?? "";
     return map;
   }

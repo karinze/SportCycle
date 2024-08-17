@@ -117,4 +117,9 @@ public class ItemService implements IItemService {
         return itemRepository.findTop10NewestItems(pageable);
     }
 
+    @Override
+    public Items findName(String name) {
+        return itemRepository.findName(name);
+    }
+
 }

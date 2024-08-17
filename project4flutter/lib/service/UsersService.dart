@@ -34,10 +34,16 @@ class UsersService {
         }
 
         Users user = Users.fromJson(data);
+        if (user.block == true) {
+          print("Login failed: user account is locked.");
+          return user; // Blocked users cannot log in
+        }
+
         if (user.role == true) {
           print("Login failed: no user data returned.");
           return null;
         }
+
         // Save session
         final prefs = await SharedPreferences.getInstance();
         if (prefs.getString('username') != null ||
