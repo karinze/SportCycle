@@ -157,7 +157,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
             note: "Thank you for your purchase!",
             onSuccess: (Map params) async {
               print("Payment successful: $params");
-              _saveOrderToDatabase('Online Payment');
+              _saveOrderToDatabase('OnlinePayment');
             },
             onCancel: (Map params) {
               print("Payment cancelled: $params");

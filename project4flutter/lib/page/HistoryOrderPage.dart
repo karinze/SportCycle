@@ -193,7 +193,8 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                   ),
                 ),
                 Text(
-                  'Status: ${order.status}',
+                  // Check if the status is 'OnlinePayment' and display 'Online Payment'
+                  'Status: ${order.status == 'OnlinePayment' ? 'Online Payment' : order.status}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
